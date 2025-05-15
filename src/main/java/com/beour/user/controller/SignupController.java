@@ -1,6 +1,5 @@
 package com.beour.user.controller;
 
-import com.beour.user.dto.CheckDuplicateLoginIdDto;
 import com.beour.user.dto.CheckDuplicateNickNameDto;
 import com.beour.user.dto.CheckDuplicateResponse;
 import com.beour.user.dto.SignupDto;
@@ -10,9 +9,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
@@ -32,9 +33,9 @@ public class SignupController {
         }
     }
 
-    @PostMapping("/signup/check/id")
-    public ResponseEntity<CheckDuplicateResponse> checkDuplicateLoginId(@Valid @RequestBody CheckDuplicateLoginIdDto dto){
-        if(signupService.checkIdDuplicate(dto)){
+    @GetMapping("/signup/check/loginId")
+    public ResponseEntity<CheckDuplicateResponse> checkDuplicateLoginId(@RequestParam("loginId") String loginId){
+        if(signupService.checkLoginIdDuplicate(loginId)){
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(new CheckDuplicateResponse(true, "이미 사용 중인 아이디입니다."));
 
@@ -43,9 +44,9 @@ public class SignupController {
         return ResponseEntity.ok(new CheckDuplicateResponse(false, "사용 가능한 아이디입니다."));
     }
 
-    @PostMapping("/signup/check/nickname")
-    public ResponseEntity<CheckDuplicateResponse> checkDuplicateNickName(@Valid @RequestBody CheckDuplicateNickNameDto dto){
-        if(signupService.checkNicknameDuplicate(dto)){
+    @GetMapping("/signup/check/nickname")
+    public ResponseEntity<CheckDuplicateResponse> checkDuplicateNickName(@RequestParam("nickname") String nickname){
+        if(signupService.checkNicknameDuplicate(nickname)){
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(new CheckDuplicateResponse(true, "이미 사용 중인 닉네임입니다."));
 
