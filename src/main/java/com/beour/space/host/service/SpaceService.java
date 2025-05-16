@@ -3,6 +3,7 @@ package com.beour.space.host.service;
 import com.beour.space.host.dto.SpaceRegisterRequestDto;
 import com.beour.space.host.entity.*;
 import com.beour.space.host.repository.*;
+import com.beour.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +26,7 @@ public class SpaceService {
 
     @Transactional
     public Long registerSpace(SpaceRegisterRequestDto dto) {
-        var host = userService.getUserById(dto.getHostId());
+        User host = userService.getUserById(dto.getHostId());
         double[] latLng = kakaoMapService.getLatLng(dto.getAddress());
 
         // 1. Space
