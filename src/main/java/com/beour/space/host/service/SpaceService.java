@@ -1,6 +1,7 @@
 package com.beour.space.host.service;
 
 import com.beour.space.host.dto.SpaceRegisterRequestDto;
+import com.beour.space.host.dto.SpaceUpdateRequestDto;
 import com.beour.space.host.entity.*;
 import com.beour.space.host.repository.*;
 import com.beour.user.entity.User;
@@ -85,4 +86,53 @@ public class SpaceService {
 
         return space.getId();
     }
+
+    @Transactional
+    public void updateSpace(Long spaceId, SpaceUpdateRequestDto dto) {
+        Space space = spaceRepository.findById(spaceId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공간입니다."));
+
+        double[] latLng = kakaoMapService.getLatLng(dto.getAddress());
+
+        // 1. Space 수정
+        space.update(
+                dto.getName(), dto.getAddress(), dto.getDetailAddress(), dto.getPricePerHour(),
+                dto.getMaxCapacity(), dto.getSpaceCategory(), dto.getUseCategory(),
+                dto.getThumbnailUrl(), latLng[0], latLng[1]
+        );
+
+        // 2. Description 수정
+        Description desc = space.getDescription();
+        desc.update(
+                dto.getDescription(), dto.getPriceGuide(), dto.getFacilityNotice(), dto.getNotice(),
+                dto.getLocationDescription(), dto.getRefundPolicy(), dto.getWebsiteUrl()
+        );
+
+        // 3. Tags 재저장
+        tagRepository.deleteAll(space.getTags());
+        List<Tag> tags = dto.getTags().stream()
+                .map(content -> Tag.builder().space(space).contents(content).build())
+                .toList();
+        tagRepository.saveAll(tags);
+
+        // 4. AvailableTimes 재저장
+        availableTimeRepository.deleteAll(space.getAvailableTimes());
+        List<AvailableTime> times = dto.getAvailableTimes().stream()
+                .map(t -> AvailableTime.builder()
+                        .space(space)
+                        .date(t.getDate())
+                        .startTime(t.getStartTime())
+                        .endTime(t.getEndTime())
+                        .build())
+                .toList();
+        availableTimeRepository.saveAll(times);
+
+        // 5. Images 재저장
+        spaceImageRepository.deleteAll(space.getSpaceImages());
+        List<SpaceImage> images = dto.getImageUrls().stream()
+                .map(url -> SpaceImage.builder().space(space).imageUrl(url).build())
+                .toList();
+        spaceImageRepository.saveAll(images);
+    }
+
 }

@@ -65,4 +65,21 @@ public class Space {
 
     @OneToMany(mappedBy = "space", cascade = CascadeType.ALL)
     private List<SpaceImage> spaceImages = new ArrayList<>();
+
+
+    public void update(String name, String address, String detailAddress, int pricePerHour,
+                       int maxCapacity, SpaceCategory spaceCategory, UseCategory useCategory,
+                       String thumbnailUrl, double lat, double lng) {
+        this.name = name;
+        this.address = address;
+        this.detailAddress = detailAddress;
+        this.pricePerHour = pricePerHour;
+        this.maxCapacity = maxCapacity;
+        this.spaceCategory = spaceCategory;
+        this.useCategory = useCategory;
+        this.thumbnailUrl = thumbnailUrl;
+        this.latitude = lat;
+        this.longitude = lng;
+    }
+
 }

@@ -29,4 +29,16 @@ public class Description {
     private String locationDescription;
     private String refundPolicy;
     private String websiteUrl;
+
+
+    public void update(String description, String priceGuide, String facilityNotice,
+                       String notice, String locationDescription, String refundPolicy, String websiteUrl) {
+        this.description = description;
+        this.priceGuide = priceGuide;
+        this.facilityNotice = facilityNotice;
+        this.notice = notice;
+        this.locationDescription = locationDescription;
+        this.refundPolicy = refundPolicy;
+        this.websiteUrl = websiteUrl;
+    }
 }
