@@ -85,4 +85,12 @@ public class SpaceService {
 
         return space.getId();
     }
+
+    @Transactional
+    public void deleteSpace(Long spaceId) {
+        Space space = spaceRepository.findById(spaceId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공간입니다."));
+        space.delete();
+    }
+
 }

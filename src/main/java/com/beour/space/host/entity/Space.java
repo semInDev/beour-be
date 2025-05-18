@@ -65,4 +65,8 @@ public class Space {
 
     @OneToMany(mappedBy = "space", cascade = CascadeType.ALL)
     private List<SpaceImage> spaceImages = new ArrayList<>();
+
+    public void delete() {
+        this.deletedAt = LocalDateTime.now();
+    }
 }
