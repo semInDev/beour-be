@@ -1,13 +1,12 @@
 package com.beour.space.host.controller;
 
+import com.beour.space.host.dto.SpaceDetailResponseDto;
 import com.beour.space.host.dto.SpaceRegisterRequestDto;
+import com.beour.space.host.dto.SpaceSimpleResponseDto;
 import com.beour.space.host.service.SpaceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,5 +19,15 @@ public class SpaceController {
     public ResponseEntity<?> registerSpace(@RequestBody SpaceRegisterRequestDto dto) {
         Long id = spaceService.registerSpace(dto);
         return ResponseEntity.ok("공간이 등록되었습니다. ID: " + id);
+    }
+
+    @GetMapping("/{id}/simple")
+    public ResponseEntity<SpaceSimpleResponseDto> getSimpleInfo(@PathVariable Long id) {
+        return ResponseEntity.ok(spaceService.getSimpleSpaceInfo(id));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<SpaceDetailResponseDto> getDetailInfo(@PathVariable Long id) {
+        return ResponseEntity.ok(spaceService.getDetailedSpaceInfo(id));
     }
 }

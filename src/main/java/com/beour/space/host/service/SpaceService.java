@@ -1,5 +1,6 @@
 package com.beour.space.host.service;
 
+import com.beour.space.host.dto.SpaceDetailResponseDto;
 import com.beour.space.host.dto.SpaceRegisterRequestDto;
 import com.beour.space.host.dto.SpaceSimpleResponseDto;
 import com.beour.space.host.entity.*;
@@ -110,6 +111,39 @@ public class SpaceService {
     private String extractDongFromAddress(String address) {
         String[] parts = address.split(" ");
         return parts.length >= 3 ? String.join(" ", parts[0], parts[1], parts[2]) : address;
+    }
+
+    @Transactional(readOnly = true)
+    public SpaceDetailResponseDto getDetailedSpaceInfo(Long spaceId) {
+        Space space = spaceRepository.findById(spaceId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공간입니다."));
+
+        Description desc = space.getDescription();
+
+        return SpaceDetailResponseDto.builder()
+                .id(space.getId())
+                .name(space.getName())
+                .address(space.getAddress())
+                .detailAddress(space.getDetailAddress())
+                .pricePerHour(space.getPricePerHour())
+                .maxCapacity(space.getMaxCapacity())
+                .spaceCategory(space.getSpaceCategory())
+                .useCategory(space.getUseCategory())
+                .avgRating(space.getAvgRating())
+                .description(desc.getDescription())
+                .priceGuide(desc.getPriceGuide())
+                .facilityNotice(desc.getFacilityNotice())
+                .notice(desc.getNotice())
+                .locationDescription(desc.getLocationDescription())
+                .refundPolicy(desc.getRefundPolicy())
+                .websiteUrl(desc.getWebsiteUrl())
+                .tags(space.getTags().stream().map(Tag::getContents).toList())
+                .availableTimes(space.getAvailableTimes().stream()
+                        .map(t -> new SpaceDetailResponseDto.AvailableTimeDto(
+                                t.getDate(), t.getStartTime(), t.getEndTime()))
+                        .toList())
+                .imageUrls(space.getSpaceImages().stream().map(SpaceImage::getImageUrl).toList())
+                .build();
     }
 
 }
