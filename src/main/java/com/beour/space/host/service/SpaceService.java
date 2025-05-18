@@ -1,6 +1,7 @@
 package com.beour.space.host.service;
 
 import com.beour.space.host.dto.SpaceRegisterRequestDto;
+import com.beour.space.host.dto.SpaceSimpleResponseDto;
 import com.beour.space.host.entity.*;
 import com.beour.space.host.repository.*;
 import com.beour.user.entity.User;
@@ -10,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -85,4 +87,29 @@ public class SpaceService {
 
         return space.getId();
     }
+
+    @Transactional(readOnly = true)
+    public SpaceSimpleResponseDto getSimpleSpaceInfo(Long spaceId) {
+        Space space = spaceRepository.findById(spaceId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공간입니다."));
+
+        List<String> tagContents = space.getTags().stream()
+                .map(Tag::getContents)
+                .collect(Collectors.toList());
+
+        return new SpaceSimpleResponseDto(
+                space.getName(),
+                extractDongFromAddress(space.getAddress()),
+                space.getPricePerHour(),
+                tagContents,
+                space.getThumbnailUrl()
+        );
+    }
+
+    // 예: 서울시 강남구 역삼동 어딘가 123 -> 서울시 강남구 역삼동
+    private String extractDongFromAddress(String address) {
+        String[] parts = address.split(" ");
+        return parts.length >= 3 ? String.join(" ", parts[0], parts[1], parts[2]) : address;
+    }
+
 }
