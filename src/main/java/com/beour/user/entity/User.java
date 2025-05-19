@@ -8,8 +8,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Getter
 @NoArgsConstructor
 @Entity
 public class User extends BaseTimeEntity {
@@ -36,15 +38,18 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false)
     private String phone;
 
+    private String role;
+
 
     @Builder
-    public User(String name, String nickname, String email, String loginId, String password, String phone) {
+    public User(String name, String nickname, String email, String loginId, String password, String phone, String role) {
         this.name = name;
         this.nickname = nickname;
         this.email = email;
         this.loginId = loginId;
         this.password = password;
         this.phone = phone;
+        this.role = "GUEST";
     }
 
     public static User createFrom(SignupDto signUpDto){
@@ -55,6 +60,14 @@ public class User extends BaseTimeEntity {
                 .loginId(signUpDto.getLoginId())
                 .password(signUpDto.getPassword())
                 .phone(signUpDto.getPhone())
+                .build();
+    }
+
+    public static User fromJwt(String loginId, String password, String role){
+        return User.builder()
+                .loginId(loginId)
+                .password(password)
+                .role(role)
                 .build();
     }
 
