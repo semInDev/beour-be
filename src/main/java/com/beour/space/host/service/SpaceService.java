@@ -135,4 +135,60 @@ public class SpaceService {
         spaceImageRepository.saveAll(images);
     }
 
+    @Transactional
+    public void updateSpacePartial(Long id, SpaceUpdateRequestDto dto) {
+        Space space = spaceRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공간입니다."));
+
+        if (dto.getName() != null) space.setName(dto.getName());
+        if (dto.getAddress() != null) {
+            space.setAddress(dto.getAddress());
+            double[] latLng = kakaoMapService.getLatLng(dto.getAddress());
+            space.setLatitude(latLng[0]);
+            space.setLongitude(latLng[1]);
+        }
+        if (dto.getDetailAddress() != null) space.setDetailAddress(dto.getDetailAddress());
+        if (dto.getPricePerHour() != 0) space.setPricePerHour(dto.getPricePerHour());
+        if (dto.getMaxCapacity() != 0) space.setMaxCapacity(dto.getMaxCapacity());
+        if (dto.getSpaceCategory() != null) space.setSpaceCategory(dto.getSpaceCategory());
+        if (dto.getUseCategory() != null) space.setUseCategory(dto.getUseCategory());
+        if (dto.getThumbnailUrl() != null) space.setThumbnailUrl(dto.getThumbnailUrl());
+
+        // Description
+        if (dto.getDescription() != null) space.getDescription().setDescription(dto.getDescription());
+        if (dto.getPriceGuide() != null) space.getDescription().setPriceGuide(dto.getPriceGuide());
+        if (dto.getFacilityNotice() != null) space.getDescription().setFacilityNotice(dto.getFacilityNotice());
+        if (dto.getNotice() != null) space.getDescription().setNotice(dto.getNotice());
+        if (dto.getLocationDescription() != null) space.getDescription().setLocationDescription(dto.getLocationDescription());
+        if (dto.getRefundPolicy() != null) space.getDescription().setRefundPolicy(dto.getRefundPolicy());
+        if (dto.getWebsiteUrl() != null) space.getDescription().setWebsiteUrl(dto.getWebsiteUrl());
+
+        // Tags
+        if (dto.getTags() != null) {
+            tagRepository.deleteBySpace(space);
+            List<Tag> newTags = dto.getTags().stream()
+                    .map(contents -> new Tag(space, contents))
+                    .toList();
+            tagRepository.saveAll(newTags);
+        }
+
+        // AvailableTimes
+        if (dto.getAvailableTimes() != null) {
+            availableTimeRepository.deleteBySpace(space);
+            List<AvailableTime> newTimes = dto.getAvailableTimes().stream()
+                    .map(t -> new AvailableTime(space, t.getDate(), t.getStartTime(), t.getEndTime()))
+                    .toList();
+            availableTimeRepository.saveAll(newTimes);
+        }
+
+        // Images
+        if (dto.getImageUrls() != null) {
+            spaceImageRepository.deleteBySpace(space);
+            List<SpaceImage> newImages = dto.getImageUrls().stream()
+                    .map(url -> new SpaceImage(space, url))
+                    .toList();
+            spaceImageRepository.saveAll(newImages);
+        }
+    }
+
 }

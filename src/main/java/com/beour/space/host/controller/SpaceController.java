@@ -26,4 +26,13 @@ public class SpaceController {
         spaceService.updateSpace(id, dto);
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<Void> updateSpacePartial(
+            @PathVariable Long id,
+            @RequestBody SpaceUpdateRequestDto dto) {
+        spaceService.updateSpacePartial(id, dto);
+        return ResponseEntity.noContent().build();
+    }
+
 }

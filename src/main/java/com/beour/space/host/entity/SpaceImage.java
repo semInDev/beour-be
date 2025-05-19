@@ -8,8 +8,9 @@ import java.time.LocalDateTime;
 
 
 @Entity
-@Getter @Setter
-@NoArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
 public class SpaceImage {
@@ -25,4 +26,10 @@ public class SpaceImage {
     private String imageUrl;
 
     private LocalDateTime deletedAt;
+
+    // 생성자: id 없이 만드는 용도
+    public SpaceImage(Space space, String imageUrl) {
+        this.space = space;
+        this.imageUrl = imageUrl;
+    }
 }
