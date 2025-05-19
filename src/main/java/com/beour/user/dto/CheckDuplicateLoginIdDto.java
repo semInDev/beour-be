@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 public class CheckDuplicateLoginIdDto {
 
-    @NotBlank(message = "아이디를 적어주세요.")
-    private String loginId;
+  @NotBlank(message = "아이디를 적어주세요.")
+  private String loginId;
 
 }

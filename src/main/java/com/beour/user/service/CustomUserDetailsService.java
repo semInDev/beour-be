@@ -14,16 +14,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final UserRepository userRepository;
+  private final UserRepository userRepository;
 
-    @Override
-    public UserDetails loadUserByUsername(String loginId) throws UsernameNotFoundException {
+  @Override
+  public UserDetails loadUserByUsername(String loginId) throws UsernameNotFoundException {
 
-        User user = userRepository.findByLoginId(loginId).orElseThrow(
-                () -> new UserNotFoundException("일치하는 회원이 없습니다.")
-        );
+    User user = userRepository.findByLoginId(loginId).orElseThrow(
+        () -> new UserNotFoundException("일치하는 회원이 없습니다.")
+    );
 
-        return new CustomUserDetails(user);
-    }
+    return new CustomUserDetails(user);
+  }
 
 }

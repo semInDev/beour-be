@@ -8,6 +8,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class FindLoginIdResponseDto {
-    private String loginId;
-    private String message;
+
+  private String loginId;
+  private String message;
 }

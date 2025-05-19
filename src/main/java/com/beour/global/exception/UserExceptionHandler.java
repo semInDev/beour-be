@@ -15,29 +15,24 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class UserExceptionHandler {
 
-//    @ExceptionHandler(UserException.class)
-//    public ResponseEntity<com.beour.global.response.ErrorResponse> handleSignupException(UserException ex) {
-//        return ResponseEntity.status(HttpStatus.CONFLICT)
-//                .body(new ErrorResponse("SIGNUP_ERROR", ex.getMessage()));
-//    }
 
-    @ExceptionHandler(InvalidCredentialsException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidCredentials(InvalidCredentialsException ex) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ErrorResponse("INVALID_CREDENTIALS", ex.getMessage()));
-    }
+  @ExceptionHandler(InvalidCredentialsException.class)
+  public ResponseEntity<ErrorResponse> handleInvalidCredentials(InvalidCredentialsException ex) {
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+        .body(new ErrorResponse("INVALID_CREDENTIALS", ex.getMessage()));
+  }
 
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse("USER_NOT_FOUND", ex.getMessage()));
-    }
+  @ExceptionHandler(UserNotFoundException.class)
+  public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex) {
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        .body(new ErrorResponse("USER_NOT_FOUND", ex.getMessage()));
+  }
 
-    @ExceptionHandler(DuplicateUserInfoException.class)
-    public ResponseEntity<ErrorResponse> handleDuplicateUserInfo(DuplicateUserInfoException ex) {
-        log.error("중복 예외 발생: {}", ex.getMessage()); // 로그 찍기
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new ErrorResponse("DUPLICATE_USER_INFO", ex.getMessage()));
-    }
+  @ExceptionHandler(DuplicateUserInfoException.class)
+  public ResponseEntity<ErrorResponse> handleDuplicateUserInfo(DuplicateUserInfoException ex) {
+    log.error("중복 예외 발생: {}", ex.getMessage()); // 로그 찍기
+    return ResponseEntity.status(HttpStatus.CONFLICT)
+        .body(new ErrorResponse("DUPLICATE_USER_INFO", ex.getMessage()));
+  }
 
 }

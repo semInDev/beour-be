@@ -8,6 +8,6 @@ import lombok.Setter;
 @Setter
 public class CheckDuplicateNickNameDto {
 
-    @NotBlank(message = "닉네임을 적어주세요.")
-    private String nickname;
+  @NotBlank(message = "닉네임을 적어주세요.")
+  private String nickname;
 }

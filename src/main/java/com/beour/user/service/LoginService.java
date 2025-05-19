@@ -16,56 +16,58 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class LoginService {
 
-    private final UserRepository userRepository;
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+  private final UserRepository userRepository;
+  private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public String findLoginId(FindLoginIdRequestDto dto){
-        User user = userRepository.findByNameAndPhoneAndEmail(dto.getName(), dto.getPhone(), dto.getEmail()).orElseThrow(
-                () -> new UserNotFoundException("일치하는 회원을 찾을 수 없습니다.")
-        );
+  public String findLoginId(FindLoginIdRequestDto dto) {
+    User user = userRepository.findByNameAndPhoneAndEmail(dto.getName(), dto.getPhone(),
+        dto.getEmail()).orElseThrow(
+        () -> new UserNotFoundException("일치하는 회원을 찾을 수 없습니다.")
+    );
 
-        return user.getLoginId();
+    return user.getLoginId();
+  }
+
+  @Transactional
+  public String resetPassword(ResetPasswordRequestDto dto) {
+    if (isExistUser(dto)) {
+      String tempPassword = generateTempPassword();
+      String encode = bCryptPasswordEncoder.encode(tempPassword);
+      userRepository.updatePasswordByLoginId(dto.getLoginId(), encode);
+
+      return tempPassword;
     }
 
-    @Transactional
-    public String resetPassword(ResetPasswordRequestDto dto){
-        if(isExistUser(dto)){
-            String tempPassword = generateTempPassword();
-            String encode = bCryptPasswordEncoder.encode(tempPassword);
-            userRepository.updatePasswordByLoginId(dto.getLoginId(), encode);
+    throw new UserNotFoundException("일치하는 회원을 찾을 수 없습니다.");
+  }
 
-            return tempPassword;
-        }
+  private Boolean isExistUser(ResetPasswordRequestDto dto) {
+    User userByLoginID = userRepository.findByLoginId(dto.getLoginId()).orElseThrow(
+        () -> new UserNotFoundException("일치하는 회원을 찾을 수 없습니다.")
+    );
 
-        throw new UserNotFoundException("일치하는 회원을 찾을 수 없습니다.");
+    User userByNamePhoneEmail = userRepository.findByNameAndPhoneAndEmail(dto.getName(),
+        dto.getPhone(), dto.getEmail()).orElseThrow(
+        () -> new UserNotFoundException("일치하는 회원을 찾을 수 없습니다.")
+    );
+
+    if (userByLoginID.getId() == userByNamePhoneEmail.getId()) {
+      return true;
     }
 
-    private Boolean isExistUser(ResetPasswordRequestDto dto){
-        User userByLoginID = userRepository.findByLoginId(dto.getLoginId()).orElseThrow(
-                () -> new UserNotFoundException("일치하는 회원을 찾을 수 없습니다.")
-        );
+    throw new UserNotFoundException("일치하는 회원을 찾을 수 없습니다.");
+  }
 
-        User userByNamePhoneEmail = userRepository.findByNameAndPhoneAndEmail(dto.getName(), dto.getPhone(), dto.getEmail()).orElseThrow(
-                () -> new UserNotFoundException("일치하는 회원을 찾을 수 없습니다.")
-        );
+  private String generateTempPassword() {
+    int length = 10;
+    String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    StringBuilder sb = new StringBuilder();
 
-        if(userByLoginID.getId() == userByNamePhoneEmail.getId()){
-            return true;
-        }
-
-        throw new UserNotFoundException("일치하는 회원을 찾을 수 없습니다.");
+    Random random = new SecureRandom();
+    for (int i = 0; i < length; i++) {
+      sb.append(chars.charAt(random.nextInt(chars.length())));
     }
 
-    private String generateTempPassword(){
-        int length = 10;
-        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        StringBuilder sb = new StringBuilder();
-
-        Random random = new SecureRandom();
-        for(int i = 0; i < length; i++){
-            sb.append(chars.charAt(random.nextInt(chars.length())));
-        }
-
-        return sb.toString();
-    }
+    return sb.toString();
+  }
 }

@@ -24,67 +24,67 @@ import org.springframework.web.cors.CorsConfigurationSource;
 @Configuration
 public class SecurityConfig {
 
-    private final AuthenticationConfiguration authenticationConfiguration;
-    private final JWTUtil jwtUtil;
+  private final AuthenticationConfiguration authenticationConfiguration;
+  private final JWTUtil jwtUtil;
 
-    @Bean
-    public AuthenticationManager authenticationManager() throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
-    }
+  @Bean
+  public AuthenticationManager authenticationManager() throws Exception {
+    return authenticationConfiguration.getAuthenticationManager();
+  }
 
-    @Bean
-    public BCryptPasswordEncoder bCryptPasswordEncoder() {
+  @Bean
+  public BCryptPasswordEncoder bCryptPasswordEncoder() {
 
-        return new BCryptPasswordEncoder();
-    }
+    return new BCryptPasswordEncoder();
+  }
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+  @Bean
+  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        AuthenticationManager authenticationManager = authenticationManager();
+    AuthenticationManager authenticationManager = authenticationManager();
 
-        LoginFilter loginFilter = new LoginFilter(authenticationManager, jwtUtil);
-        loginFilter.setFilterProcessesUrl("/api/users/login");
+    LoginFilter loginFilter = new LoginFilter(authenticationManager, jwtUtil);
+    loginFilter.setFilterProcessesUrl("/api/users/login");
 
-        http.cors((cors) -> cors
-                    .configurationSource(new CorsConfigurationSource() {
-                        @Override
-                        public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
+    http.cors((cors) -> cors
+        .configurationSource(new CorsConfigurationSource() {
+          @Override
+          public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
 
-                            CorsConfiguration configuration = new CorsConfiguration();
+            CorsConfiguration configuration = new CorsConfiguration();
 
-                            configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
-                            configuration.setAllowedMethods(Collections.singletonList("*"));
-                            configuration.setAllowCredentials(true);
-                            configuration.setAllowedHeaders(Collections.singletonList("*"));
-                            configuration.setMaxAge(3600L);
+            configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
+            configuration.setAllowedMethods(Collections.singletonList("*"));
+            configuration.setAllowCredentials(true);
+            configuration.setAllowedHeaders(Collections.singletonList("*"));
+            configuration.setMaxAge(3600L);
 
-                            configuration.setExposedHeaders(Collections.singletonList("Authorization"));
+            configuration.setExposedHeaders(Collections.singletonList("Authorization"));
 
-                            return configuration;
-                        }
-                    })
+            return configuration;
+          }
+        })
+    );
+
+    http
+        .authorizeHttpRequests((auth) -> auth
+                .requestMatchers("/api/users/**").permitAll()
+                .requestMatchers("/admin").hasRole("ADMIN")
+//                        .requestMatchers("/my/**").hasAnyRole("ADMIN", "USER")
+                .anyRequest().authenticated()
         );
 
-        http
-                .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/api/users/**").permitAll()
-                        .requestMatchers("/admin").hasRole("ADMIN")
-//                        .requestMatchers("/my/**").hasAnyRole("ADMIN", "USER")
-                        .anyRequest().authenticated()
-                );
+    http
+        .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class)
+        .addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class);
 
-        http
-                .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class)
-                .addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class);
+    http
+        .formLogin((auth) -> auth.disable())
+        .csrf((auth) -> auth.disable())
+        .httpBasic((auth) -> auth.disable())
+        .sessionManagement((session) -> session
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-        http
-                .formLogin((auth) -> auth.disable())
-                .csrf((auth) -> auth.disable())
-                .httpBasic((auth) -> auth.disable())
-                .sessionManagement((session) -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-
-        return http.build();
-    }
+    return http.build();
+  }
 }

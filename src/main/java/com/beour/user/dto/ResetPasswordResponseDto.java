@@ -9,7 +9,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ResetPasswordResponseDto {
 
-    private String tempPassword;
-    private String message;
+  private String tempPassword;
+  private String message;
 
 }

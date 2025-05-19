@@ -16,38 +16,40 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @RequiredArgsConstructor
 public class JWTFilter extends OncePerRequestFilter {
 
-    private final JWTUtil jwtUtil;
+  private final JWTUtil jwtUtil;
 
-    @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String authorization= request.getHeader("Authorization");
+  @Override
+  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+      FilterChain filterChain) throws ServletException, IOException {
+    String authorization = request.getHeader("Authorization");
 
-        if (authorization == null || !authorization.startsWith("Bearer ")) {
+    if (authorization == null || !authorization.startsWith("Bearer ")) {
 
-            System.out.println("token null");
-            filterChain.doFilter(request, response);
+      System.out.println("token null");
+      filterChain.doFilter(request, response);
 
-            return;
-        }
-
-        String token = authorization.split(" ")[1];
-
-        if(jwtUtil.isExpired(token)){
-            System.out.println("token expired");
-            filterChain.doFilter(request, response);
-
-            return;
-        }
-
-        String loginId = jwtUtil.getLoginId(token);
-        String role = jwtUtil.getRole(token);
-
-        User user = User.fromJwt(loginId, "temppassword", role);
-        CustomUserDetails customUserDetails = new CustomUserDetails(user);
-
-        Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(authToken);
-
-        filterChain.doFilter(request, response);
+      return;
     }
+
+    String token = authorization.split(" ")[1];
+
+    if (jwtUtil.isExpired(token)) {
+      System.out.println("token expired");
+      filterChain.doFilter(request, response);
+
+      return;
+    }
+
+    String loginId = jwtUtil.getLoginId(token);
+    String role = jwtUtil.getRole(token);
+
+    User user = User.fromJwt(loginId, "temppassword", role);
+    CustomUserDetails customUserDetails = new CustomUserDetails(user);
+
+    Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null,
+        customUserDetails.getAuthorities());
+    SecurityContextHolder.getContext().setAuthentication(authToken);
+
+    filterChain.doFilter(request, response);
+  }
 }
