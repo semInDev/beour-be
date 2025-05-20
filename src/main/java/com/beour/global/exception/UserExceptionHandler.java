@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class UserExceptionHandler {
 
-
   @ExceptionHandler(InvalidCredentialsException.class)
   public ResponseEntity<ErrorResponse> handleInvalidCredentials(InvalidCredentialsException ex) {
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
