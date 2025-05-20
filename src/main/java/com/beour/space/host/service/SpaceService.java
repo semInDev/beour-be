@@ -27,7 +27,7 @@ public class SpaceService {
     @Transactional
     public Long registerSpace(SpaceRegisterRequestDto dto) {
         User host = userService.getUserById(dto.getHostId());
-        double[] latLng = kakaoMapService.getLatLng(dto.getAddress());
+        double[] latitudeAndLongitude = kakaoMapService.getLatLng(dto.getAddress());
 
         // 1. Space
         Space space = Space.builder()
@@ -40,10 +40,9 @@ public class SpaceService {
                 .detailAddress(dto.getDetailAddress())
                 .pricePerHour(dto.getPricePerHour())
                 .thumbnailUrl(dto.getThumbnailUrl())
-                .latitude(latLng[0])
-                .longitude(latLng[1])
+                .latitude(latitudeAndLongitude[0])
+                .longitude(latitudeAndLongitude[1])
                 .avgRating(0.0)
-                .createdAt(LocalDateTime.now())
                 .build();
         spaceRepository.save(space);
 
