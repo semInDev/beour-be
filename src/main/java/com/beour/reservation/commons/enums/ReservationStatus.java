@@ -1,4 +1,4 @@
-package com.beour.reservation.enums;
+package com.beour.reservation.commons.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
