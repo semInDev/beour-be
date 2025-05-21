@@ -20,7 +20,7 @@ public class SpaceController {
         Long id = spaceService.registerSpace(dto);
         return ResponseEntity.ok("공간이 등록되었습니다. ID: " + id);
     }
-
+    
     @GetMapping("/{id}/simple")
     public ResponseEntity<SpaceSimpleResponseDto> getSimpleInfo(@PathVariable Long id) {
         return ResponseEntity.ok(spaceService.getSimpleSpaceInfo(id));
@@ -30,4 +30,11 @@ public class SpaceController {
     public ResponseEntity<SpaceDetailResponseDto> getDetailInfo(@PathVariable Long id) {
         return ResponseEntity.ok(spaceService.getDetailedSpaceInfo(id));
     }
+  
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteSpace(@PathVariable Long id) {
+        spaceService.deleteSpace(id);
+        return ResponseEntity.noContent().build();
+    }
+  
 }
