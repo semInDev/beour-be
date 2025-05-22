@@ -53,7 +53,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     GrantedAuthority auth = iterator.next();
     String role = auth.getAuthority();
 
-    String token = jwtUtil.createJwt(loginId, role, 60 * 60 * 10L);
+    String token = jwtUtil.createJwt(loginId, "ROLE_"+role, 60 * 60 * 10L * 1000);
 
     response.setStatus(HttpServletResponse.SC_OK);
     response.setContentType("application/json");

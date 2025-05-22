@@ -71,8 +71,11 @@ public class SecurityConfig {
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/api/users/**").permitAll()
                 .requestMatchers("/admin").hasRole("ADMIN")
+                .requestMatchers("/api/spaces").hasRole("HOST")
+                .requestMatchers("/api/spaces/reserve").hasRole("GUEST")
 //                        .requestMatchers("/my/**").hasAnyRole("ADMIN", "USER")
                 .anyRequest().authenticated()
+//                .anyRequest().permitAll()
         );
 
     http
