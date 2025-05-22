@@ -2,7 +2,11 @@ package com.beour.reservation.guest.dto;
 
 import com.beour.reservation.commons.entity.Reservation;
 import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@Getter
+@NoArgsConstructor
 public class ReservationResponseDto {
 
     private Long id;
