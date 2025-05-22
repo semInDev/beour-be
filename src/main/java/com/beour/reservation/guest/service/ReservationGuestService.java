@@ -6,6 +6,7 @@ import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
 import com.beour.reservation.commons.repository.ReservationRepository;
 import com.beour.reservation.guest.dto.ReservationCreateRequest;
+import com.beour.reservation.guest.dto.ReservationResponseDto;
 import com.beour.space.host.entity.Space;
 import com.beour.space.host.repository.SpaceRepository;
 import com.beour.user.entity.User;
@@ -21,13 +22,9 @@ public class ReservationGuestService {
     private final UserRepository userRepository;
     private final SpaceRepository spaceRepository;
 
-    public void createReservation(ReservationCreateRequest requestDto){
-        User guest = userRepository.findById(requestDto.getGuestId()).orElseThrow(
-            () -> new UserNotFoundException("존재하지 않는 유저입니다.")
-        );
-        User host = userRepository.findById(requestDto.getHostId()).orElseThrow(
-            () -> new UserNotFoundException("존재하지 않는 유저입니다.")
-        );
+    public ReservationResponseDto createReservation(ReservationCreateRequest requestDto){
+        User guest = getUser(requestDto.getGuestId());
+        User host = getUser(requestDto.getHostId());
         Space space = spaceRepository.findById(requestDto.getSpaceId()).orElseThrow(
             () -> new SpaceNotFoundException("존재하지 않는 공간입니다.")
         );
@@ -44,7 +41,14 @@ public class ReservationGuestService {
             .guestCount(requestDto.getGuestCount())
             .build();
 
-        reservationRepository.save(reservation);
+        Reservation savedReservation = reservationRepository.save(reservation);
+        return ReservationResponseDto.of(savedReservation);
+    }
+
+    private User getUser(Long userId) {
+        return userRepository.findById(userId).orElseThrow(
+            () -> new UserNotFoundException("존재하지 않는 유저입니다.")
+        );
     }
 
 }
