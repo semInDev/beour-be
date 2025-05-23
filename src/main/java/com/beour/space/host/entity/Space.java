@@ -1,5 +1,6 @@
 package com.beour.space.host.entity;
 
+import com.beour.global.entity.BaseTimeEntity;
 import com.beour.space.host.enums.SpaceCategory;
 import com.beour.space.host.enums.UseCategory;
 import com.beour.user.entity.User;
@@ -13,11 +14,10 @@ import java.util.List;
 
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Space {
+public class Space extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,8 +49,6 @@ public class Space {
 
     private Double avgRating;
 
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
 
     // 연관관계 매핑
@@ -66,7 +64,7 @@ public class Space {
     @OneToMany(mappedBy = "space", cascade = CascadeType.ALL)
     private List<SpaceImage> spaceImages = new ArrayList<>();
 
-
+  
     public void update(String name, String address, String detailAddress, int pricePerHour,
                        int maxCapacity, SpaceCategory spaceCategory, UseCategory useCategory,
                        String thumbnailUrl, double lat, double lng) {
@@ -82,4 +80,8 @@ public class Space {
         this.longitude = lng;
     }
 
+    public void delete() {
+        this.deletedAt = LocalDateTime.now();
+    }
+  
 }

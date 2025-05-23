@@ -6,8 +6,7 @@ import jakarta.persistence.Id;
 
 @Entity
 @Getter
-@Setter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Tag {
