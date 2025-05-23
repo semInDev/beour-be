@@ -41,11 +41,33 @@ public class SpaceController {
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{id}")
-    public ResponseEntity<Void> updateSpacePartial(
-            @PathVariable Long id,
-            @RequestBody SpaceUpdateRequestDto dto) {
-        spaceService.updateSpacePartial(id, dto);
+    @PatchMapping("/{id}/basic")
+    public ResponseEntity<Void> updateSpaceBasic(@PathVariable Long id, @RequestBody SpaceUpdateRequestDto dto) {
+        spaceService.updateSpaceBasic(id, dto);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/description")
+    public ResponseEntity<Void> updateSpaceDescription(@PathVariable Long id, @RequestBody SpaceUpdateRequestDto dto) {
+        spaceService.updateSpaceDescription(id, dto);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/tags")
+    public ResponseEntity<Void> updateTags(@PathVariable Long id, @RequestBody SpaceUpdateRequestDto dto) {
+        spaceService.updateTags(id, dto);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/available-times")
+    public ResponseEntity<Void> updateAvailableTimes(@PathVariable Long id, @RequestBody SpaceUpdateRequestDto dto) {
+        spaceService.updateAvailableTimes(id, dto);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/images")
+    public ResponseEntity<Void> updateSpaceImages(@PathVariable Long id, @RequestBody SpaceUpdateRequestDto dto) {
+        spaceService.updateSpaceImages(id, dto);
         return ResponseEntity.noContent().build();
     }
   

@@ -197,26 +197,25 @@ public class SpaceService {
     }
 
     @Transactional
-    public void updateSpacePartial(Long id, SpaceUpdateRequestDto dto) {
-        Space space = spaceRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공간입니다."));
+    public void updateSpaceBasic(Long id, SpaceUpdateRequestDto dto) {
+        Space space = spaceRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공간입니다."));
 
-        // Space
         if (dto.getName() != null) space.updateName(dto.getName());
-
         if (dto.getAddress() != null) {
-            double[] latitudeAndLongitude = kakaoMapService.getLatitudeAndLongitude(dto.getAddress());
-            space.updateAddress(dto.getAddress(), latitudeAndLongitude[0], latitudeAndLongitude[1]);
+            double[] latLng = kakaoMapService.getLatitudeAndLongitude(dto.getAddress());
+            space.updateAddress(dto.getAddress(), latLng[0], latLng[1]);
         }
-
         if (dto.getDetailAddress() != null) space.updateDetailAddress(dto.getDetailAddress());
         if (dto.getPricePerHour() != 0) space.updatePricePerHour(dto.getPricePerHour());
         if (dto.getMaxCapacity() != 0) space.updateMaxCapacity(dto.getMaxCapacity());
         if (dto.getSpaceCategory() != null) space.updateSpaceCategory(dto.getSpaceCategory());
         if (dto.getUseCategory() != null) space.updateUseCategory(dto.getUseCategory());
         if (dto.getThumbnailUrl() != null) space.updateThumbnailUrl(dto.getThumbnailUrl());
+    }
 
-        // Description
+    @Transactional
+    public void updateSpaceDescription(Long id, SpaceUpdateRequestDto dto) {
+        Space space = spaceRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공간입니다."));
         Description desc = space.getDescription();
         if (desc != null) {
             if (dto.getDescription() != null) desc.updateDescription(dto.getDescription());
@@ -227,18 +226,23 @@ public class SpaceService {
             if (dto.getRefundPolicy() != null) desc.updateRefundPolicy(dto.getRefundPolicy());
             if (dto.getWebsiteUrl() != null) desc.updateWebsiteUrl(dto.getWebsiteUrl());
         }
+    }
 
-
-        // Tags
+    @Transactional
+    public void updateTags(Long id, SpaceUpdateRequestDto dto) {
+        Space space = spaceRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공간입니다."));
         if (dto.getTags() != null) {
             tagRepository.deleteBySpace(space);
             List<Tag> newTags = dto.getTags().stream()
-                    .map(contents -> new Tag(space, contents))
+                    .map(content -> new Tag(space, content))
                     .toList();
             tagRepository.saveAll(newTags);
         }
+    }
 
-        // AvailableTimes
+    @Transactional
+    public void updateAvailableTimes(Long id, SpaceUpdateRequestDto dto) {
+        Space space = spaceRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공간입니다."));
         if (dto.getAvailableTimes() != null) {
             availableTimeRepository.deleteBySpace(space);
             List<AvailableTime> newTimes = dto.getAvailableTimes().stream()
@@ -246,8 +250,11 @@ public class SpaceService {
                     .toList();
             availableTimeRepository.saveAll(newTimes);
         }
+    }
 
-        // Images
+    @Transactional
+    public void updateSpaceImages(Long id, SpaceUpdateRequestDto dto) {
+        Space space = spaceRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공간입니다."));
         if (dto.getImageUrls() != null) {
             spaceImageRepository.deleteBySpace(space);
             List<SpaceImage> newImages = dto.getImageUrls().stream()
