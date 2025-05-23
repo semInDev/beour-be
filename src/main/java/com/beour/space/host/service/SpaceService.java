@@ -201,28 +201,33 @@ public class SpaceService {
         Space space = spaceRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공간입니다."));
 
-        if (dto.getName() != null) space.setName(dto.getName());
+        // Space
+        if (dto.getName() != null) space.updateName(dto.getName());
+
         if (dto.getAddress() != null) {
-            space.setAddress(dto.getAddress());
             double[] latitudeAndLongitude = kakaoMapService.getLatitudeAndLongitude(dto.getAddress());
-            space.setLatitude(latitudeAndLongitude[0]);
-            space.setLongitude(latitudeAndLongitude[1]);
+            space.updateAddress(dto.getAddress(), latitudeAndLongitude[0], latitudeAndLongitude[1]);
         }
-        if (dto.getDetailAddress() != null) space.setDetailAddress(dto.getDetailAddress());
-        if (dto.getPricePerHour() != 0) space.setPricePerHour(dto.getPricePerHour());
-        if (dto.getMaxCapacity() != 0) space.setMaxCapacity(dto.getMaxCapacity());
-        if (dto.getSpaceCategory() != null) space.setSpaceCategory(dto.getSpaceCategory());
-        if (dto.getUseCategory() != null) space.setUseCategory(dto.getUseCategory());
-        if (dto.getThumbnailUrl() != null) space.setThumbnailUrl(dto.getThumbnailUrl());
+
+        if (dto.getDetailAddress() != null) space.updateDetailAddress(dto.getDetailAddress());
+        if (dto.getPricePerHour() != 0) space.updatePricePerHour(dto.getPricePerHour());
+        if (dto.getMaxCapacity() != 0) space.updateMaxCapacity(dto.getMaxCapacity());
+        if (dto.getSpaceCategory() != null) space.updateSpaceCategory(dto.getSpaceCategory());
+        if (dto.getUseCategory() != null) space.updateUseCategory(dto.getUseCategory());
+        if (dto.getThumbnailUrl() != null) space.updateThumbnailUrl(dto.getThumbnailUrl());
 
         // Description
-        if (dto.getDescription() != null) space.getDescription().setDescription(dto.getDescription());
-        if (dto.getPriceGuide() != null) space.getDescription().setPriceGuide(dto.getPriceGuide());
-        if (dto.getFacilityNotice() != null) space.getDescription().setFacilityNotice(dto.getFacilityNotice());
-        if (dto.getNotice() != null) space.getDescription().setNotice(dto.getNotice());
-        if (dto.getLocationDescription() != null) space.getDescription().setLocationDescription(dto.getLocationDescription());
-        if (dto.getRefundPolicy() != null) space.getDescription().setRefundPolicy(dto.getRefundPolicy());
-        if (dto.getWebsiteUrl() != null) space.getDescription().setWebsiteUrl(dto.getWebsiteUrl());
+        Description desc = space.getDescription();
+        if (desc != null) {
+            if (dto.getDescription() != null) desc.updateDescription(dto.getDescription());
+            if (dto.getPriceGuide() != null) desc.updatePriceGuide(dto.getPriceGuide());
+            if (dto.getFacilityNotice() != null) desc.updateFacilityNotice(dto.getFacilityNotice());
+            if (dto.getNotice() != null) desc.updateNotice(dto.getNotice());
+            if (dto.getLocationDescription() != null) desc.updateLocationDescription(dto.getLocationDescription());
+            if (dto.getRefundPolicy() != null) desc.updateRefundPolicy(dto.getRefundPolicy());
+            if (dto.getWebsiteUrl() != null) desc.updateWebsiteUrl(dto.getWebsiteUrl());
+        }
+
 
         // Tags
         if (dto.getTags() != null) {
@@ -250,8 +255,9 @@ public class SpaceService {
                     .toList();
             spaceImageRepository.saveAll(newImages);
         }
+    }
 
-      
+
     @Transactional
     public void deleteSpace(Long spaceId) {
         Space space = spaceRepository.findById(spaceId)

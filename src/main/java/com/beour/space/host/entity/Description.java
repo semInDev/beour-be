@@ -29,7 +29,7 @@ public class Description {
     private String refundPolicy;
     private String websiteUrl;
 
-
+    // 전체 수정(PUT)
     public void update(String description, String priceGuide, String facilityNotice,
                        String notice, String locationDescription, String refundPolicy, String websiteUrl) {
         this.description = description;
@@ -40,4 +40,34 @@ public class Description {
         this.refundPolicy = refundPolicy;
         this.websiteUrl = websiteUrl;
     }
+
+    // 부분 수정(PATCH)
+    public void updateDescription(String description) {
+        this.description = description;
+    }
+
+    public void updatePriceGuide(String priceGuide) {
+        this.priceGuide = priceGuide;
+    }
+
+    public void updateFacilityNotice(String facilityNotice) {
+        this.facilityNotice = facilityNotice;
+    }
+
+    public void updateNotice(String notice) {
+        this.notice = notice;
+    }
+
+    public void updateLocationDescription(String locationDescription) {
+        this.locationDescription = locationDescription;
+    }
+
+    public void updateRefundPolicy(String refundPolicy) {
+        this.refundPolicy = refundPolicy;
+    }
+
+    public void updateWebsiteUrl(String websiteUrl) {
+        this.websiteUrl = websiteUrl;
+    }
+
 }
