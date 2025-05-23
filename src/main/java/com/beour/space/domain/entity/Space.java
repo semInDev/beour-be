@@ -1,4 +1,4 @@
-package com.beour.space.host.entity;
+package com.beour.space.domain.entity;
 
 import com.beour.global.entity.BaseTimeEntity;
 import com.beour.space.host.enums.SpaceCategory;
