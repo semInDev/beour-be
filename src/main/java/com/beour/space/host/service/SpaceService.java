@@ -1,17 +1,16 @@
 package com.beour.space.host.service;
 
+import com.beour.space.domain.entity.*;
+import com.beour.space.domain.repository.*;
 import com.beour.space.host.dto.SpaceDetailResponseDto;
 import com.beour.space.host.dto.SpaceRegisterRequestDto;
 import com.beour.space.host.dto.SpaceUpdateRequestDto;
 import com.beour.space.host.dto.SpaceSimpleResponseDto;
-import com.beour.space.host.entity.*;
-import com.beour.space.host.repository.*;
 import com.beour.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 

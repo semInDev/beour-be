@@ -1,4 +1,4 @@
-package com.beour.space.host.entity;
+package com.beour.space.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
