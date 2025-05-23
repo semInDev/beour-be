@@ -1,7 +1,7 @@
 package com.beour.reservation.commons.entity;
 
 import com.beour.reservation.commons.enums.ReservationStatus;
-import com.beour.space.host.entity.Space;
+import com.beour.space.domain.entity.Space;
 import com.beour.user.entity.User;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
