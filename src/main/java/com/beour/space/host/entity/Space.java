@@ -64,7 +64,59 @@ public class Space extends BaseTimeEntity {
     @OneToMany(mappedBy = "space", cascade = CascadeType.ALL)
     private List<SpaceImage> spaceImages = new ArrayList<>();
 
+    // 전체 수정(PUT)
+    public void update(String name, String address, String detailAddress, int pricePerHour,
+                       int maxCapacity, SpaceCategory spaceCategory, UseCategory useCategory,
+                       String thumbnailUrl, double lat, double lng) {
+        this.name = name;
+        this.address = address;
+        this.detailAddress = detailAddress;
+        this.pricePerHour = pricePerHour;
+        this.maxCapacity = maxCapacity;
+        this.spaceCategory = spaceCategory;
+        this.useCategory = useCategory;
+        this.thumbnailUrl = thumbnailUrl;
+        this.latitude = lat;
+        this.longitude = lng;
+    }
+
+    // 부분 수정(PATCH)
+    public void updateName(String name) {
+        this.name = name;
+    }
+
+    public void updateAddress(String address, double lat, double lng) {
+        this.address = address;
+        this.latitude = lat;
+        this.longitude = lng;
+    }
+
+    public void updateDetailAddress(String detailAddress) {
+        this.detailAddress = detailAddress;
+    }
+
+    public void updatePricePerHour(int pricePerHour) {
+        this.pricePerHour = pricePerHour;
+    }
+
+    public void updateMaxCapacity(int maxCapacity) {
+        this.maxCapacity = maxCapacity;
+    }
+
+    public void updateSpaceCategory(SpaceCategory category) {
+        this.spaceCategory = category;
+    }
+
+    public void updateUseCategory(UseCategory category) {
+        this.useCategory = category;
+    }
+
+    public void updateThumbnailUrl(String thumbnailUrl) {
+        this.thumbnailUrl = thumbnailUrl;
+    }
+
     public void delete() {
         this.deletedAt = LocalDateTime.now();
     }
+  
 }

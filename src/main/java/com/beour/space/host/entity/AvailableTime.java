@@ -28,4 +28,12 @@ public class AvailableTime {
     private LocalTime endTime;
 
     private LocalDateTime deletedAt;
+
+    // 생성자: id 없이 만드는 용도
+    public AvailableTime(Space space, LocalDate date, LocalTime startTime, LocalTime endTime) {
+        this.space = space;
+        this.date = date;
+        this.startTime = startTime;
+        this.endTime = endTime;
+    }
 }
