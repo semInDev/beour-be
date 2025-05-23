@@ -31,7 +31,7 @@ public class SpaceService {
     @Transactional
     public Long registerSpace(SpaceRegisterRequestDto dto) {
         User host = userService.getUserById(dto.getHostId());
-        double[] latitudeAndLongitude = kakaoMapService.getLatLng(dto.getAddress());
+        double[] latitudeAndLongitude = kakaoMapService.getLatitudeAndLongitude(dto.getAddress());
 
         // 1. Space
         Space space = Space.builder()
@@ -153,13 +153,13 @@ public class SpaceService {
         Space space = spaceRepository.findById(spaceId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공간입니다."));
 
-        double[] latLng = kakaoMapService.getLatLng(dto.getAddress());
+        double[] latitudeAndLongitude = kakaoMapService.getLatitudeAndLongitude(dto.getAddress());
 
         // 1. Space 수정
         space.update(
                 dto.getName(), dto.getAddress(), dto.getDetailAddress(), dto.getPricePerHour(),
                 dto.getMaxCapacity(), dto.getSpaceCategory(), dto.getUseCategory(),
-                dto.getThumbnailUrl(), latLng[0], latLng[1]
+                dto.getThumbnailUrl(), latitudeAndLongitude[0], latitudeAndLongitude[1]
         );
 
         // 2. Description 수정
@@ -204,9 +204,9 @@ public class SpaceService {
         if (dto.getName() != null) space.setName(dto.getName());
         if (dto.getAddress() != null) {
             space.setAddress(dto.getAddress());
-            double[] latLng = kakaoMapService.getLatLng(dto.getAddress());
-            space.setLatitude(latLng[0]);
-            space.setLongitude(latLng[1]);
+            double[] latitudeAndLongitude = kakaoMapService.getLatitudeAndLongitude(dto.getAddress());
+            space.setLatitude(latitudeAndLongitude[0]);
+            space.setLongitude(latitudeAndLongitude[1]);
         }
         if (dto.getDetailAddress() != null) space.setDetailAddress(dto.getDetailAddress());
         if (dto.getPricePerHour() != 0) space.setPricePerHour(dto.getPricePerHour());
