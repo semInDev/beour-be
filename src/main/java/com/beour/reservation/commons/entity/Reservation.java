@@ -1,7 +1,8 @@
 package com.beour.reservation.commons.entity;
 
+import com.beour.global.entity.BaseTimeEntity;
 import com.beour.reservation.commons.enums.ReservationStatus;
-import com.beour.space.host.entity.Space;
+import com.beour.space.domain.entity.Space;
 import com.beour.user.entity.User;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -22,7 +23,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-public class Reservation {
+public class Reservation extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

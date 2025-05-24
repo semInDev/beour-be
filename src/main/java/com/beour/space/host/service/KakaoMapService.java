@@ -21,7 +21,7 @@ public class KakaoMapService {
     @Value("${kakao.api.key}")
     private String kakaoApiKey;
 
-    public double[] getLatLng(String address) {
+    public double[] getLatitudeAndLongitude(String address) {
         Coordinate coordinate = getCoordinatesByAddress(address);
         return new double[]{coordinate.getLatitude(), coordinate.getLongitude()};
     }
