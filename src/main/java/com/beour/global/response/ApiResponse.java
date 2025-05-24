@@ -9,11 +9,10 @@ import org.springframework.http.HttpStatus;
 public class ApiResponse<T> {
     private int code;
     private HttpStatus httpStatus;
-    private String message;
     private T data;
 
     public static <T> ApiResponse<T> of(HttpStatus httpStatus, T data){
-        return new ApiResponse<>(httpStatus.value(), httpStatus, httpStatus.name(), data);
+        return new ApiResponse<>(httpStatus.value(), httpStatus, data);
     }
 
     public static <T> ApiResponse<T> ok(T data){

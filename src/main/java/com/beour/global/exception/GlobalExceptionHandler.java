@@ -18,7 +18,7 @@ public class GlobalExceptionHandler {
     String message = fieldError.getDefaultMessage();
 
     return ResponseEntity.badRequest()
-        .body(new ErrorResponse("VALIDATION_ERROR", message));
+        .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "VALIDATION_ERROR", message));
   }
 
 }

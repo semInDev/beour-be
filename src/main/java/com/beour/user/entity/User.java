@@ -1,7 +1,7 @@
 package com.beour.user.entity;
 
 import com.beour.global.entity.BaseTimeEntity;
-import com.beour.user.dto.SignupDto;
+import com.beour.user.dto.SignupRequestDto;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -53,15 +53,15 @@ public class User extends BaseTimeEntity {
         this.role = role;
     }
 
-    public static User createFrom(SignupDto signUpDto) {
+    public static User createFrom(SignupRequestDto signUpRequestDto) {
         return User.builder()
-            .name(signUpDto.getName())
-            .nickname(signUpDto.getNickname())
-            .email(signUpDto.getEmail())
-            .loginId(signUpDto.getLoginId())
-            .password(signUpDto.getPassword())
-            .phone(signUpDto.getPhone())
-            .role(signUpDto.getRole())
+            .name(signUpRequestDto.getName())
+            .nickname(signUpRequestDto.getNickname())
+            .email(signUpRequestDto.getEmail())
+            .loginId(signUpRequestDto.getLoginId())
+            .password(signUpRequestDto.getPassword())
+            .phone(signUpRequestDto.getPhone())
+            .role(signUpRequestDto.getRole())
             .build();
     }
 

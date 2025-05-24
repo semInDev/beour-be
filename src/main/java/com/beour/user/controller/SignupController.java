@@ -1,7 +1,8 @@
 package com.beour.user.controller;
 
 import com.beour.global.exception.exceptionType.DuplicateUserInfoException;
-import com.beour.user.dto.SignupDto;
+import com.beour.global.response.ApiResponse;
+import com.beour.user.dto.SignupRequestDto;
 import com.beour.user.service.SignupService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,9 +22,9 @@ public class SignupController {
   private final SignupService signupService;
 
   @PostMapping("/signup")
-  public ResponseEntity<String> signup(@Valid @RequestBody SignupDto signUpDto) {
-    signupService.create(signUpDto);
-    return ResponseEntity.ok("회원가입 완료");
+  public ApiResponse<String> signup(@Valid @RequestBody SignupRequestDto signUpRequestDto) {
+    signupService.create(signUpRequestDto);
+    return ApiResponse.ok("회원가입 완료");
   }
 
   @GetMapping("/signup/check/loginId")

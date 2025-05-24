@@ -1,6 +1,5 @@
 package com.beour.user.dto;
 
-import com.beour.user.enums.UserRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -9,7 +8,7 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class SignupDto {
+public class SignupRequestDto {
 
     @NotBlank(message = "이름은 필수입니다.")
     private String name;
