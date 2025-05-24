@@ -3,6 +3,7 @@ package com.beour.user.service;
 import com.beour.global.exception.exceptionType.DuplicateUserInfoException;
 import com.beour.global.exception.exceptionType.InvalidCredentialsException;
 import com.beour.global.exception.exceptionType.InvalidFormatException;
+import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.user.dto.SignupRequestDto;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
@@ -29,13 +30,8 @@ public class SignupService {
   }
 
   private void validDuplicateUser(SignupRequestDto dto) {
-    if (userRepository.existsByLoginId(dto.getLoginId())) {
-      throw new DuplicateUserInfoException("이미 사용중인 아이디입니다.");
-    }
-
-    if (userRepository.existsByNickname(dto.getNickname())) {
-      throw new DuplicateUserInfoException("이미 사용중인 닉네임입니다.");
-    }
+    isExistLoginId(dto.getLoginId());
+    isExistNickname(dto.getNickname());
   }
 
   private void checkRoleInvalidRequest(String role){
@@ -45,10 +41,57 @@ public class SignupService {
   }
 
   public boolean checkLoginIdDuplicate(String loginId) {
-    return userRepository.existsByLoginId(loginId);
+    if(loginId.isBlank()){
+      throw new InvalidFormatException("아이디를 입력해주세요.");
+    }
+
+    isExistLoginId(loginId);
+
+    return false;
+  }
+
+  private boolean isExistLoginId(String loginId) {
+    Boolean isUserExist = userRepository.existsByLoginId(loginId);
+
+    if(isUserExist){
+      User user = userRepository.findByLoginId(loginId).orElseThrow(
+          () -> new UserNotFoundException("존재하지 않는 사용자입니다.")
+      );
+
+      if(user.isDeleted()){
+        return false;
+      }
+
+      throw new DuplicateUserInfoException("이미 사용중인 id입니다.");
+    }
+
+    return false;
   }
 
   public boolean checkNicknameDuplicate(String nickname) {
-    return userRepository.existsByNickname(nickname);
+    if(nickname.isBlank()){
+      throw new InvalidFormatException("닉네임을 입력해주세요.");
+    }
+
+    isExistNickname(nickname);
+    return false;
+  }
+
+  private boolean isExistNickname(String nickname) {
+    Boolean isUserExist = userRepository.existsByNickname(nickname);
+
+    if(isUserExist){
+      User user = userRepository.findByNickname(nickname).orElseThrow(
+          () -> new UserNotFoundException("존재하지 않는 사용자입니다.")
+      );
+
+      if(user.isDeleted()){
+        return false;
+      }
+
+      throw new DuplicateUserInfoException("이미 사용중인 닉네임입니다.");
+    }
+
+    return false;
   }
 }

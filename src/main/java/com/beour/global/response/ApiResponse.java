@@ -11,6 +11,7 @@ public class ApiResponse<T> {
     private HttpStatus httpStatus;
     private T data;
 
+
     public static <T> ApiResponse<T> of(HttpStatus httpStatus, T data){
         return new ApiResponse<>(httpStatus.value(), httpStatus, data);
     }
@@ -18,4 +19,5 @@ public class ApiResponse<T> {
     public static <T> ApiResponse<T> ok(T data){
         return of(HttpStatus.OK, data);
     }
+
 }
