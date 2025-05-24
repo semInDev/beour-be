@@ -4,12 +4,15 @@ import com.beour.global.exception.exceptionType.SpaceNotFoundException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
+import com.beour.reservation.commons.exceptionType.AvailableTimeNotFound;
 import com.beour.reservation.commons.exceptionType.ReservationNotFound;
 import com.beour.reservation.commons.repository.ReservationRepository;
+import com.beour.reservation.guest.dto.CheckAvailableTimesRequestDto;
 import com.beour.reservation.guest.dto.ReservationCreateRequest;
 import com.beour.reservation.guest.dto.ReservationListResponseDto;
 import com.beour.reservation.guest.dto.ReservationResponseDto;
 import com.beour.space.domain.entity.Space;
+import com.beour.space.domain.repository.AvailableTimeRepository;
 import com.beour.space.domain.repository.SpaceRepository;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
@@ -25,8 +28,10 @@ import org.springframework.stereotype.Service;
 public class ReservationGuestService {
 
     private final ReservationRepository reservationRepository;
+    private final AvailableTimeRepository availableTimeRepository;
     private final UserRepository userRepository;
     private final SpaceRepository spaceRepository;
+    private final CheckAvailableTimeService checkAvailableTimeService;
 
     public ReservationResponseDto createReservation(ReservationCreateRequest requestDto){
         User guest = getUser(requestDto.getGuestId());
@@ -34,6 +39,12 @@ public class ReservationGuestService {
         Space space = spaceRepository.findById(requestDto.getSpaceId()).orElseThrow(
             () -> new SpaceNotFoundException("존재하지 않는 공간입니다.")
         );
+
+//        if(!availableTimeRepository.existsBySpaceIdAndDateAndDeletedAtIsNull(requestDto.getSpaceId(), requestDto.getDate())){
+//            throw new AvailableTimeNotFound("해당 일은 예약이 불가합니다.");
+//        }
+
+        checkAvailableTimeService.findAvailableTime(new CheckAvailableTimesRequestDto(requestDto.getSpaceId(), requestDto.getDate()));
 
         Reservation reservation = Reservation.builder()
             .guest(guest)

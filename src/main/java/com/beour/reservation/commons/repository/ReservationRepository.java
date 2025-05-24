@@ -11,7 +11,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
 
-    List<Reservation> findBySpaceIdAndDate(Long spaceId, LocalDate date);
+    List<Reservation> findBySpaceIdAndDateAndDeletedAtIsNull(Long spaceId, LocalDate date);
 
     @Query("SELECT r FROM Reservation r " +
         "WHERE r.guest.id = :guestId AND " +
