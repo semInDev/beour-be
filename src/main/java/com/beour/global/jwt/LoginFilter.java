@@ -1,5 +1,6 @@
 package com.beour.global.jwt;
 
+import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.user.dto.CustomUserDetails;
 import com.beour.user.dto.LoginDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,10 +12,12 @@ import java.util.Collection;
 import java.util.Iterator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @RequiredArgsConstructor
@@ -60,15 +63,17 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     response.setCharacterEncoding("UTF-8");
     response.setHeader("Authorization", "Bearer " + token);
 
+    Long userId = customUserDetails.getUserId();
     String jsonResponse = String.format("""
         {
             "code": 200,
             "message": "로그인 성공",
+            "userId": %d,
             "loginId": "%s",
             "role": "%s",
             "token": "Bearer %s"
         }
-        """, loginId, role, token);
+        """, userId, loginId, role, token);
 
     response.getWriter().write(jsonResponse);
   }
@@ -81,11 +86,16 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     response.setContentType("application/json");
     response.setCharacterEncoding("UTF-8");
 
-    String message = switch (failed.getClass().getSimpleName()) {
-      case "BadCredentialsException" -> "아이디 또는 비밀번호가 잘못되었습니다.";
-      case "UsernameNotFoundException" -> "존재하지 않는 사용자입니다.";
-      default -> "로그인에 실패했습니다.";
-    };
+    String message;
+    if (failed.getMessage().contains("탈퇴한 회원")) {
+      message = "탈퇴한 회원입니다.";
+    } else if (failed instanceof UsernameNotFoundException) {
+      message = "존재하지 않는 사용자입니다.";
+    } else if (failed instanceof BadCredentialsException) {
+      message = "아이디 또는 비밀번호가 잘못되었습니다.";
+    } else {
+      message = "로그인에 실패했습니다.";
+    }
 
     String jsonResponse = String.format("""
         {
