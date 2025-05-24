@@ -22,5 +22,14 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
         @Param("now") LocalTime now
     );
 
+    @Query("SELECT r FROM Reservation r " +
+        "WHERE r.guest.id = :guestId AND " +
+        "(r.date < :today OR (r.date = :today AND r.endTime <= :now))")
+    List<Reservation> findPastReservationsByGuest(
+        @Param("guestId") Long guestId,
+        @Param("today") LocalDate today,
+        @Param("now") LocalTime now
+    );
+
 
 }

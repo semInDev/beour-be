@@ -12,7 +12,6 @@ import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -38,6 +37,11 @@ public class ReservationGuestController {
     @GetMapping("/api/reservation")
     public ApiResponse<List<ReservationListResponseDto>> checkReservationList(@RequestParam(value = "guestId") Long guestId){
         return ApiResponse.ok(reservationGuestService.findReservationList(guestId));
+    }
+
+    @GetMapping("/api/reservation/past")
+    public ApiResponse<List<ReservationListResponseDto>> checkPastReservationList(@RequestParam(value = "guestId") Long guestId){
+        return ApiResponse.ok(reservationGuestService.findPastReservationList(guestId));
     }
 
 }

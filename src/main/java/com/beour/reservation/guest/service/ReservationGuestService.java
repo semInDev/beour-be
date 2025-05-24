@@ -60,9 +60,7 @@ public class ReservationGuestService {
     public List<ReservationListResponseDto> findReservationList(Long guestId){
         List<Reservation> reservationList = reservationRepository.findUpcomingReservationsByGuest(guestId, LocalDate.now(), LocalTime.now());
 
-        if(reservationList.isEmpty()){
-            throw new ReservationNotFound("예약이 없습니다.");
-        }
+        checkEmptyReservation(reservationList);
 
         List<ReservationListResponseDto> responseDtoList = new ArrayList<>();
         for (Reservation reservation : reservationList) {
@@ -71,6 +69,26 @@ public class ReservationGuestService {
 
 
         return responseDtoList;
+    }
+
+    public List<ReservationListResponseDto> findPastReservationList(Long guestId){
+        List<Reservation> reservationList = reservationRepository.findPastReservationsByGuest(guestId, LocalDate.now(), LocalTime.now());
+
+        checkEmptyReservation(reservationList);
+
+        List<ReservationListResponseDto> responseDtoList = new ArrayList<>();
+        for (Reservation reservation : reservationList) {
+            responseDtoList.add(ReservationListResponseDto.of(reservation));
+        }
+
+
+        return responseDtoList;
+    }
+
+    private static void checkEmptyReservation(List<Reservation> reservationList) {
+        if(reservationList.isEmpty()){
+            throw new ReservationNotFound("예약이 없습니다.");
+        }
     }
 
 }
