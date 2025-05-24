@@ -1,19 +1,18 @@
-package com.beour.space.host.entity;
+package com.beour.space.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 import jakarta.persistence.Id;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.LocalDateTime;
+
 
 @Entity
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AvailableTime {
+public class SpaceImage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,9 +22,13 @@ public class AvailableTime {
     @JoinColumn(name = "space_id")
     private Space space;
 
-    private LocalDate date;
-    private LocalTime startTime;
-    private LocalTime endTime;
+    private String imageUrl;
 
     private LocalDateTime deletedAt;
+
+    // 생성자: id 없이 만드는 용도
+    public SpaceImage(Space space, String imageUrl) {
+        this.space = space;
+        this.imageUrl = imageUrl;
+    }
 }

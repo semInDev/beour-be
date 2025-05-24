@@ -1,6 +1,7 @@
 package com.beour.user.entity;
 
 import com.beour.global.entity.BaseTimeEntity;
+
 import com.beour.user.dto.SignupRequestDto;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
