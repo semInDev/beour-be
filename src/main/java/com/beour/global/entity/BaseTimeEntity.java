@@ -9,13 +9,11 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-public class BaseTimeEntity {
+public class BaseTimeEntity extends SoftDeletableEntity {
 
   @CreatedDate
   private LocalDateTime createdAt;
 
   @LastModifiedDate
   private LocalDateTime updatedAt;
-
-//    private LocalDateTime deletedAt;
 }
