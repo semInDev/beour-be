@@ -11,6 +11,7 @@ import com.beour.reservation.guest.service.ReservationGuestService;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -44,4 +45,9 @@ public class ReservationGuestController {
         return ApiResponse.ok(reservationGuestService.findPastReservationList(guestId));
     }
 
+    @DeleteMapping("/api/reservation/cancel")
+    public ApiResponse<String> cancelReservation(@RequestParam(value = "reservationId") Long reservationId){
+        reservationGuestService.cancelReservation(reservationId);
+        return ApiResponse.ok("예약이 성공적으로 취소되었습니다.");
+    }
 }

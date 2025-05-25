@@ -49,6 +49,11 @@ public class Reservation extends BaseTimeEntity {
     private int price;
     private int guestCount;
 
+    public void cancel(){
+        this.status = ReservationStatus.REJECTED;
+        this.softDelete();
+    }
+
     @Builder
     private Reservation(User guest, User host, Space space, ReservationStatus status, LocalDate date, LocalTime startTime, LocalTime endTime, int price, int guestCount){
         this.guest = guest;
