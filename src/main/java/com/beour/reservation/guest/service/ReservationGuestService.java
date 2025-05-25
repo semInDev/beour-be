@@ -13,7 +13,6 @@ import com.beour.reservation.guest.dto.ReservationListResponseDto;
 import com.beour.reservation.guest.dto.ReservationResponseDto;
 import com.beour.space.domain.entity.AvailableTime;
 import com.beour.space.domain.entity.Space;
-import com.beour.space.domain.repository.AvailableTimeRepository;
 import com.beour.space.domain.repository.SpaceRepository;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
@@ -29,12 +28,11 @@ import org.springframework.stereotype.Service;
 public class ReservationGuestService {
 
     private final ReservationRepository reservationRepository;
-    private final AvailableTimeRepository availableTimeRepository;
     private final UserRepository userRepository;
     private final SpaceRepository spaceRepository;
     private final CheckAvailableTimeService checkAvailableTimeService;
 
-    public ReservationResponseDto createReservation(ReservationCreateRequest requestDto){
+    public ReservationResponseDto createReservation(ReservationCreateRequest requestDto) {
         User guest = getUser(requestDto.getGuestId());
         User host = getUser(requestDto.getHostId());
         Space space = spaceRepository.findById(requestDto.getSpaceId()).orElseThrow(
@@ -85,10 +83,12 @@ public class ReservationGuestService {
     }
 
     private void checkReservationAvailableDate(ReservationCreateRequest requestDto) {
-        AvailableTime availableTime = checkAvailableTimeService.checkReservationAvailableDateAndGetAvailableTime(new CheckAvailableTimesRequestDto(
-            requestDto.getSpaceId(), requestDto.getDate()));
-        if(availableTime.getStartTime().isAfter(requestDto.getStartTime()) || availableTime.getEndTime().isBefore(
-            requestDto.getEndTime())){
+        AvailableTime availableTime = checkAvailableTimeService.checkReservationAvailableDateAndGetAvailableTime(
+            new CheckAvailableTimesRequestDto(
+                requestDto.getSpaceId(), requestDto.getDate()));
+        if (availableTime.getStartTime().isAfter(requestDto.getStartTime())
+            || availableTime.getEndTime().isBefore(
+            requestDto.getEndTime())) {
             throw new AvailableTimeNotFound("예약이 불가능한 시간입니다.");
         }
     }
@@ -99,8 +99,9 @@ public class ReservationGuestService {
         );
     }
 
-    public List<ReservationListResponseDto> findReservationList(Long guestId){
-        List<Reservation> reservationList = reservationRepository.findUpcomingReservationsByGuest(guestId, LocalDate.now(), LocalTime.now());
+    public List<ReservationListResponseDto> findReservationList(Long guestId) {
+        List<Reservation> reservationList = reservationRepository.findUpcomingReservationsByGuest(
+            guestId, LocalDate.now(), LocalTime.now());
 
         checkEmptyReservation(reservationList);
 
@@ -108,13 +109,13 @@ public class ReservationGuestService {
         for (Reservation reservation : reservationList) {
             responseDtoList.add(ReservationListResponseDto.of(reservation));
         }
-
 
         return responseDtoList;
     }
 
-    public List<ReservationListResponseDto> findPastReservationList(Long guestId){
-        List<Reservation> reservationList = reservationRepository.findPastReservationsByGuest(guestId, LocalDate.now(), LocalTime.now());
+    public List<ReservationListResponseDto> findPastReservationList(Long guestId) {
+        List<Reservation> reservationList = reservationRepository.findPastReservationsByGuest(
+            guestId, LocalDate.now(), LocalTime.now());
 
         checkEmptyReservation(reservationList);
 
@@ -122,13 +123,12 @@ public class ReservationGuestService {
         for (Reservation reservation : reservationList) {
             responseDtoList.add(ReservationListResponseDto.of(reservation));
         }
-
 
         return responseDtoList;
     }
 
     private static void checkEmptyReservation(List<Reservation> reservationList) {
-        if(reservationList.isEmpty()){
+        if (reservationList.isEmpty()) {
             throw new ReservationNotFound("예약이 없습니다.");
         }
     }

@@ -46,7 +46,7 @@ public class ReservationListResponseDto {
             .endTime(reservation.getEndTime())
             .price(reservation.getPrice())
             .guestCount(reservation.getGuestCount())
-            .status(reservation.getStatus())
+            .status(reservation.isDeleted() ? ReservationStatus.REJECTED : reservation.getStatus())
             .build();
     }
 
