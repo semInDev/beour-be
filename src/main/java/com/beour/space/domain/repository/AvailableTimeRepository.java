@@ -5,13 +5,12 @@ import com.beour.space.domain.entity.Space;
 import java.time.LocalDate;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+
 
 public interface AvailableTimeRepository extends JpaRepository<AvailableTime, Long> {
+
     void deleteBySpace(Space space);
 
     Optional<AvailableTime> findBySpaceIdAndDateAndDeletedAtIsNull(Long spaceId, LocalDate date);
 
 }
-
