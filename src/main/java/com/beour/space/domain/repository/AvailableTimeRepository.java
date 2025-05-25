@@ -12,7 +12,6 @@ public interface AvailableTimeRepository extends JpaRepository<AvailableTime, Lo
     void deleteBySpace(Space space);
 
     Optional<AvailableTime> findBySpaceIdAndDateAndDeletedAtIsNull(Long spaceId, LocalDate date);
-    boolean existsBySpaceIdAndDateAndDeletedAtIsNull(Long spaceId, LocalDate date);
 
 }
 

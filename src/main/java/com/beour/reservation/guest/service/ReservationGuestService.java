@@ -11,6 +11,7 @@ import com.beour.reservation.guest.dto.CheckAvailableTimesRequestDto;
 import com.beour.reservation.guest.dto.ReservationCreateRequest;
 import com.beour.reservation.guest.dto.ReservationListResponseDto;
 import com.beour.reservation.guest.dto.ReservationResponseDto;
+import com.beour.space.domain.entity.AvailableTime;
 import com.beour.space.domain.entity.Space;
 import com.beour.space.domain.repository.AvailableTimeRepository;
 import com.beour.space.domain.repository.SpaceRepository;
@@ -33,6 +34,8 @@ public class ReservationGuestService {
     private final SpaceRepository spaceRepository;
     private final CheckAvailableTimeService checkAvailableTimeService;
 
+    //1. 해당 날짜 예약 가능 찾아보기
+    // 2. 해당 날짜 시간 찾아보기
     public ReservationResponseDto createReservation(ReservationCreateRequest requestDto){
         User guest = getUser(requestDto.getGuestId());
         User host = getUser(requestDto.getHostId());
@@ -40,11 +43,7 @@ public class ReservationGuestService {
             () -> new SpaceNotFoundException("존재하지 않는 공간입니다.")
         );
 
-//        if(!availableTimeRepository.existsBySpaceIdAndDateAndDeletedAtIsNull(requestDto.getSpaceId(), requestDto.getDate())){
-//            throw new AvailableTimeNotFound("해당 일은 예약이 불가합니다.");
-//        }
-
-        checkAvailableTimeService.findAvailableTime(new CheckAvailableTimesRequestDto(requestDto.getSpaceId(), requestDto.getDate()));
+        checkReservationAvailable(requestDto);
 
         Reservation reservation = Reservation.builder()
             .guest(guest)
@@ -60,6 +59,36 @@ public class ReservationGuestService {
 
         Reservation savedReservation = reservationRepository.save(reservation);
         return ReservationResponseDto.of(savedReservation);
+    }
+
+    private void checkReservationAvailable(ReservationCreateRequest requestDto) {
+        //유효한 날짜인지 체크
+        AvailableTime availableTime = checkAvailableTimeService.checkReservationAvailableDateAndGetAvailableTime(new CheckAvailableTimesRequestDto(
+            requestDto.getSpaceId(), requestDto.getDate()));
+        if(availableTime.getStartTime().isAfter(requestDto.getStartTime()) || availableTime.getEndTime().isBefore(requestDto.getEndTime())){
+            throw new AvailableTimeNotFound("예약이 불가능한 시간입니다.");
+        }
+
+
+        //유효한 시간인지 체크
+        List<Reservation> reservationList = reservationRepository.findBySpaceIdAndDateAndDeletedAtIsNull(
+            requestDto.getSpaceId(), requestDto.getDate());
+
+        LocalTime startTime = requestDto.getStartTime();
+        while (startTime.isBefore(requestDto.getEndTime())) {
+            LocalTime currentTime = requestDto.getStartTime();
+
+            boolean isReserved = reservationList.stream().anyMatch(reservation ->
+                reservation.getStartTime().isBefore(currentTime.plusHours(1)) &&
+                    reservation.getEndTime().isAfter(currentTime)
+            );
+
+            if (isReserved) {
+                throw new AvailableTimeNotFound("예약이 불가능한 시간입니다.");
+            }
+
+            startTime = startTime.plusHours(1);
+        }
     }
 
     private User getUser(Long userId) {

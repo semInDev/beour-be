@@ -22,14 +22,7 @@ public class CheckAvailableTimeService {
     private final ReservationRepository reservationRepository;
 
     public SpaceAvailableTimeResponseDto findAvailableTime(CheckAvailableTimesRequestDto requestDto) {
-        if(requestDto.getDate().isBefore(LocalDate.now())){
-            throw new AvailableTimeNotFound("예약 가능한 시간이 없습니다.");
-        }
-
-        AvailableTime availableTime = availableTimeRepository.findBySpaceIdAndDateAndDeletedAtIsNull(
-            requestDto.getSpaceId(), requestDto.getDate()).orElseThrow(
-            () -> new AvailableTimeNotFound("예약 가능한 시간이 없습니다.")
-        );
+        AvailableTime availableTime = checkReservationAvailableDateAndGetAvailableTime(requestDto);
 
         List<Reservation> reservationList = reservationRepository.findBySpaceIdAndDateAndDeletedAtIsNull(
             requestDto.getSpaceId(), requestDto.getDate());
@@ -40,6 +33,17 @@ public class CheckAvailableTimeService {
         }
 
         return SpaceAvailableTimeResponseDto.of(findTimeList);
+    }
+
+    public AvailableTime checkReservationAvailableDateAndGetAvailableTime(CheckAvailableTimesRequestDto requestDto) {
+        if(requestDto.getDate().isBefore(LocalDate.now())){
+            throw new AvailableTimeNotFound("예약 가능한 시간이 없습니다.");
+        }
+
+        return availableTimeRepository.findBySpaceIdAndDateAndDeletedAtIsNull(
+            requestDto.getSpaceId(), requestDto.getDate()).orElseThrow(
+            () -> new AvailableTimeNotFound("예약 가능한 시간이 없습니다.")
+        );
     }
 
     private static List<LocalTime> getAvailableTimeList(AvailableTime availableTime,
