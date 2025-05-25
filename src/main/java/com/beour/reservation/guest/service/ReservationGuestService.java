@@ -34,8 +34,6 @@ public class ReservationGuestService {
     private final SpaceRepository spaceRepository;
     private final CheckAvailableTimeService checkAvailableTimeService;
 
-    //1. 해당 날짜 예약 가능 찾아보기
-    // 2. 해당 날짜 시간 찾아보기
     public ReservationResponseDto createReservation(ReservationCreateRequest requestDto){
         User guest = getUser(requestDto.getGuestId());
         User host = getUser(requestDto.getHostId());
@@ -57,20 +55,15 @@ public class ReservationGuestService {
             .guestCount(requestDto.getGuestCount())
             .build();
 
-        Reservation savedReservation = reservationRepository.save(reservation);
-        return ReservationResponseDto.of(savedReservation);
+        return ReservationResponseDto.of(reservationRepository.save(reservation));
     }
 
     private void checkReservationAvailable(ReservationCreateRequest requestDto) {
-        //유효한 날짜인지 체크
-        AvailableTime availableTime = checkAvailableTimeService.checkReservationAvailableDateAndGetAvailableTime(new CheckAvailableTimesRequestDto(
-            requestDto.getSpaceId(), requestDto.getDate()));
-        if(availableTime.getStartTime().isAfter(requestDto.getStartTime()) || availableTime.getEndTime().isBefore(requestDto.getEndTime())){
-            throw new AvailableTimeNotFound("예약이 불가능한 시간입니다.");
-        }
+        checkReservationAvailableDate(requestDto);
+        checkReservationAvailabeTime(requestDto);
+    }
 
-
-        //유효한 시간인지 체크
+    private void checkReservationAvailabeTime(ReservationCreateRequest requestDto) {
         List<Reservation> reservationList = reservationRepository.findBySpaceIdAndDateAndDeletedAtIsNull(
             requestDto.getSpaceId(), requestDto.getDate());
 
@@ -88,6 +81,15 @@ public class ReservationGuestService {
             }
 
             startTime = startTime.plusHours(1);
+        }
+    }
+
+    private void checkReservationAvailableDate(ReservationCreateRequest requestDto) {
+        AvailableTime availableTime = checkAvailableTimeService.checkReservationAvailableDateAndGetAvailableTime(new CheckAvailableTimesRequestDto(
+            requestDto.getSpaceId(), requestDto.getDate()));
+        if(availableTime.getStartTime().isAfter(requestDto.getStartTime()) || availableTime.getEndTime().isBefore(
+            requestDto.getEndTime())){
+            throw new AvailableTimeNotFound("예약이 불가능한 시간입니다.");
         }
     }
 
