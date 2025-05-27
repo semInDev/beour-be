@@ -44,8 +44,6 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
           () -> {throw new UserNotFoundException("존재하지 않는 사용자입니다.");}
       );
 
-      System.out.println("user role = " + user.getRole());
-      System.out.println("loginDto role = " + loginDto.getRole());
       if(!user.getRole().equals(loginDto.getRole())){
         throw new RuntimeException("역할 불일치");
       }
