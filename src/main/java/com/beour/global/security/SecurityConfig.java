@@ -3,6 +3,7 @@ package com.beour.global.security;
 import com.beour.global.jwt.JWTFilter;
 import com.beour.global.jwt.JWTUtil;
 import com.beour.global.jwt.LoginFilter;
+import com.beour.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Collections;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 public class SecurityConfig {
 
   private final AuthenticationConfiguration authenticationConfiguration;
+  private final UserRepository userRepository;
   private final JWTUtil jwtUtil;
 
   @Bean
@@ -43,7 +45,7 @@ public class SecurityConfig {
 
     AuthenticationManager authenticationManager = authenticationManager();
 
-    LoginFilter loginFilter = new LoginFilter(authenticationManager, jwtUtil);
+    LoginFilter loginFilter = new LoginFilter(authenticationManager, userRepository, jwtUtil);
     loginFilter.setFilterProcessesUrl("/api/users/login");
 
     http.cors((cors) -> cors

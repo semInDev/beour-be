@@ -3,6 +3,8 @@ package com.beour.global.jwt;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.user.dto.CustomUserDetails;
 import com.beour.user.dto.LoginDto;
+import com.beour.user.entity.User;
+import com.beour.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,6 +26,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
   private final AuthenticationManager authenticationManager;
+  private final UserRepository userRepository;
   private final JWTUtil jwtUtil;
 
   @Override
@@ -36,6 +39,16 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
       UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
           loginDto.getLoginId(), loginDto.getPassword(), null);
+
+      User user = userRepository.findByLoginId(loginDto.getLoginId()).orElseThrow(
+          () -> {throw new UserNotFoundException("존재하지 않는 사용자입니다.");}
+      );
+
+      System.out.println("user role = " + user.getRole());
+      System.out.println("loginDto role = " + loginDto.getRole());
+      if(!user.getRole().equals(loginDto.getRole())){
+        throw new RuntimeException("역할 불일치");
+      }
 
       return authenticationManager.authenticate(authToken);
     } catch (Exception e) {
