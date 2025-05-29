@@ -1,6 +1,10 @@
 package com.beour.space.guest.controller;
 
+import com.beour.global.response.ApiResponse;
+import com.beour.space.domain.entity.Space;
 import com.beour.space.guest.dto.NearbySpaceResponse;
+import com.beour.space.guest.dto.SearchSpaceResponseDto;
+import com.beour.space.guest.service.GuestSpaceSearchService;
 import com.beour.space.guest.service.GuestSpaceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +20,7 @@ import java.util.List;
 @RequestMapping("/api/spaces")
 public class GuestSpaceController {
     private final GuestSpaceService guestSpaceService;
+    private final GuestSpaceSearchService guestSpaceSearchService;
 
     @GetMapping("/nearby")
     public ResponseEntity<List<NearbySpaceResponse>> getNearbySpaces(
@@ -27,4 +32,16 @@ public class GuestSpaceController {
         List<NearbySpaceResponse> response = guestSpaceService.findNearbySpaces(latitude, longitude, radiusKm, userId);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/search")
+    public ApiResponse<List<SearchSpaceResponseDto>> searchSpaces(@RequestParam(value = "request") String request){
+        List<Space> spaces = guestSpaceSearchService.search(request);
+
+        List<SearchSpaceResponseDto> response = spaces.stream()
+            .map(SearchSpaceResponseDto::of)
+            .toList();
+
+        return ApiResponse.ok(response);
+    }
+
 }

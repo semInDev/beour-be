@@ -74,7 +74,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/users/**").permitAll()
                 .requestMatchers("/admin").hasRole("ADMIN")
                 .requestMatchers("/api/spaces").hasRole("HOST")
-                .requestMatchers("/api/spaces/reserve", "/api/spaces/reserve/available-times", "/api/reservation/**").hasRole("GUEST")
+                .requestMatchers("/api/spaces/reserve", "/api/spaces/reserve/available-times", "/api/reservation/**", "/api/spaces/search/**").hasRole("GUEST")
 //                        .requestMatchers("/my/**").hasAnyRole("ADMIN", "USER")
                 .anyRequest().authenticated()
 //                .anyRequest().permitAll()
