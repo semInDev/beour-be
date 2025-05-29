@@ -1,11 +1,13 @@
 package com.beour.space.guest.service;
 
-import com.beour.global.exception.exceptionType.InputNotFoundException;
+import com.beour.global.exception.exceptionType.InputInvalidFormatException;
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
 import com.beour.space.domain.entity.Space;
 import com.beour.space.domain.repository.SpaceRepository;
 import com.beour.space.guest.dto.FilteringSearchRequestDto;
 import com.beour.space.guest.dto.SearchSpaceResponseDto;
+import com.beour.space.host.enums.SpaceCategory;
+import com.beour.space.host.enums.UseCategory;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +21,7 @@ public class GuestSpaceSearchService {
 
     public List<Space> search(String keyword){
         if(keyword.isEmpty()){
-            throw new InputNotFoundException("키워드를 입력해주세요");
+            throw new InputInvalidFormatException("키워드를 입력해주세요");
         }
 
         List<Space> result = spaceRepository.searchByKeyword("%" + keyword + "%");
@@ -39,9 +41,7 @@ public class GuestSpaceSearchService {
             throw new SpaceNotFoundException("해당 조건에 일치하는 공간이 없습니다.");
         }
 
-        return filtering.stream()
-            .map(SearchSpaceResponseDto::of)
-            .toList();
+        return changeToSearchResponseDtoFrom(filtering);
     }
 
     private List<Space> filterSpaces(List<Space> spaceListWithKeyword, FilteringSearchRequestDto requestDto) {
@@ -67,6 +67,32 @@ public class GuestSpaceSearchService {
                     .anyMatch(at -> at.getDeletedAt() == null && requestDto.getDate().equals(at.getDate())))
 
             .collect(Collectors.toList());
+    }
+
+    public List<SearchSpaceResponseDto> searchSpaceWithSpaceCategory(SpaceCategory request){
+        List<Space> space = spaceRepository.findBySpaceCategory(request);
+
+        if(space.isEmpty()){
+            throw new SpaceNotFoundException("해당 유형의 공간은 존재하지 않습니다.");
+        }
+
+        return changeToSearchResponseDtoFrom(space);
+    }
+
+    public List<SearchSpaceResponseDto> searchSpaceWithUseCategory(UseCategory request){
+        List<Space> space = spaceRepository.findByUseCategory(request);
+
+        if(space.isEmpty()){
+            throw new SpaceNotFoundException("해당 유형의 공간은 존재하지 않습니다.");
+        }
+
+        return changeToSearchResponseDtoFrom(space);
+    }
+
+    private static List<SearchSpaceResponseDto> changeToSearchResponseDtoFrom(List<Space> space) {
+        return space.stream()
+            .map(SearchSpaceResponseDto::of)
+            .toList();
     }
 
 }

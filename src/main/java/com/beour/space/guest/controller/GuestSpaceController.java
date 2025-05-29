@@ -7,6 +7,8 @@ import com.beour.space.guest.dto.NearbySpaceResponse;
 import com.beour.space.guest.dto.SearchSpaceResponseDto;
 import com.beour.space.guest.service.GuestSpaceSearchService;
 import com.beour.space.guest.service.GuestSpaceService;
+import com.beour.space.host.enums.SpaceCategory;
+import com.beour.space.host.enums.UseCategory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -52,6 +54,18 @@ public class GuestSpaceController {
         return ApiResponse.ok(guestSpaceSearchService.searchWithFiltering(requestDto));
     }
 
+    @GetMapping("/search/spacecategory")
+    public ApiResponse<List<SearchSpaceResponseDto>> searchWithSpaceCategory(@RequestParam(value = "spacecategory")
+        SpaceCategory request){
 
+        return ApiResponse.ok(guestSpaceSearchService.searchSpaceWithSpaceCategory(request));
+    }
+
+    @GetMapping("/search/usecategory")
+    public ApiResponse<List<SearchSpaceResponseDto>> searchWithUseCategory(@RequestParam(value = "usecategory")
+    UseCategory request){
+
+        return ApiResponse.ok(guestSpaceSearchService.searchSpaceWithUseCategory(request));
+    }
 
 }

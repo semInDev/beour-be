@@ -1,6 +1,8 @@
 package com.beour.space.domain.repository;
 
 import com.beour.space.domain.entity.Space;
+import com.beour.space.host.enums.SpaceCategory;
+import com.beour.space.host.enums.UseCategory;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -36,4 +38,7 @@ public interface SpaceRepository extends JpaRepository<Space, Long> {
        OR t.contents LIKE %:keyword%
     """, nativeQuery = true)
     List<Space> searchByKeyword(@Param("keyword") String keyword);
+
+    List<Space> findBySpaceCategory(SpaceCategory spaceCategory);
+    List<Space> findByUseCategory(UseCategory useCategory);
 }
