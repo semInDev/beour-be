@@ -2,6 +2,7 @@ package com.beour.space.guest.controller;
 
 import com.beour.global.response.ApiResponse;
 import com.beour.space.domain.entity.Space;
+import com.beour.space.guest.dto.FilteringSearchRequestDto;
 import com.beour.space.guest.dto.NearbySpaceResponse;
 import com.beour.space.guest.dto.SearchSpaceResponseDto;
 import com.beour.space.guest.service.GuestSpaceSearchService;
@@ -9,6 +10,8 @@ import com.beour.space.guest.service.GuestSpaceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -43,5 +46,12 @@ public class GuestSpaceController {
 
         return ApiResponse.ok(response);
     }
+
+    @PostMapping("/search/filter")
+    public ApiResponse<List<SearchSpaceResponseDto>> searchSpacesWithFiltering(@RequestBody FilteringSearchRequestDto requestDto){
+        return ApiResponse.ok(guestSpaceSearchService.searchWithFiltering(requestDto));
+    }
+
+
 
 }

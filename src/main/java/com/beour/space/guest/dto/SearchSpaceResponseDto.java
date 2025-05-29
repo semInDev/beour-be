@@ -14,14 +14,16 @@ public class SearchSpaceResponseDto {
 
     private Long spaceId;
     private String spaceName;
+    private String thumbnailUrl;
     private int price;
     private String description;
     private List<String> tags;
 
     @Builder
-    private SearchSpaceResponseDto(Long spaceId, String spaceName, int price, String description, List<String> tags){
+    private SearchSpaceResponseDto(Long spaceId, String spaceName, String thumbnailUrl, int price, String description, List<String> tags){
         this.spaceId = spaceId;
         this.spaceName = spaceName;
+        this.thumbnailUrl = thumbnailUrl;
         this.price = price;
         this.description = description;
         this.tags = tags;
@@ -35,6 +37,7 @@ public class SearchSpaceResponseDto {
         return SearchSpaceResponseDto.builder()
             .spaceId(space.getId())
             .spaceName(space.getName())
+            .thumbnailUrl(space.getThumbnailUrl())
             .price(space.getPricePerHour())
             .description(space.getDescription().getDescription())
             .tags(tagList)
