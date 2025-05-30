@@ -43,6 +43,10 @@ public class CustomUserDetails implements UserDetails {
     return user.getId();
   }
 
+  public User getUser(){
+    return this.user;
+  }
+
   @Override
   public boolean isAccountNonExpired() {
     return true;
