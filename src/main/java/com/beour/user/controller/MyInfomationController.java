@@ -8,6 +8,7 @@ import com.beour.user.dto.UserInformationSimpleResponseDto;
 import com.beour.user.service.MyInformationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -44,5 +45,12 @@ public class MyInfomationController {
         myInformationService.updatePassword(requestDto);
 
         return ApiResponse.ok("비밀번호 변경이 완료되었습니다.");
+    }
+
+    @DeleteMapping("/withdraw")
+    public ApiResponse<String> userWithdraw(){
+        myInformationService.deleteUser();
+
+        return ApiResponse.ok("회원 탈퇴가 완료되었습니다.");
     }
 }

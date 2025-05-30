@@ -71,6 +71,12 @@ public class MyInformationService {
         }
     }
 
+    @Transactional
+    public void deleteUser(){
+        User user = findUserFromToken();
+        user.softDelete();
+    }
+
     private User findUserFromToken() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if(authentication == null || !authentication.isAuthenticated()){
@@ -79,9 +85,15 @@ public class MyInformationService {
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        return userRepository.findByLoginId(userDetails.getUsername()).orElseThrow(
+        User user = userRepository.findByLoginId(userDetails.getUsername()).orElseThrow(
             () -> new UserNotFoundException("해당 유저를 찾을 수 없습니다.")
         );
+
+        if(user.isDeleted()){
+            throw new UserNotFoundException("해당 유저를 찾을 수 없습니다.");
+        }
+
+        return user;
     }
 
 }
