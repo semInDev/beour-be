@@ -1,6 +1,7 @@
 package com.beour.user.controller;
 
 import com.beour.global.response.ApiResponse;
+import com.beour.user.dto.UserInformationDetailResponseDto;
 import com.beour.user.dto.UserInformationSimpleResponseDto;
 import com.beour.user.service.MyInformationService;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +22,8 @@ public class MyInfomationController {
     }
 
     @GetMapping("/detail")
-    public ApiResponse<UserInformationSimpleResponseDto> readDetailInformation(){
-        return ApiResponse.ok(myInformationService.getUserInformationSimple());
+    public ApiResponse<UserInformationDetailResponseDto> readDetailInformation(){
+        return ApiResponse.ok(myInformationService.getUserInformationDetail());
     }
 
 
