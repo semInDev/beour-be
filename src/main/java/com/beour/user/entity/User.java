@@ -82,4 +82,8 @@ public class User extends BaseTimeEntity {
         this.phone = newPhoneNum;
     }
 
+    public void updatePassword(String newPassword){
+        this.password = newPassword;
+    }
+
 }

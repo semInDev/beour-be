@@ -3,6 +3,7 @@ package com.beour.user.service;
 import com.beour.global.exception.exceptionType.InvalidCredentialsException;
 import com.beour.global.exception.exceptionType.InvalidFormatException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
+import com.beour.user.dto.ChangePasswordRequestDto;
 import com.beour.user.dto.CustomUserDetails;
 import com.beour.user.dto.UpdateUserInfoRequestDto;
 import com.beour.user.dto.UserInformationDetailResponseDto;
@@ -12,6 +13,7 @@ import com.beour.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +22,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class MyInformationService {
 
     private final UserRepository userRepository;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+
+    @Transactional
+    public void updatePassword(ChangePasswordRequestDto changePasswordRequestDto){
+        User user = findUserFromToken();
+
+        String newPassword = bCryptPasswordEncoder.encode(changePasswordRequestDto.getNewPassword());
+        user.updatePassword(newPassword);
+    }
 
     public UserInformationSimpleResponseDto getUserInformationSimple(){
         User user = findUserFromToken();

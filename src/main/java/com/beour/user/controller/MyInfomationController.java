@@ -1,6 +1,7 @@
 package com.beour.user.controller;
 
 import com.beour.global.response.ApiResponse;
+import com.beour.user.dto.ChangePasswordRequestDto;
 import com.beour.user.dto.UpdateUserInfoRequestDto;
 import com.beour.user.dto.UserInformationDetailResponseDto;
 import com.beour.user.dto.UserInformationSimpleResponseDto;
@@ -38,6 +39,10 @@ public class MyInfomationController {
         return ApiResponse.ok("수정이 완료되었습니다.");
     }
 
+    @PatchMapping("/password")
+    public ApiResponse<String> updatePassword(@Valid @RequestBody ChangePasswordRequestDto requestDto){
+        myInformationService.updatePassword(requestDto);
 
-
+        return ApiResponse.ok("비밀번호 변경이 완료되었습니다.");
+    }
 }
