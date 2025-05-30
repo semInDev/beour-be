@@ -36,5 +36,4 @@ public class GlobalExceptionHandler {
         .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "INPUT_INVALID_FORMAT", ex.getMessage()));
   }
 
-
 }

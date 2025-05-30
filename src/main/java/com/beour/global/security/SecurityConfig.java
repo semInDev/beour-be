@@ -73,9 +73,9 @@ public class SecurityConfig {
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/api/users/**").permitAll()
                 .requestMatchers("/admin").hasRole("ADMIN")
+                .requestMatchers("/api/mypage/**").hasAnyRole("HOST", "GUEST")
                 .requestMatchers("/api/spaces").hasRole("HOST")
                 .requestMatchers("/api/spaces/reserve", "/api/spaces/reserve/available-times", "/api/reservation/**", "/api/spaces/search/**").hasRole("GUEST")
-//                        .requestMatchers("/my/**").hasAnyRole("ADMIN", "USER")
                 .anyRequest().authenticated()
 //                .anyRequest().permitAll()
         );
