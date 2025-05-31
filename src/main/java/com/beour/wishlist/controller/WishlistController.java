@@ -28,6 +28,7 @@ public class WishlistController {
 
     @DeleteMapping
     public ApiResponse<String> deleteSpaceFromWishlist(@RequestParam(value = "spaceId")Long spaceId){
+        wishlistService.deleteSpaceFromWishList(spaceId);
 
         return ApiResponse.ok("찜 삭제가 되었습니다.");
     }
