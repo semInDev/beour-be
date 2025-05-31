@@ -7,11 +7,14 @@ import com.beour.global.exception.exceptionType.SpaceNotFoundException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.space.domain.entity.Space;
 import com.beour.space.domain.repository.SpaceRepository;
+import com.beour.space.guest.dto.SpaceListSpaceResponseDto;
 import com.beour.user.dto.CustomUserDetails;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
 import com.beour.wishlist.entity.Like;
 import com.beour.wishlist.repository.LikeRepository;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -76,6 +79,19 @@ public class WishlistService {
             throw new SpaceNotFoundException("해당 공간은 존재하지 않습니다.");
         }
         return space;
+    }
+
+    public List<SpaceListSpaceResponseDto> getWishlist(){
+        User user = findUserFromToken();
+        List<Like> whisList = likeRepository.findByUserIdAndDeletedAtIsNull(user.getId());
+
+        if(whisList.isEmpty()){
+            throw new LikesNotFoundException("찜 목록이 비어있습니다.");
+        }
+
+        return whisList.stream()
+            .map(like -> SpaceListSpaceResponseDto.of(like.getSpace(), true))
+            .collect(Collectors.toList());
     }
 
     private User findUserFromToken() {
