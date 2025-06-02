@@ -1,11 +1,13 @@
 package com.beour.banner.service;
 
+import com.beour.banner.dto.BannerListForUserResponseDto;
 import com.beour.banner.dto.BannerListResponseDto;
 import com.beour.banner.dto.CreateBannerRequestDto;
 import com.beour.banner.dto.CreateBannerResponseDto;
 import com.beour.banner.entity.Banner;
 import com.beour.banner.repository.BannerRepository;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +47,18 @@ public class BannerService {
         return banners.stream()
             .filter(banner -> !banner.isDeleted())
             .map(BannerListResponseDto::dtoFrom)
+            .collect(Collectors.toList());
+    }
+
+    public List<BannerListForUserResponseDto> getBannerListForUser(){
+        List<Banner> banners = bannerRepository.findValidBanners(LocalDate.now());
+
+        if(banners.isEmpty()){
+            throw new UserNotFoundException("조회된 배너가 없습니다.");
+        }
+
+        return banners.stream()
+            .map(BannerListForUserResponseDto::dtoFrom)
             .collect(Collectors.toList());
     }
 

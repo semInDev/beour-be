@@ -1,5 +1,6 @@
 package com.beour.banner.controller;
 
+import com.beour.banner.dto.BannerListForUserResponseDto;
 import com.beour.banner.dto.BannerListResponseDto;
 import com.beour.banner.dto.CreateBannerRequestDto;
 import com.beour.banner.dto.CreateBannerResponseDto;
@@ -30,5 +31,9 @@ public class BannerController {
         return ApiResponse.ok(bannerService.getBannerList());
     }
 
+    @GetMapping("/api/banners")
+    public ApiResponse<List<BannerListForUserResponseDto>> userGetBannerList(){
+        return ApiResponse.ok(bannerService.getBannerListForUser());
+    }
 
 }
