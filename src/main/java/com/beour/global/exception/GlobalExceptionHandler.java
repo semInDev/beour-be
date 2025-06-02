@@ -30,6 +30,7 @@ public class GlobalExceptionHandler {
     return ResponseEntity.badRequest()
         .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "INVALID_ENUM", "유효하지 않은 값입니다"));
   }
+
   @ExceptionHandler(InputInvalidFormatException.class)
   public ResponseEntity<ErrorResponse> handleInputFormat(InputInvalidFormatException ex) {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
