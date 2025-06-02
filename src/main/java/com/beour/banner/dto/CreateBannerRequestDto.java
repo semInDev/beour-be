@@ -20,7 +20,7 @@ public class CreateBannerRequestDto {
     private String title;
 
     @NotNull(message = "활성화를 선택해주세요.")
-    private boolean isActive;
+    private Boolean isActive;
 
     @NotNull(message = "순서를 입력해주세요.")
     private int displayOrder;
