@@ -7,9 +7,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface LikeRepository extends JpaRepository<Like, Long> {
     boolean existsByUserIdAndSpaceId(Long userId, Long spaceId);
+    boolean existsByUserIdAndSpaceIdAndDeletedAtIsNull(Long userId, Long spaceId);
 
     Optional<Like> findByUserIdAndSpaceId(Long userId, Long spaceId);
 
     List<Like> findByUserIdAndDeletedAtIsNull(Long userId);
+
 }
 

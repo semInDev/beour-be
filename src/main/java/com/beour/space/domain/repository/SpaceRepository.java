@@ -41,4 +41,6 @@ public interface SpaceRepository extends JpaRepository<Space, Long> {
 
     List<Space> findBySpaceCategory(SpaceCategory spaceCategory);
     List<Space> findByUseCategory(UseCategory useCategory);
+    List<Space> findTop5ByDeletedAtIsNullOrderByCreatedAtDesc();
+
 }
