@@ -2,6 +2,7 @@ package com.beour.global.jwt;
 
 import com.beour.user.dto.CustomUserDetails;
 import com.beour.user.entity.User;
+import com.beour.user.enums.UserRole;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
