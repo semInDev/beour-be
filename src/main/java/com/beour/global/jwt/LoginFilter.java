@@ -32,6 +32,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final UserRepository userRepository;
     private final JWTUtil jwtUtil;
 
+    private static final long TOKEN_EXPIRATION_MILLIS = 60 * 60 * 10L * 1000;
+
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request,
         HttpServletResponse response) {
@@ -49,7 +51,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             loginDto.getLoginId(), loginDto.getPassword(), null);
 
         User user = userRepository.findByLoginId(loginDto.getLoginId()).orElse(null);
-        if(user == null || user.isDeleted()){
+        if (user == null || user.isDeleted()) {
             throw new LoginUserNotFoundException("존재하지 않는 사용자입니다.");
         }
 
@@ -75,7 +77,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         GrantedAuthority auth = iterator.next();
         String role = auth.getAuthority();
 
-        String token = jwtUtil.createJwt(loginId, "ROLE_" + role, 60 * 60 * 10L * 1000);
+        String token = jwtUtil.createJwt(loginId, "ROLE_" + role, TOKEN_EXPIRATION_MILLIS);
 
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType("application/json");

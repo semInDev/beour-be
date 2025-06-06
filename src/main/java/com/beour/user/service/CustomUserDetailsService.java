@@ -1,6 +1,5 @@
 package com.beour.user.service;
 
-import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.user.dto.CustomUserDetails;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
@@ -13,20 +12,14 @@ import org.springframework.stereotype.Service;
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
-  private final UserRepository userRepository;
+    private final UserRepository userRepository;
 
-  @Override
-  public UserDetails loadUserByUsername(String loginId) {
+    @Override
+    public UserDetails loadUserByUsername(String loginId) {
 
-    User user = userRepository.findByLoginId(loginId).orElseThrow(
-        () -> new UserNotFoundException("일치하는 회원이 없습니다.")
-    );
+        User user = userRepository.findByLoginId(loginId).orElse(null);
 
-    if(user.isDeleted()){
-      throw new UserNotFoundException("탈퇴한 회원입니다.");
+        return new CustomUserDetails(user);
     }
-
-    return new CustomUserDetails(user);
-  }
 
 }
