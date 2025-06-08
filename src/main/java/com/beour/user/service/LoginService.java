@@ -10,6 +10,7 @@ import com.beour.user.dto.FindLoginIdResponseDto;
 import com.beour.user.dto.ResetPasswordRequestDto;
 import com.beour.user.dto.ResetPasswordResponseDto;
 import com.beour.user.entity.User;
+import com.beour.user.enums.TokenExpireTime;
 import com.beour.user.repository.UserRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
@@ -122,7 +123,9 @@ public class LoginService {
         String role = jwtUtil.getRole(refresh);
 
         String newAccessToken = "Bearer " + jwtUtil.createJwt("access", loginId, role,
-            ACCESS_TOKEN_EXPIRATION_MILLIS);
+            TokenExpireTime.ACCESS_TOKEN_EXPIRATION_MILLIS.getValue());
+        String newRefreshToken = jwtUtil.createJwt("refresh", loginId, role,
+            TokenExpireTime.REFRESH_TOKEN_EXPIRATION_MILLIS.getValue());
 
         return newAccessToken;
     }

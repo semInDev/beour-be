@@ -5,6 +5,7 @@ import com.beour.global.exception.exceptionType.LoginUserNotFoundException;
 import com.beour.user.dto.CustomUserDetails;
 import com.beour.user.dto.LoginDto;
 import com.beour.user.entity.User;
+import com.beour.user.enums.TokenExpireTime;
 import com.beour.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
@@ -29,9 +30,6 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final JWTUtil jwtUtil;
-
-    private static final long ACCESS_TOKEN_EXPIRATION_MILLIS = 1000L * 60 * 10; //10분
-    private static final long REFRESH_TOKEN_EXPIRATION_MILLIS = 1000L * 60 * 60 * 24;   //1일
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request,
@@ -78,8 +76,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String role = auth.getAuthority();
 
         //토큰 생성
-        String access = "Bearer " + jwtUtil.createJwt("access", loginId, "ROLE_" + role, ACCESS_TOKEN_EXPIRATION_MILLIS);
-        String refresh = jwtUtil.createJwt("refresh", loginId, "ROLE_" + role, REFRESH_TOKEN_EXPIRATION_MILLIS);
+        String access = "Bearer " + jwtUtil.createJwt("access", loginId, "ROLE_" + role,
+            TokenExpireTime.ACCESS_TOKEN_EXPIRATION_MILLIS.getValue());
+        String refresh = jwtUtil.createJwt("refresh", loginId, "ROLE_" + role,
+            TokenExpireTime.REFRESH_TOKEN_EXPIRATION_MILLIS.getValue());
 
         //access는 헤더 refresh는 쿠키에 넣어 보냄
         response.setStatus(HttpServletResponse.SC_OK);
@@ -106,7 +106,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private Cookie createCookie(String key, String value) {
 
         Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(24*60*60); //refresh와 값 같게
+        cookie.setMaxAge(24 * 60 * 60); //refresh와 값 같게
         //todo : 운영 배포시에 아래 주석 활성화
         //cookie.setSecure(true);
         //cookie.setPath("/");
