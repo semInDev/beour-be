@@ -2,7 +2,6 @@ package com.beour.global.jwt;
 
 import com.beour.global.exception.exceptionType.LoginUserMismatchRole;
 import com.beour.global.exception.exceptionType.LoginUserNotFoundException;
-import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.user.dto.CustomUserDetails;
 import com.beour.user.dto.LoginDto;
 import com.beour.user.entity.User;
@@ -16,14 +15,12 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @RequiredArgsConstructor
@@ -81,14 +78,14 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String role = auth.getAuthority();
 
         //토큰 생성
-        String access = jwtUtil.createJwt("access", loginId, "ROLE_" + role, ACCESS_TOKEN_EXPIRATION_MILLIS);
+        String access = "Bearer " + jwtUtil.createJwt("access", loginId, "ROLE_" + role, ACCESS_TOKEN_EXPIRATION_MILLIS);
         String refresh = jwtUtil.createJwt("refresh", loginId, "ROLE_" + role, REFRESH_TOKEN_EXPIRATION_MILLIS);
 
-        //access는 헤더 refresh는 쿠키에 넣어 보냄 => why? response바디에 보내면 안됨?
+        //access는 헤더 refresh는 쿠키에 넣어 보냄
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        response.setHeader("access", access);
+        response.setHeader("Authorization", access);
         response.addCookie(createCookie("refresh", refresh));
 
         Long userId = customUserDetails.getUserId();
@@ -99,10 +96,9 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
                 "userId": %d,
                 "loginId": "%s",
                 "role": "%s",
-                "access_token": "%s",
-                "refresh_token": "%s"
+                "accessToken": "%s"
             }
-            """, userId, loginId, role, access, refresh);
+            """, userId, loginId, role, access);
 
         response.getWriter().write(jsonResponse);
     }
@@ -111,6 +107,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         Cookie cookie = new Cookie(key, value);
         cookie.setMaxAge(24*60*60); //refresh와 값 같게
+        //todo : 운영 배포시에 아래 주석 활성화
         //cookie.setSecure(true);
         //cookie.setPath("/");
         cookie.setHttpOnly(true);
