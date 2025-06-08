@@ -9,6 +9,7 @@ import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -32,7 +33,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final UserRepository userRepository;
     private final JWTUtil jwtUtil;
 
-    private static final long TOKEN_EXPIRATION_MILLIS = 60 * 60 * 10L * 1000;
+    private static final long ACCESS_TOKEN_EXPIRATION_MILLIS = 1000L * 60 * 10; //10분
+    private static final long REFRESH_TOKEN_EXPIRATION_MILLIS = 1000L * 60 * 60 * 24;   //1일
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request,
@@ -62,6 +64,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         return authenticationManager.authenticate(authToken);
     }
 
+    //로그인 성공 시 토큰 발급 함수
     @Override
     protected void successfulAuthentication(HttpServletRequest request,
         HttpServletResponse response,
@@ -70,19 +73,23 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
 
+        //토큰에 넣을 정보(역할, 로그인 아이디) 뽑아옴
         String loginId = customUserDetails.getUsername();
-
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
         GrantedAuthority auth = iterator.next();
         String role = auth.getAuthority();
 
-        String token = jwtUtil.createJwt(loginId, "ROLE_" + role, TOKEN_EXPIRATION_MILLIS);
+        //토큰 생성
+        String access = jwtUtil.createJwt("access", loginId, "ROLE_" + role, ACCESS_TOKEN_EXPIRATION_MILLIS);
+        String refresh = jwtUtil.createJwt("refresh", loginId, "ROLE_" + role, REFRESH_TOKEN_EXPIRATION_MILLIS);
 
+        //access는 헤더 refresh는 쿠키에 넣어 보냄 => why? response바디에 보내면 안됨?
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        response.setHeader("Authorization", "Bearer " + token);
+        response.setHeader("access", access);
+        response.addCookie(createCookie("refresh", refresh));
 
         Long userId = customUserDetails.getUserId();
         String jsonResponse = String.format("""
@@ -92,11 +99,23 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
                 "userId": %d,
                 "loginId": "%s",
                 "role": "%s",
-                "token": "Bearer %s"
+                "access_token": "%s",
+                "refresh_token": "%s"
             }
-            """, userId, loginId, role, token);
+            """, userId, loginId, role, access, refresh);
 
         response.getWriter().write(jsonResponse);
+    }
+
+    private Cookie createCookie(String key, String value) {
+
+        Cookie cookie = new Cookie(key, value);
+        cookie.setMaxAge(24*60*60); //refresh와 값 같게
+        //cookie.setSecure(true);
+        //cookie.setPath("/");
+        cookie.setHttpOnly(true);
+
+        return cookie;
     }
 
     @Override

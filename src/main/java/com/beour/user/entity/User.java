@@ -69,10 +69,9 @@ public class User extends BaseTimeEntity {
             .build();
     }
 
-    public static User fromJwt(String loginId, String password, String role) {
+    public static User fromJwt(String loginId, String role) {
         return User.builder()
             .loginId(loginId)
-            .password(password)
             .role(role)
             .build();
     }
