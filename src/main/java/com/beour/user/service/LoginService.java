@@ -5,6 +5,8 @@ import com.beour.global.exception.exceptionType.TokenNotFoundException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.global.jwt.JWTUtil;
 import com.beour.global.response.ApiResponse;
+import com.beour.token.entity.RefreshToken;
+import com.beour.token.repository.RefreshTokenRepository;
 import com.beour.user.dto.FindLoginIdRequestDto;
 import com.beour.user.dto.FindLoginIdResponseDto;
 import com.beour.user.dto.ResetPasswordRequestDto;
@@ -17,6 +19,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.security.SecureRandom;
+import java.util.Date;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -30,8 +33,7 @@ public class LoginService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final JWTUtil jwtUtil;
-
-    private static final long ACCESS_TOKEN_EXPIRATION_MILLIS = 1000L * 60 * 10; //10분
+    private final RefreshTokenRepository refreshTokenRepository;
 
     public ApiResponse<FindLoginIdResponseDto> findLoginId(FindLoginIdRequestDto dto) {
         User user = userRepository.findByNameAndPhoneAndEmail(dto.getName(), dto.getPhone(),
@@ -119,6 +121,11 @@ public class LoginService {
             throw new TokenNotFoundException("refresh 토큰을 찾을 수 없습니다.");
         }
 
+        Boolean isExistRefresh = refreshTokenRepository.existsByRefresh(refresh);
+        if (!isExistRefresh) {
+            throw new TokenNotFoundException("refresh 토큰을 찾을 수 없습니다.");
+        }
+
         String loginId = jwtUtil.getLoginId(refresh);
         String role = jwtUtil.getRole(refresh);
 
@@ -127,9 +134,22 @@ public class LoginService {
         String newRefreshToken = jwtUtil.createJwt("refresh", loginId, role,
             TokenExpireTime.REFRESH_TOKEN_EXPIRATION_MILLIS.getValue());
 
+        refreshTokenRepository.deleteByRefresh(refresh);
+        addRefreshToken(loginId, newRefreshToken);
+
         String[] tokens = new String[2];
         tokens[0] = newAccessToken;
         tokens[1] = newRefreshToken;
         return tokens;
+    }
+
+    private void addRefreshToken(String loginId, String newRefreshToken) {
+        RefreshToken refreshToken = RefreshToken.builder()
+            .loginId(loginId)
+            .refresh(newRefreshToken)
+            .expiration(new Date(System.currentTimeMillis()
+                + TokenExpireTime.REFRESH_TOKEN_EXPIRATION_MILLIS.getValue()).toString())
+            .build();
+        refreshTokenRepository.save(refreshToken);
     }
 }

@@ -2,6 +2,8 @@ package com.beour.global.jwt;
 
 import com.beour.global.exception.exceptionType.LoginUserMismatchRole;
 import com.beour.global.exception.exceptionType.LoginUserNotFoundException;
+import com.beour.token.entity.RefreshToken;
+import com.beour.token.repository.RefreshTokenRepository;
 import com.beour.user.dto.CustomUserDetails;
 import com.beour.user.dto.LoginDto;
 import com.beour.user.entity.User;
@@ -14,6 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -30,6 +33,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final JWTUtil jwtUtil;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request,
@@ -101,6 +105,20 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             """, userId, loginId, role, access);
 
         response.getWriter().write(jsonResponse);
+        addRefreshEntity(loginId, refresh, TokenExpireTime.REFRESH_TOKEN_EXPIRATION_MILLIS.getValue());
+    }
+
+    private void addRefreshEntity(String loginId, String refresh, Long expiredMs) {
+
+        Date date = new Date(System.currentTimeMillis() + expiredMs);
+
+        RefreshToken refreshToken = RefreshToken.builder()
+            .loginId(loginId)
+            .refresh(refresh)
+            .expiration(date.toString())
+            .build();
+
+        refreshTokenRepository.save(refreshToken);
     }
 
     @Override
