@@ -1,6 +1,7 @@
 package com.beour.user.controller;
 
 import com.beour.global.exception.exceptionType.UserNotFoundException;
+import com.beour.global.jwt.ManageCookie;
 import com.beour.global.response.ApiResponse;
 import com.beour.user.dto.FindLoginIdRequestDto;
 import com.beour.user.dto.FindLoginIdResponseDto;
@@ -40,8 +41,11 @@ public class LoginController {
     @PostMapping("/api/users/reissue")
     public ApiResponse<ReissueAccesstokenResponseDto> reissue(HttpServletRequest request,
         HttpServletResponse response) {
-        String newAccessToken = loginService.reissueRefreshToken(request, response);
+        String[] tokens = loginService.reissueRefreshToken(request, response);
+        String newAccessToken = tokens[0];
+        String newRefreshToken = tokens[1];
         response.setHeader("Authorization", newAccessToken);
+        response.addCookie(ManageCookie.createCookie("refresh", newRefreshToken));
 
         ReissueAccesstokenResponseDto responseDto = new ReissueAccesstokenResponseDto(
             newAccessToken);

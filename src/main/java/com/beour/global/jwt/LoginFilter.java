@@ -86,7 +86,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         response.setHeader("Authorization", access);
-        response.addCookie(createCookie("refresh", refresh));
+        response.addCookie(ManageCookie.createCookie("refresh", refresh));
 
         Long userId = customUserDetails.getUserId();
         String jsonResponse = String.format("""
@@ -101,18 +101,6 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             """, userId, loginId, role, access);
 
         response.getWriter().write(jsonResponse);
-    }
-
-    private Cookie createCookie(String key, String value) {
-
-        Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(24 * 60 * 60); //refresh와 값 같게
-        //todo : 운영 배포시에 아래 주석 활성화
-        //cookie.setSecure(true);
-        //cookie.setPath("/");
-        cookie.setHttpOnly(true);
-
-        return cookie;
     }
 
     @Override

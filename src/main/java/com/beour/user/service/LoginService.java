@@ -95,7 +95,7 @@ public class LoginService {
         return sb.toString();
     }
 
-    public String reissueRefreshToken(HttpServletRequest request, HttpServletResponse response) {
+    public String[] reissueRefreshToken(HttpServletRequest request, HttpServletResponse response) {
         String refresh = null;
         Cookie[] cookies = request.getCookies();
         for (Cookie cookie : cookies) {
@@ -127,6 +127,9 @@ public class LoginService {
         String newRefreshToken = jwtUtil.createJwt("refresh", loginId, role,
             TokenExpireTime.REFRESH_TOKEN_EXPIRATION_MILLIS.getValue());
 
-        return newAccessToken;
+        String[] tokens = new String[2];
+        tokens[0] = newAccessToken;
+        tokens[1] = newRefreshToken;
+        return tokens;
     }
 }
