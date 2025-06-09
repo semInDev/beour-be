@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum UserRole {
 
-    ADMIN("관리자"),
     GUEST("공간 대여자"),
     HOST("공간 제공자");
 

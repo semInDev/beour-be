@@ -3,8 +3,11 @@ package com.beour.user.entity;
 import com.beour.global.entity.BaseTimeEntity;
 
 import com.beour.user.dto.SignupRequestDto;
+import com.beour.user.enums.UserRole;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -66,10 +69,9 @@ public class User extends BaseTimeEntity {
             .build();
     }
 
-    public static User fromJwt(String loginId, String password, String role) {
+    public static User fromJwt(String loginId, String role) {
         return User.builder()
             .loginId(loginId)
-            .password(password)
             .role(role)
             .build();
     }

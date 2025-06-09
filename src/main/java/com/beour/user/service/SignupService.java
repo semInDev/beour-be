@@ -6,6 +6,7 @@ import com.beour.global.exception.exceptionType.InvalidFormatException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.user.dto.SignupRequestDto;
 import com.beour.user.entity.User;
+import com.beour.user.enums.UserRole;
 import com.beour.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
