@@ -2,11 +2,13 @@ package com.beour.user.controller;
 
 import com.beour.global.exception.exceptionType.DuplicateUserInfoException;
 import com.beour.global.response.ApiResponse;
+import com.beour.global.validator.annotation.ValidLoginId;
 import com.beour.user.dto.SignupRequestDto;
 import com.beour.user.service.SignupService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@Validated
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
 @RestController
@@ -28,7 +31,7 @@ public class SignupController {
     }
 
     @GetMapping("/signup/check/loginId")
-    public ApiResponse<String> checkDuplicateLoginId(@RequestParam("loginId") String loginId) {
+    public ApiResponse<String> checkDuplicateLoginId(@ValidLoginId @RequestParam("loginId") String loginId) {
         signupService.checkLoginIdDuplicate(loginId);
         return ApiResponse.ok("사용 가능한 아이디 입니다.");
     }
