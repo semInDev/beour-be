@@ -3,6 +3,7 @@ package com.beour.user.controller;
 import com.beour.global.exception.exceptionType.DuplicateUserInfoException;
 import com.beour.global.response.ApiResponse;
 import com.beour.global.validator.annotation.ValidLoginId;
+import com.beour.global.validator.annotation.ValidNickname;
 import com.beour.user.dto.SignupRequestDto;
 import com.beour.user.service.SignupService;
 import jakarta.validation.Valid;
@@ -37,7 +38,7 @@ public class SignupController {
     }
 
     @GetMapping("/signup/check/nickname")
-    public ApiResponse<String> checkDuplicateNickName(@RequestParam("nickname") String nickname) {
+    public ApiResponse<String> checkDuplicateNickName(@ValidNickname @RequestParam("nickname") String nickname) {
         signupService.checkNicknameDuplicate(nickname);
         return ApiResponse.ok("사용 가능한 닉네임입니다.");
     }

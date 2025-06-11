@@ -1,6 +1,7 @@
 package com.beour.user.dto;
 
 import com.beour.global.validator.annotation.ValidLoginId;
+import com.beour.global.validator.annotation.ValidNickname;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -15,8 +16,9 @@ public class SignupRequestDto {
     @NotBlank(message = "이름은 필수입니다.")
     private String name;
 
-    @NotBlank(message = "닉네임은 필수입니다.")
-    @Size(min = 1, max = 10, message = "닉네임은 1자 이상 10자 이하여야 합니다.")
+//    @NotBlank(message = "닉네임은 필수입니다.")
+//    @Size(min = 1, max = 10, message = "닉네임은 1자 이상 10자 이하여야 합니다.")
+    @ValidNickname
     private String nickname;
 
     @NotBlank(message = "역할은 필수입니다.")
@@ -27,9 +29,6 @@ public class SignupRequestDto {
     @Email(message = "올바른 이메일 형식이어야 합니다.")
     private String email;
 
-//    @NotBlank(message = "아이디는 필수입니다.")
-//    @Size(min = 5, max = 15, message = "아이디는 5자 이상 15자 이하여야 합니다.")
-//    @Pattern(regexp = "^[a-zA-Z0-9]+$", message = "아이디는 영어와 숫자만 사용 가능합니다.")
     @ValidLoginId
     private String loginId;
 
