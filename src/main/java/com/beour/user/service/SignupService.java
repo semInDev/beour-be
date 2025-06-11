@@ -1,7 +1,6 @@
 package com.beour.user.service;
 
 import com.beour.global.exception.exceptionType.DuplicateUserInfoException;
-import com.beour.global.exception.exceptionType.InvalidFormatException;
 import com.beour.user.dto.SignupRequestDto;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
@@ -47,7 +46,6 @@ public class SignupService {
     }
 
     public boolean checkNicknameDuplicate(String nickname) {
-        checkInputIsNull(nickname, "닉네임");
         Boolean isUserExist = userRepository.existsByNicknameAndDeletedAtIsNull(nickname);
 
         if (isUserExist) {
@@ -55,12 +53,6 @@ public class SignupService {
         }
 
         return false;
-    }
-
-    private static void checkInputIsNull(String loginId, String category) {
-        if (loginId == null) {
-            throw new InvalidFormatException(category + "를 입력해주세요.");
-        }
     }
 
 }

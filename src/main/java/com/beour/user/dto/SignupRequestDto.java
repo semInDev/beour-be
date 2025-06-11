@@ -16,8 +16,6 @@ public class SignupRequestDto {
     @NotBlank(message = "이름은 필수입니다.")
     private String name;
 
-//    @NotBlank(message = "닉네임은 필수입니다.")
-//    @Size(min = 1, max = 10, message = "닉네임은 1자 이상 10자 이하여야 합니다.")
     @ValidNickname
     private String nickname;
 

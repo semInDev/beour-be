@@ -1,6 +1,5 @@
 package com.beour.user.controller;
 
-import com.beour.global.exception.exceptionType.DuplicateUserInfoException;
 import com.beour.global.response.ApiResponse;
 import com.beour.global.validator.annotation.ValidLoginId;
 import com.beour.global.validator.annotation.ValidNickname;
@@ -8,7 +7,6 @@ import com.beour.user.dto.SignupRequestDto;
 import com.beour.user.service.SignupService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
