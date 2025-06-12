@@ -32,7 +32,8 @@ public class LoginController {
     @PostMapping("/api/users/reset-pw")
     public ApiResponse<ResetPasswordResponseDto> resetPassword(
         @Valid @RequestBody ResetPasswordRequestDto dto) {
-        return loginService.resetPassword(dto);
+
+        return ApiResponse.ok(loginService.resetPassword(dto));
     }
 
     @PostMapping("/api/users/reissue")
