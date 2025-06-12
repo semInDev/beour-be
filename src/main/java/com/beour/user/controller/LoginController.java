@@ -39,7 +39,7 @@ public class LoginController {
     @PostMapping("/api/users/reissue")
     public ApiResponse<ReissueAccesstokenResponseDto> reissue(HttpServletRequest request,
         HttpServletResponse response) {
-        String[] tokens = loginService.reissueRefreshToken(request, response);
+        String[] tokens = loginService.reissueRefreshToken(request);
         String newAccessToken = tokens[0];
         String newRefreshToken = tokens[1];
         response.setHeader("Authorization", newAccessToken);

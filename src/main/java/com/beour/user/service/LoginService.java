@@ -86,7 +86,25 @@ public class LoginService {
         return sb.toString();
     }
 
-    public String[] reissueRefreshToken(HttpServletRequest request, HttpServletResponse response) {
+    public String[] reissueRefreshToken(HttpServletRequest request) {
+        String refresh = extractRefreshFromCookie(request);
+
+        checkRefreshTokenIsValid(refresh);
+
+        String loginId = jwtUtil.getLoginId(refresh);
+        String role = jwtUtil.getRole(refresh);
+
+        String newAccessToken = "Bearer " + jwtUtil.createJwt("access", loginId, role,
+            TokenExpireTime.ACCESS_TOKEN_EXPIRATION_MILLIS.getValue());
+        String newRefreshToken = jwtUtil.createJwt("refresh", loginId, role,
+            TokenExpireTime.REFRESH_TOKEN_EXPIRATION_MILLIS.getValue());
+
+        refreshTokenRotation(refresh, loginId, newRefreshToken);
+
+        return new String[] {newAccessToken, newRefreshToken};
+    }
+
+    private static String extractRefreshFromCookie(HttpServletRequest request) {
         String refresh = null;
         Cookie[] cookies = request.getCookies();
         for (Cookie cookie : cookies) {
@@ -94,7 +112,10 @@ public class LoginService {
                 refresh = cookie.getValue();
             }
         }
+        return refresh;
+    }
 
+    private void checkRefreshTokenIsValid(String refresh) {
         if (refresh == null) {
             throw new TokenNotFoundException("refresh 토큰을 찾을 수 없습니다.");
         }
@@ -114,22 +135,11 @@ public class LoginService {
         if (!isExistRefresh) {
             throw new TokenNotFoundException("refresh 토큰을 찾을 수 없습니다.");
         }
+    }
 
-        String loginId = jwtUtil.getLoginId(refresh);
-        String role = jwtUtil.getRole(refresh);
-
-        String newAccessToken = "Bearer " + jwtUtil.createJwt("access", loginId, role,
-            TokenExpireTime.ACCESS_TOKEN_EXPIRATION_MILLIS.getValue());
-        String newRefreshToken = jwtUtil.createJwt("refresh", loginId, role,
-            TokenExpireTime.REFRESH_TOKEN_EXPIRATION_MILLIS.getValue());
-
+    private void refreshTokenRotation(String refresh, String loginId, String newRefreshToken) {
         refreshTokenRepository.deleteByRefresh(refresh);
         addRefreshToken(loginId, newRefreshToken);
-
-        String[] tokens = new String[2];
-        tokens[0] = newAccessToken;
-        tokens[1] = newRefreshToken;
-        return tokens;
     }
 
     private void addRefreshToken(String loginId, String newRefreshToken) {
