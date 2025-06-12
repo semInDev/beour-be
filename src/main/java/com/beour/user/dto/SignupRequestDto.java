@@ -2,6 +2,7 @@ package com.beour.user.dto;
 
 import com.beour.global.validator.annotation.ValidLoginId;
 import com.beour.global.validator.annotation.ValidNickname;
+import com.beour.global.validator.annotation.ValidPhoneNum;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -34,7 +35,6 @@ public class SignupRequestDto {
     @Size(min = 4, max = 20, message = "비밀번호는 4자 이상 20자 이하여야 합니다.")
     private String password;
 
-    @NotBlank(message = "핸드폰번호는 필수입니다.")
-    @Pattern(regexp = "^\\d{10,11}$", message = "전화번호는 숫자만 10~11자리로 입력하세요.")
+    @ValidPhoneNum
     private String phone;
 }
