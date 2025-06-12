@@ -1,6 +1,5 @@
 package com.beour.user.dto;
 
-import com.beour.global.validator.annotation.ValidPhoneNum;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -18,7 +17,8 @@ public class FindLoginIdRequestDto {
   @Email(message = "올바른 이메일 형식이어야 합니다.")
   private String email;
 
-  @ValidPhoneNum
+  @NotBlank(message = "핸드폰번호는 필수입니다.")
+  @Pattern(regexp = "^\\d{10,11}$", message = "전화번호는 숫자만 10~11자리로 입력하세요.")
   private String phone;
 
 }
