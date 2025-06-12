@@ -18,7 +18,7 @@ import java.lang.annotation.Target;
 @Target({ ElementType.FIELD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidNickname {
-    String message() default "닉네임은 1자 이상 10자 이하여야 합니다.";
+    String message() default "닉네임은 1자 이상 8자 이하여야 합니다.";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }
