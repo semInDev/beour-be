@@ -16,7 +16,6 @@ import com.beour.user.repository.UserRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.security.SecureRandom;
 import java.util.Date;
 import java.util.Random;
