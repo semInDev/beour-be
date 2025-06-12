@@ -35,14 +35,13 @@ public class LoginService {
     private final JWTUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
 
-    public ApiResponse<FindLoginIdResponseDto> findLoginId(FindLoginIdRequestDto dto) {
-        User user = userRepository.findByNameAndPhoneAndEmail(dto.getName(), dto.getPhone(),
+    public FindLoginIdResponseDto findLoginId(FindLoginIdRequestDto dto) {
+        User user = userRepository.findByNameAndPhoneAndEmailAndDeletedAtIsNull(dto.getName(), dto.getPhone(),
             dto.getEmail()).orElseThrow(
             () -> new UserNotFoundException("일치하는 회원을 찾을 수 없습니다.")
         );
-        checkDeletedUser(user);
 
-        return ApiResponse.ok(new FindLoginIdResponseDto(user.getLoginId()));
+        return new FindLoginIdResponseDto(user.getLoginId());
     }
 
     @Transactional
@@ -63,7 +62,7 @@ public class LoginService {
             () -> new UserNotFoundException("일치하는 회원을 찾을 수 없습니다.")
         );
 
-        User userByNamePhoneEmail = userRepository.findByNameAndPhoneAndEmail(dto.getName(),
+        User userByNamePhoneEmail = userRepository.findByNameAndPhoneAndEmailAndDeletedAtIsNull(dto.getName(),
             dto.getPhone(), dto.getEmail()).orElseThrow(
             () -> new UserNotFoundException("일치하는 회원을 찾을 수 없습니다.")
         );

@@ -1,6 +1,5 @@
 package com.beour.user.controller;
 
-import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.global.jwt.ManageCookie;
 import com.beour.global.response.ApiResponse;
 import com.beour.user.dto.FindLoginIdRequestDto;
@@ -13,8 +12,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,7 +26,7 @@ public class LoginController {
     public ApiResponse<FindLoginIdResponseDto> findLoginId(
         @Valid @RequestBody FindLoginIdRequestDto dto) {
 
-        return loginService.findLoginId(dto);
+        return ApiResponse.ok(loginService.findLoginId(dto));
     }
 
     @PostMapping("/api/users/reset-pw")

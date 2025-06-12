@@ -1,8 +1,8 @@
 package com.beour.user.dto;
 
+import com.beour.global.validator.annotation.ValidPhoneNum;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,8 +16,7 @@ public class ResetPasswordRequestDto {
   @NotBlank(message = "이름은 필수입니다.")
   private String name;
 
-  @NotBlank(message = "핸드폰 번호는 필수입니다.")
-  @Pattern(regexp = "^\\d{10,11}$", message = "전화번호는 숫자만 10~11자리로 입력하세요.")
+  @ValidPhoneNum
   private String phone;
 
   @NotBlank(message = "이메일은 필수입니다.")
