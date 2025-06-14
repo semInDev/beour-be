@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @Getter
 public class UpdateUserInfoRequestDto {
 
+    //validation 커스텀해서 적용
     private String newNickname;
 
     @Pattern(regexp = "^\\d{10,11}$", message = "전화번호는 숫자만 10~11자리로 입력하세요.")
