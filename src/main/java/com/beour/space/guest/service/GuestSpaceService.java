@@ -67,8 +67,8 @@ public class GuestSpaceService {
 
         return spaces.stream()
             .map(space -> {
-                boolean isLiked = likeRepository.existsByUserIdAndSpaceIdAndDeletedAtIsNull(user.getId(), space.getId());
-                return new RecentCreatedSpcaceListResponseDto().dtoFrom(space, isLiked);
+//                boolean isLiked = likeRepository.existsByUserIdAndSpaceIdAndDeletedAtIsNull(user.getId(), space.getId());
+                return new RecentCreatedSpcaceListResponseDto().dtoFrom(space);
             })
             .collect(Collectors.toList());
     }
