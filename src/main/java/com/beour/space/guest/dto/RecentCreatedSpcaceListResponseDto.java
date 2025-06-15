@@ -13,18 +13,16 @@ import lombok.RequiredArgsConstructor;
 @AllArgsConstructor
 public class RecentCreatedSpcaceListResponseDto {
 
-    private String address;
-    private String name;
-    private int pricePerHour;
-    private boolean like;
+    private String addressAndName;
+    private String thumbnailUrl;
+    private String description;
     private LocalDateTime createdAt;
 
-    public RecentCreatedSpcaceListResponseDto dtoFrom(Space space, boolean like){
+    public RecentCreatedSpcaceListResponseDto dtoFrom(Space space){
         return RecentCreatedSpcaceListResponseDto.builder()
-            .address(space.getAddress())
-            .name(space.getName())
-            .pricePerHour(space.getPricePerHour())
-            .like(like)
+            .addressAndName(space.getAddress().split(" ")[1] + " / " + space.getName())
+            .thumbnailUrl(space.getThumbnailUrl())
+            .description(space.getDescription().getDescription())
             .createdAt(space.getCreatedAt())
             .build();
     }
