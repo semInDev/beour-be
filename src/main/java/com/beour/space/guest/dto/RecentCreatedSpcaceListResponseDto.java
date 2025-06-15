@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 @AllArgsConstructor
 public class RecentCreatedSpcaceListResponseDto {
 
+    private Long spaceId;
     private String addressAndName;
     private String thumbnailUrl;
     private String description;
@@ -20,6 +21,7 @@ public class RecentCreatedSpcaceListResponseDto {
 
     public RecentCreatedSpcaceListResponseDto dtoFrom(Space space){
         return RecentCreatedSpcaceListResponseDto.builder()
+            .spaceId(space.getId())
             .addressAndName(space.getAddress().split(" ")[1] + " / " + space.getName())
             .thumbnailUrl(space.getThumbnailUrl())
             .description(space.getDescription().getDescription())
