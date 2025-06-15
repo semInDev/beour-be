@@ -58,7 +58,6 @@ public class GuestSpaceService {
     }
 
     public List<RecentCreatedSpcaceListResponseDto> getRecentCreatedSpace(){
-        User user = findUserFromToken();
         List<Space> spaces = spaceRepository.findTop5ByDeletedAtIsNullOrderByCreatedAtDesc();
 
         if(spaces.isEmpty()){
