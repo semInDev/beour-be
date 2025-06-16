@@ -4,6 +4,7 @@ import com.beour.global.exception.exceptionType.InvalidFormatException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.user.dto.ChangePasswordRequestDto;
 import com.beour.user.dto.UpdateUserInfoRequestDto;
+import com.beour.user.dto.UpdateUserInfoResponseDto;
 import com.beour.user.dto.UserInformationDetailResponseDto;
 import com.beour.user.dto.UserInformationSimpleResponseDto;
 import com.beour.user.entity.User;
@@ -52,9 +53,10 @@ public class MyInformationService {
     }
 
     @Transactional
-    public void updateUserInfo(UpdateUserInfoRequestDto requestDto){
+    public UpdateUserInfoResponseDto updateUserInfo(UpdateUserInfoRequestDto requestDto){
         User user = findUserFromToken();
 
+        //todo: 중복 체크
         if(!requestDto.getNewNickname().isEmpty()){
             user.updateNickname(requestDto.getNewNickname());
         }
@@ -66,6 +68,12 @@ public class MyInformationService {
         if(requestDto.getNewNickname().isEmpty() && requestDto.getNewPhone().isEmpty()){
             throw new InvalidFormatException("수정할 정보를 입력해주세요.");
         }
+
+        User updatedUser = findUserFromToken();
+        return UpdateUserInfoResponseDto.builder()
+            .newNickname(updatedUser.getNickname())
+            .newPhone(updatedUser.getPhone())
+            .build();
     }
 
     @Transactional
