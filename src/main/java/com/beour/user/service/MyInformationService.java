@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class MyInformationService {
 
     private final UserRepository userRepository;
+    private final SignupService signupService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Transactional
@@ -56,12 +57,13 @@ public class MyInformationService {
     public UpdateUserInfoResponseDto updateUserInfo(UpdateUserInfoRequestDto requestDto){
         User user = findUserFromToken();
 
-        //todo: 회원가입 pr merge 후 닉네임 중복 체크 로직 추가
         if(!requestDto.getNewNickname().isEmpty()){
+            signupService.checkNicknameDuplicate(requestDto.getNewNickname());
             user.updateNickname(requestDto.getNewNickname());
         }
 
         if(!requestDto.getNewPhone().isEmpty()){
+
             user.updatePhone(requestDto.getNewPhone());
         }
 
