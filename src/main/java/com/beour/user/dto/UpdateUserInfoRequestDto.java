@@ -1,7 +1,7 @@
 package com.beour.user.dto;
 
 import com.beour.global.validator.annotation.ValidNullableNickname;
-import jakarta.validation.constraints.Pattern;
+import com.beour.global.validator.annotation.ValidNullablePhoneNumber;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -12,7 +12,7 @@ public class UpdateUserInfoRequestDto {
     @ValidNullableNickname
     private String newNickname;
 
-    @Pattern(regexp = "^\\d{10,11}$", message = "전화번호는 숫자만 10~11자리로 입력하세요.")
+    @ValidNullablePhoneNumber
     private String newPhone;
 
 }
