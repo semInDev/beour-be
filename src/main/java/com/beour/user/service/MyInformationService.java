@@ -56,7 +56,7 @@ public class MyInformationService {
     public UpdateUserInfoResponseDto updateUserInfo(UpdateUserInfoRequestDto requestDto){
         User user = findUserFromToken();
 
-        //todo: 중복 체크
+        //todo: 회원가입 pr merge 후 닉네임 중복 체크 로직 추가
         if(!requestDto.getNewNickname().isEmpty()){
             user.updateNickname(requestDto.getNewNickname());
         }
