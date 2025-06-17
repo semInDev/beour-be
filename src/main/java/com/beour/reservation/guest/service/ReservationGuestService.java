@@ -38,8 +38,10 @@ public class ReservationGuestService {
     private final ReviewRepository reviewRepository;
 
     public ReservationResponseDto createReservation(ReservationCreateRequest requestDto) {
-        User guest = getUser(requestDto.getGuestId());
-        User host = getUser(requestDto.getHostId());
+        User guest = findUserFromToken();
+        User host = userRepository.findById(requestDto.getHostId()).orElseThrow(
+            () -> new UserNotFoundException("존재하지 않는 유저입니다.")
+        );
         Space space = spaceRepository.findById(requestDto.getSpaceId()).orElseThrow(
             () -> new SpaceNotFoundException("존재하지 않는 공간입니다.")
         );
@@ -96,12 +98,6 @@ public class ReservationGuestService {
             requestDto.getEndTime())) {
             throw new AvailableTimeNotFound("예약이 불가능한 시간입니다.");
         }
-    }
-
-    private User getUser(Long userId) {
-        return userRepository.findById(userId).orElseThrow(
-            () -> new UserNotFoundException("존재하지 않는 유저입니다.")
-        );
     }
 
     public List<ReservationListResponseDto> findReservationList() {
