@@ -104,9 +104,10 @@ public class ReservationGuestService {
         );
     }
 
-    public List<ReservationListResponseDto> findReservationList(Long guestId) {
+    public List<ReservationListResponseDto> findReservationList() {
+        User guest = findUserFromToken();
         List<Reservation> reservationList = reservationRepository.findUpcomingReservationsByGuest(
-            guestId, LocalDate.now(), LocalTime.now());
+            guest.getId(), LocalDate.now(), LocalTime.now());
 
         checkEmptyReservation(reservationList);
 

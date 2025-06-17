@@ -27,9 +27,6 @@ public class CheckAvailableTimeService {
         CheckAvailableTimesRequestDto requestDto) {
         AvailableTime availableTime = checkReservationAvailableDateAndGetAvailableTime(requestDto);
 
-//        List<Reservation> reservationList = reservationRepository.findBySpaceIdAndDateAndDeletedAtIsNull(
-//            requestDto.getSpaceId(), requestDto.getDate());
-
         List<Reservation> reservationList = reservationRepository.findBySpaceIdAndDateAndStatusNot(
             requestDto.getSpaceId(), requestDto.getDate(), ReservationStatus.REJECTED);
 
