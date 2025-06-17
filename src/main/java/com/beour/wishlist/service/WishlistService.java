@@ -55,12 +55,9 @@ public class WishlistService {
         User user = findUserFromToken();
         Space space = getSpace(spaceId);
 
-        Like like = likeRepository.findByUserIdAndSpaceId(user.getId(), space.getId()).orElseThrow(
+        Like like = likeRepository.findByUserIdAndSpaceIdAndDeletedAtIsNull(user.getId(), space.getId()).orElseThrow(
             () -> new LikesNotFoundException("찜 목록에 존재하지 않습니다.")
         );
-        if(like.isDeleted()){
-            throw new LikesNotFoundException("찜 목록에 존재하지 않습니다.");
-        }
 
         like.softDelete();
     }
