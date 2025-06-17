@@ -1,14 +1,12 @@
 package com.beour.wishlist.service;
 
 import com.beour.global.exception.exceptionType.DuplicateLikesException;
-import com.beour.global.exception.exceptionType.InvalidCredentialsException;
 import com.beour.global.exception.exceptionType.LikesNotFoundException;
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.space.domain.entity.Space;
 import com.beour.space.domain.repository.SpaceRepository;
 import com.beour.space.guest.dto.SpaceListSpaceResponseDto;
-import com.beour.user.dto.CustomUserDetails;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
 import com.beour.wishlist.entity.Like;
@@ -16,7 +14,6 @@ import com.beour.wishlist.repository.LikeRepository;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,7 +31,7 @@ public class WishlistService {
         Space space = getSpace(spaceId);
 
         if(isExistInWishList(spaceId, user)){
-            throw new DuplicateLikesException("이미 찜 목록에 있습니다.");
+            throw new DuplicateLikesException("wishlist에 존재하는 공간입니다.");
         }
 
         Like like = Like.builder()
@@ -42,9 +39,7 @@ public class WishlistService {
             .user(user)
             .build();
 
-        Like saved = likeRepository.save(like);
-
-        return saved;
+        return likeRepository.save(like);
     }
 
     private boolean isExistInWishList(Long spaceId, User user) {
@@ -60,12 +55,9 @@ public class WishlistService {
         User user = findUserFromToken();
         Space space = getSpace(spaceId);
 
-        Like like = likeRepository.findByUserIdAndSpaceId(user.getId(), space.getId()).orElseThrow(
+        Like like = likeRepository.findByUserIdAndSpaceIdAndDeletedAtIsNull(user.getId(), space.getId()).orElseThrow(
             () -> new LikesNotFoundException("찜 목록에 존재하지 않습니다.")
         );
-        if(like.isDeleted()){
-            throw new LikesNotFoundException("찜 목록에 존재하지 않습니다.");
-        }
 
         like.softDelete();
     }
@@ -95,22 +87,11 @@ public class WishlistService {
     }
 
     private User findUserFromToken() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new InvalidCredentialsException("인증된 유저가 없습니다.");
-        }
+        String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-
-        User user = userRepository.findByLoginId(userDetails.getUsername()).orElseThrow(
+        return userRepository.findByLoginIdAndDeletedAtIsNull(loginId).orElseThrow(
             () -> new UserNotFoundException("해당 유저를 찾을 수 없습니다.")
         );
-
-        if (user.isDeleted()) {
-            throw new UserNotFoundException("해당 유저를 찾을 수 없습니다.");
-        }
-
-        return user;
     }
 
 }
