@@ -38,7 +38,7 @@ public class ReservationGuestService {
     private final ReviewRepository reviewRepository;
 
     public ReservationResponseDto createReservation(ReservationCreateRequest requestDto) {
-        User guest = getUser(requestDto.getGuestId());
+        User guest = findUserFromToken();
         User host = getUser(requestDto.getHostId());
         Space space = spaceRepository.findById(requestDto.getSpaceId()).orElseThrow(
             () -> new SpaceNotFoundException("존재하지 않는 공간입니다.")
