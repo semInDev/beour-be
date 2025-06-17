@@ -5,6 +5,7 @@ import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
 import com.beour.reservation.commons.exceptionType.AvailableTimeNotFound;
+import com.beour.reservation.commons.exceptionType.MissMatch;
 import com.beour.reservation.commons.exceptionType.ReservationNotFound;
 import com.beour.reservation.commons.repository.ReservationRepository;
 import com.beour.reservation.guest.dto.CheckAvailableTimesRequestDto;
@@ -39,12 +40,14 @@ public class ReservationGuestService {
 
     public ReservationResponseDto createReservation(ReservationCreateRequest requestDto) {
         User guest = findUserFromToken();
-        User host = getUser(requestDto.getHostId());
+        User host = userRepository.findById(requestDto.getHostId()).orElseThrow(
+            () -> new UserNotFoundException("존재하지 않는 유저입니다.")
+        );
         Space space = spaceRepository.findById(requestDto.getSpaceId()).orElseThrow(
             () -> new SpaceNotFoundException("존재하지 않는 공간입니다.")
         );
 
-        checkReservationAvailable(requestDto);
+        checkReservationAvailable(requestDto, space);
 
         Reservation reservation = Reservation.builder()
             .guest(guest)
@@ -61,9 +64,40 @@ public class ReservationGuestService {
         return ReservationResponseDto.of(reservationRepository.save(reservation));
     }
 
-    private void checkReservationAvailable(ReservationCreateRequest requestDto) {
+    private void checkReservationAvailable(ReservationCreateRequest requestDto, Space space) {
+        checkPriceCorrect(requestDto, space);
+        checkValidCapacity(requestDto, space);
         checkReservationAvailableDate(requestDto);
         checkReservationAvailabeTime(requestDto);
+    }
+
+    private static void checkValidCapacity(ReservationCreateRequest requestDto, Space space) {
+        if (requestDto.getGuestCount() > space.getMaxCapacity()) {
+            throw new MissMatch("해당 인원은 예약이 불가합니다.");
+        }
+    }
+
+    private static void checkPriceCorrect(ReservationCreateRequest requestDto, Space space) {
+        int hour = requestDto.getEndTime().getHour() - requestDto.getStartTime().getHour();
+        if (requestDto.getPrice() != space.getPricePerHour() * hour) {
+            throw new MissMatch("해당 가격이 맞지 않습니다.");
+        }
+    }
+
+    private void checkReservationAvailableDate(ReservationCreateRequest requestDto) {
+        AvailableTime availableTime = checkAvailableTimeService.checkReservationAvailableDateAndGetAvailableTime(
+            new CheckAvailableTimesRequestDto(
+                requestDto.getSpaceId(), requestDto.getDate()));
+
+        if(requestDto.getDate().equals(LocalDate.now()) && requestDto.getStartTime().isBefore(LocalTime.now())){
+            throw new AvailableTimeNotFound("예약 가능한 시간이 존재하지 않습니다.");
+        }
+
+        if (availableTime.getStartTime().isAfter(requestDto.getStartTime())
+            || availableTime.getEndTime().isBefore(
+            requestDto.getEndTime())) {
+            throw new AvailableTimeNotFound("예약이 불가능한 시간입니다.");
+        }
     }
 
     private void checkReservationAvailabeTime(ReservationCreateRequest requestDto) {
@@ -87,26 +121,10 @@ public class ReservationGuestService {
         }
     }
 
-    private void checkReservationAvailableDate(ReservationCreateRequest requestDto) {
-        AvailableTime availableTime = checkAvailableTimeService.checkReservationAvailableDateAndGetAvailableTime(
-            new CheckAvailableTimesRequestDto(
-                requestDto.getSpaceId(), requestDto.getDate()));
-        if (availableTime.getStartTime().isAfter(requestDto.getStartTime())
-            || availableTime.getEndTime().isBefore(
-            requestDto.getEndTime())) {
-            throw new AvailableTimeNotFound("예약이 불가능한 시간입니다.");
-        }
-    }
-
-    private User getUser(Long userId) {
-        return userRepository.findById(userId).orElseThrow(
-            () -> new UserNotFoundException("존재하지 않는 유저입니다.")
-        );
-    }
-
-    public List<ReservationListResponseDto> findReservationList(Long guestId) {
+    public List<ReservationListResponseDto> findReservationList() {
+        User guest = findUserFromToken();
         List<Reservation> reservationList = reservationRepository.findUpcomingReservationsByGuest(
-            guestId, LocalDate.now(), LocalTime.now());
+            guest.getId(), LocalDate.now(), LocalTime.now());
 
         checkEmptyReservation(reservationList);
 
@@ -128,12 +146,13 @@ public class ReservationGuestService {
 
         List<ReservationListResponseDto> responseDtoList = new ArrayList<>();
         for (Reservation reservation : reservationList) {
-            if(reservation.getStatus() == ReservationStatus.ACCEPTED){
+            if (reservation.getStatus() == ReservationStatus.ACCEPTED) {
                 reservation.updateStatus(ReservationStatus.COMPLETED);
             }
-            Review review = reviewRepository.findByGuestIdAndSpaceIdAndReservedDateAndDeletedAtIsNull(user.getId(), reservation.getSpace().getId(), reservation.getDate()).orElse(null);
+            Review review = reviewRepository.findByGuestIdAndSpaceIdAndReservedDateAndDeletedAtIsNull(
+                user.getId(), reservation.getSpace().getId(), reservation.getDate()).orElse(null);
             Long reviewId = 0L;
-            if(review != null){
+            if (review != null) {
                 reviewId = review.getId();
             }
             responseDtoList.add(ReservationListResponseDto.of(reservation, reviewId));
