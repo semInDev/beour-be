@@ -72,15 +72,31 @@ public class ReservationGuestService {
     }
 
     private static void checkValidCapacity(ReservationCreateRequest requestDto, Space space) {
-        if(requestDto.getGuestCount() > space.getMaxCapacity()){
+        if (requestDto.getGuestCount() > space.getMaxCapacity()) {
             throw new MissMatch("해당 인원은 예약이 불가합니다.");
         }
     }
 
     private static void checkPriceCorrect(ReservationCreateRequest requestDto, Space space) {
         int hour = requestDto.getEndTime().getHour() - requestDto.getStartTime().getHour();
-        if(requestDto.getPrice() != space.getPricePerHour() * hour){
+        if (requestDto.getPrice() != space.getPricePerHour() * hour) {
             throw new MissMatch("해당 가격이 맞지 않습니다.");
+        }
+    }
+
+    private void checkReservationAvailableDate(ReservationCreateRequest requestDto) {
+        AvailableTime availableTime = checkAvailableTimeService.checkReservationAvailableDateAndGetAvailableTime(
+            new CheckAvailableTimesRequestDto(
+                requestDto.getSpaceId(), requestDto.getDate()));
+
+        if(requestDto.getDate().equals(LocalDate.now()) && requestDto.getStartTime().isBefore(LocalTime.now())){
+            throw new AvailableTimeNotFound("예약 가능한 시간이 존재하지 않습니다.");
+        }
+
+        if (availableTime.getStartTime().isAfter(requestDto.getStartTime())
+            || availableTime.getEndTime().isBefore(
+            requestDto.getEndTime())) {
+            throw new AvailableTimeNotFound("예약이 불가능한 시간입니다.");
         }
     }
 
@@ -102,17 +118,6 @@ public class ReservationGuestService {
             }
 
             startTime = startTime.plusHours(1);
-        }
-    }
-
-    private void checkReservationAvailableDate(ReservationCreateRequest requestDto) {
-        AvailableTime availableTime = checkAvailableTimeService.checkReservationAvailableDateAndGetAvailableTime(
-            new CheckAvailableTimesRequestDto(
-                requestDto.getSpaceId(), requestDto.getDate()));
-        if (availableTime.getStartTime().isAfter(requestDto.getStartTime())
-            || availableTime.getEndTime().isBefore(
-            requestDto.getEndTime())) {
-            throw new AvailableTimeNotFound("예약이 불가능한 시간입니다.");
         }
     }
 
@@ -141,12 +146,13 @@ public class ReservationGuestService {
 
         List<ReservationListResponseDto> responseDtoList = new ArrayList<>();
         for (Reservation reservation : reservationList) {
-            if(reservation.getStatus() == ReservationStatus.ACCEPTED){
+            if (reservation.getStatus() == ReservationStatus.ACCEPTED) {
                 reservation.updateStatus(ReservationStatus.COMPLETED);
             }
-            Review review = reviewRepository.findByGuestIdAndSpaceIdAndReservedDateAndDeletedAtIsNull(user.getId(), reservation.getSpace().getId(), reservation.getDate()).orElse(null);
+            Review review = reviewRepository.findByGuestIdAndSpaceIdAndReservedDateAndDeletedAtIsNull(
+                user.getId(), reservation.getSpace().getId(), reservation.getDate()).orElse(null);
             Long reviewId = 0L;
-            if(review != null){
+            if (review != null) {
                 reviewId = review.getId();
             }
             responseDtoList.add(ReservationListResponseDto.of(reservation, reviewId));
