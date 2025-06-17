@@ -1,6 +1,7 @@
 package com.beour.reservation.commons.repository;
 
 import com.beour.reservation.commons.entity.Reservation;
+import com.beour.reservation.commons.enums.ReservationStatus;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -12,6 +13,7 @@ import org.springframework.data.repository.query.Param;
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
 
     List<Reservation> findBySpaceIdAndDateAndDeletedAtIsNull(Long spaceId, LocalDate date);
+    List<Reservation> findBySpaceIdAndDateAndStatusNot(Long spaceId, LocalDate date, ReservationStatus status);
 
     @Query("SELECT r FROM Reservation r " +
         "WHERE r.guest.id = :guestId AND " +

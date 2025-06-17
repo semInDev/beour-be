@@ -1,6 +1,7 @@
 package com.beour.reservation.guest.service;
 
 import com.beour.reservation.commons.entity.Reservation;
+import com.beour.reservation.commons.enums.ReservationStatus;
 import com.beour.reservation.commons.exceptionType.AvailableTimeNotFound;
 import com.beour.reservation.commons.repository.ReservationRepository;
 import com.beour.reservation.guest.dto.CheckAvailableTimesRequestDto;
@@ -11,6 +12,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,22 +23,28 @@ public class CheckAvailableTimeService {
     private final AvailableTimeRepository availableTimeRepository;
     private final ReservationRepository reservationRepository;
 
-    public SpaceAvailableTimeResponseDto findAvailableTime(CheckAvailableTimesRequestDto requestDto) {
+    public SpaceAvailableTimeResponseDto findAvailableTime(
+        CheckAvailableTimesRequestDto requestDto) {
         AvailableTime availableTime = checkReservationAvailableDateAndGetAvailableTime(requestDto);
 
-        List<Reservation> reservationList = reservationRepository.findBySpaceIdAndDateAndDeletedAtIsNull(
-            requestDto.getSpaceId(), requestDto.getDate());
+//        List<Reservation> reservationList = reservationRepository.findBySpaceIdAndDateAndDeletedAtIsNull(
+//            requestDto.getSpaceId(), requestDto.getDate());
 
-        List<LocalTime> findTimeList = getAvailableTimeList(availableTime, reservationList);
-        if(findTimeList.isEmpty()){
+        List<Reservation> reservationList = reservationRepository.findBySpaceIdAndDateAndStatusNot(
+            requestDto.getSpaceId(), requestDto.getDate(), ReservationStatus.REJECTED);
+
+        List<LocalTime> findTimeList = getAvailableTimeList(availableTime, reservationList,
+            requestDto.getDate());
+        if (findTimeList.isEmpty()) {
             throw new AvailableTimeNotFound("예약 가능한 시간이 없습니다.");
         }
 
         return SpaceAvailableTimeResponseDto.of(findTimeList);
     }
 
-    public AvailableTime checkReservationAvailableDateAndGetAvailableTime(CheckAvailableTimesRequestDto requestDto) {
-        if(requestDto.getDate().isBefore(LocalDate.now())){
+    public AvailableTime checkReservationAvailableDateAndGetAvailableTime(
+        CheckAvailableTimesRequestDto requestDto) {
+        if (requestDto.getDate().isBefore(LocalDate.now())) {
             throw new AvailableTimeNotFound("예약 가능한 시간이 없습니다.");
         }
 
@@ -47,8 +55,13 @@ public class CheckAvailableTimeService {
     }
 
     private static List<LocalTime> getAvailableTimeList(AvailableTime availableTime,
-        List<Reservation> reservationList) {
+        List<Reservation> reservationList, LocalDate date) {
         LocalTime startTime = availableTime.getStartTime();
+
+        if (Objects.equals(date, LocalDate.now())) {
+            startTime = LocalTime.of(LocalTime.now().getHour() + 1, 0);
+        }
+
         LocalTime endTime = availableTime.getEndTime();
 
         if (reservationList.isEmpty()) {
