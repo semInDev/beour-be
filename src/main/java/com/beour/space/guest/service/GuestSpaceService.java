@@ -71,25 +71,6 @@ public class GuestSpaceService {
             .collect(Collectors.toList());
     }
 
-    private User findUserFromToken() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if(authentication == null || !authentication.isAuthenticated()){
-            throw new InvalidCredentialsException("인증된 유저가 없습니다.");
-        }
-
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-
-        User user = userRepository.findByLoginId(userDetails.getUsername()).orElseThrow(
-            () -> new UserNotFoundException("해당 유저를 찾을 수 없습니다.")
-        );
-
-        if(user.isDeleted()){
-            throw new UserNotFoundException("해당 유저를 찾을 수 없습니다.");
-        }
-
-        return user;
-    }
-
 /*    // 거리 계산 함수 (Haversine)
     private double calculateDistance(
             double userLatitude, double userLongitude,
