@@ -101,6 +101,29 @@ class SignupServiceTest {
             );
     }
 
+    @DisplayName("관리자 아이디로 회원가입할 시 에러가 난다.")
+    @Test
+    public void createUserHasAdminLoginId(){
+        //given
+        SignupRequestDto dto = new SignupRequestDto();
+        dto.setName("이름");
+        dto.setNickname("닉네임");
+        dto.setRole("GUEST");
+        dto.setEmail("given@gmail.com");
+        dto.setLoginId("admin");
+        dto.setPassword("1234");
+        dto.setPhone("01011112222");
+
+        //when then
+        List<User> users = userRepository.findAll();
+        assertThrows(DuplicateUserInfoException.class, () -> signupService.create(dto));
+        assertThat(users).hasSize(1)
+            .extracting("name", "loginId")
+            .containsExactlyInAnyOrder(
+                tuple("testName", "test")
+            );
+    }
+
     @DisplayName("중복된 닉네임으로 회원가입할 시 에러가 난다.")
     @Test
     public void createUserHasDuplicateNickname(){
