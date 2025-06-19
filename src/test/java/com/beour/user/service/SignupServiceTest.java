@@ -14,6 +14,10 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+/**
+ * checkNicknameDuplicate
+ * create
+ */
 @ActiveProfiles("test")
 @SpringBootTest
 class SignupServiceTest {
@@ -51,6 +55,23 @@ class SignupServiceTest {
     public void loginIdNotDuplicate(){
         //when
         Boolean isDuplicate = signupService.checkLoginIdDuplicate("loginId");
+
+        //then
+        assertThat(isDuplicate).isFalse();
+    }
+
+    @DisplayName("닉네임이 중복됨")
+    @Test
+    public void nickNameDuplicate(){
+        //when then
+        assertThrows(DuplicateUserInfoException.class,() -> signupService.checkNicknameDuplicate("testNick"));
+    }
+
+    @DisplayName("닉네임이 중복되지 않음")
+    @Test
+    public void nickNameNotDuplicate(){
+        //when
+        Boolean isDuplicate = signupService.checkNicknameDuplicate("nick");
 
         //then
         assertThat(isDuplicate).isFalse();
