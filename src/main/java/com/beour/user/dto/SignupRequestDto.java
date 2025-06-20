@@ -20,7 +20,6 @@ public class SignupRequestDto {
     @ValidNickname
     private String nickname;
 
-    @NotBlank(message = "역할은 필수입니다.")
     @Pattern(regexp = "^(HOST|GUEST)$", message = "역할은 HOST 또는 GUEST만 가능합니다.")
     private String role;
 

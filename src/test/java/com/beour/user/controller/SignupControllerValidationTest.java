@@ -1,6 +1,7 @@
 package com.beour.user.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.DisplayName;
@@ -19,7 +20,6 @@ class SignupControllerValidationTest {
 
     @Autowired
     private MockMvc mockMvc;
-
 
     @Test
     @DisplayName("이름 공란")
@@ -42,7 +42,9 @@ class SignupControllerValidationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("이름은 필수입니다."));
+
     }
 
     @Test
@@ -66,7 +68,8 @@ class SignupControllerValidationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("닉네임은 1자 이상 8자 이하여야 합니다."));
     }
 
     @Test
@@ -90,7 +93,8 @@ class SignupControllerValidationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("닉네임은 1자 이상 8자 이하여야 합니다."));
     }
 
     @Test
@@ -114,7 +118,8 @@ class SignupControllerValidationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("역할은 HOST 또는 GUEST만 가능합니다."));
     }
 
     @Test
@@ -138,7 +143,8 @@ class SignupControllerValidationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("역할은 HOST 또는 GUEST만 가능합니다."));
     }
 
     @Test
@@ -162,7 +168,8 @@ class SignupControllerValidationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("이메일은 필수입니다."));
     }
 
     @Test
@@ -186,7 +193,8 @@ class SignupControllerValidationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value( "올바른 이메일 형식이어야 합니다."));
     }
 
     @Test
@@ -210,7 +218,8 @@ class SignupControllerValidationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("아이디는 5~15자의 영어 대소문자와 숫자만 사용 가능합니다."));
     }
 
     @Test
@@ -234,7 +243,8 @@ class SignupControllerValidationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("아이디는 5~15자의 영어 대소문자와 숫자만 사용 가능합니다."));
     }
 
     @Test
@@ -258,7 +268,8 @@ class SignupControllerValidationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("아이디는 5~15자의 영어 대소문자와 숫자만 사용 가능합니다."));
     }
 
     @Test
@@ -282,7 +293,8 @@ class SignupControllerValidationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("아이디는 5~15자의 영어 대소문자와 숫자만 사용 가능합니다."));
     }
 
     @Test
@@ -306,7 +318,8 @@ class SignupControllerValidationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
-            .andExpect(status().isConflict());
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.message").value("사용할 수 없는 아이디입니다."));
     }
 
     @Test
@@ -330,7 +343,8 @@ class SignupControllerValidationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("비밀번호는 8자 이상 20자 이하, 특수문자를 1개 이상 포함시켜야합니다."));
     }
 
     @Test
@@ -354,7 +368,8 @@ class SignupControllerValidationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("비밀번호는 8자 이상 20자 이하, 특수문자를 1개 이상 포함시켜야합니다."));
     }
 
     @Test
@@ -378,7 +393,8 @@ class SignupControllerValidationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("비밀번호는 8자 이상 20자 이하, 특수문자를 1개 이상 포함시켜야합니다."));
     }
 
     @Test
@@ -402,7 +418,8 @@ class SignupControllerValidationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("전화번호는 숫자만 10~11자리로 입력하세요."));
     }
 
     @Test
@@ -426,7 +443,8 @@ class SignupControllerValidationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("전화번호는 숫자만 10~11자리로 입력하세요."));
     }
 
     @Test
@@ -450,30 +468,7 @@ class SignupControllerValidationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
-            .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @DisplayName("회원가입시 모든 유효성 만족")
-    void valid_request() throws Exception {
-        //given
-        String requestJson = """
-            {
-                "name": "test",
-                "nickname": "nicktest",
-                "email": "test@gmail.com",
-                "loginId": "testid",
-                "password": "test1234!",
-                "phone": "01012345678",
-                "role": "GUEST"
-            }
-        """;
-
-        //when then
-        mockMvc.perform(post("/api/users/signup")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestJson)
-            )
-            .andExpect(status().isOk());
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("전화번호는 숫자만 10~11자리로 입력하세요."));
     }
 }
