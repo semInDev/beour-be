@@ -1,18 +1,17 @@
 package com.beour.user.repository;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 import com.beour.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
-//@SpringBootTest
-@DataJpaTest
+@SpringBootTest
+@ActiveProfiles("test")
 class UserRepositoryTest {
 
     @Autowired
@@ -20,6 +19,7 @@ class UserRepositoryTest {
 
     @BeforeEach
     void setUp(){
+        userRepository.deleteAll();
         User user = User.builder()
             .name("testName")
             .nickname("testNick")
