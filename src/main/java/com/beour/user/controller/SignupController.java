@@ -32,7 +32,7 @@ public class SignupController {
     @GetMapping("/signup/check/loginId")
     public ApiResponse<String> checkDuplicateLoginId(@ValidLoginId @RequestParam("loginId") String loginId) {
         signupService.checkLoginIdDuplicate(loginId);
-        return ApiResponse.ok("사용 가능한 아이디 입니다.");
+        return ApiResponse.ok("사용 가능한 아이디입니다.");
     }
 
     @GetMapping("/signup/check/nickname")
