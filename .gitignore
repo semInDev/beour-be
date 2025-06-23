@@ -37,4 +37,4 @@ application.yml
 ### VS Code ###
 .vscode/
 
-/src/test/resources/application-test.yml
+*.yml
