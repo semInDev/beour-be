@@ -4,7 +4,6 @@ import com.beour.global.exception.exceptionType.TokenExpiredException;
 import com.beour.global.exception.exceptionType.TokenNotFoundException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.global.jwt.JWTUtil;
-import com.beour.global.response.ApiResponse;
 import com.beour.token.entity.RefreshToken;
 import com.beour.token.repository.RefreshTokenRepository;
 import com.beour.user.dto.FindLoginIdRequestDto;
@@ -17,7 +16,6 @@ import com.beour.user.repository.UserRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.security.SecureRandom;
 import java.util.Date;
 import java.util.Random;
@@ -35,53 +33,43 @@ public class LoginService {
     private final JWTUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
 
-    public ApiResponse<FindLoginIdResponseDto> findLoginId(FindLoginIdRequestDto dto) {
-        User user = userRepository.findByNameAndPhoneAndEmail(dto.getName(), dto.getPhone(),
+    public FindLoginIdResponseDto findLoginId(FindLoginIdRequestDto dto) {
+        User user = userRepository.findByNameAndPhoneAndEmailAndDeletedAtIsNull(dto.getName(), dto.getPhone(),
             dto.getEmail()).orElseThrow(
             () -> new UserNotFoundException("일치하는 회원을 찾을 수 없습니다.")
         );
-        checkDeletedUser(user);
 
-        return ApiResponse.ok(new FindLoginIdResponseDto(user.getLoginId()));
+        return new FindLoginIdResponseDto(user.getLoginId());
     }
 
     @Transactional
-    public ApiResponse<ResetPasswordResponseDto> resetPassword(ResetPasswordRequestDto dto) {
+    public ResetPasswordResponseDto resetPassword(ResetPasswordRequestDto dto) {
         if (isExistUser(dto)) {
             String tempPassword = generateTempPassword();
             String encode = bCryptPasswordEncoder.encode(tempPassword);
             userRepository.updatePasswordByLoginId(dto.getLoginId(), encode);
 
-            return ApiResponse.ok(new ResetPasswordResponseDto(tempPassword));
+            return new ResetPasswordResponseDto(tempPassword);
         }
 
         throw new UserNotFoundException("일치하는 회원을 찾을 수 없습니다.");
     }
 
     private Boolean isExistUser(ResetPasswordRequestDto dto) {
-        User userByLoginID = userRepository.findByLoginId(dto.getLoginId()).orElseThrow(
+        User userByLoginID = userRepository.findByLoginIdAndDeletedAtIsNull(dto.getLoginId()).orElseThrow(
             () -> new UserNotFoundException("일치하는 회원을 찾을 수 없습니다.")
         );
 
-        User userByNamePhoneEmail = userRepository.findByNameAndPhoneAndEmail(dto.getName(),
+        User userByNamePhoneEmail = userRepository.findByNameAndPhoneAndEmailAndDeletedAtIsNull(dto.getName(),
             dto.getPhone(), dto.getEmail()).orElseThrow(
             () -> new UserNotFoundException("일치하는 회원을 찾을 수 없습니다.")
         );
-
-        checkDeletedUser(userByLoginID);
-        checkDeletedUser(userByNamePhoneEmail);
 
         if (userByLoginID.getId() == userByNamePhoneEmail.getId()) {
             return true;
         }
 
         throw new UserNotFoundException("일치하는 회원을 찾을 수 없습니다.");
-    }
-
-    private static void checkDeletedUser(User user) {
-        if (user.isDeleted()) {
-            throw new UserNotFoundException("탈퇴한 회원입니다.");
-        }
     }
 
     private String generateTempPassword() {
@@ -97,7 +85,25 @@ public class LoginService {
         return sb.toString();
     }
 
-    public String[] reissueRefreshToken(HttpServletRequest request, HttpServletResponse response) {
+    public String[] reissueRefreshToken(HttpServletRequest request) {
+        String refresh = extractRefreshFromCookie(request);
+
+        checkRefreshTokenIsValid(refresh);
+
+        String loginId = jwtUtil.getLoginId(refresh);
+        String role = jwtUtil.getRole(refresh);
+
+        String newAccessToken = "Bearer " + jwtUtil.createJwt("access", loginId, role,
+            TokenExpireTime.ACCESS_TOKEN_EXPIRATION_MILLIS.getValue());
+        String newRefreshToken = jwtUtil.createJwt("refresh", loginId, role,
+            TokenExpireTime.REFRESH_TOKEN_EXPIRATION_MILLIS.getValue());
+
+        refreshTokenRotation(refresh, loginId, newRefreshToken);
+
+        return new String[] {newAccessToken, newRefreshToken};
+    }
+
+    private static String extractRefreshFromCookie(HttpServletRequest request) {
         String refresh = null;
         Cookie[] cookies = request.getCookies();
         for (Cookie cookie : cookies) {
@@ -105,7 +111,10 @@ public class LoginService {
                 refresh = cookie.getValue();
             }
         }
+        return refresh;
+    }
 
+    private void checkRefreshTokenIsValid(String refresh) {
         if (refresh == null) {
             throw new TokenNotFoundException("refresh 토큰을 찾을 수 없습니다.");
         }
@@ -125,22 +134,11 @@ public class LoginService {
         if (!isExistRefresh) {
             throw new TokenNotFoundException("refresh 토큰을 찾을 수 없습니다.");
         }
+    }
 
-        String loginId = jwtUtil.getLoginId(refresh);
-        String role = jwtUtil.getRole(refresh);
-
-        String newAccessToken = "Bearer " + jwtUtil.createJwt("access", loginId, role,
-            TokenExpireTime.ACCESS_TOKEN_EXPIRATION_MILLIS.getValue());
-        String newRefreshToken = jwtUtil.createJwt("refresh", loginId, role,
-            TokenExpireTime.REFRESH_TOKEN_EXPIRATION_MILLIS.getValue());
-
+    private void refreshTokenRotation(String refresh, String loginId, String newRefreshToken) {
         refreshTokenRepository.deleteByRefresh(refresh);
         addRefreshToken(loginId, newRefreshToken);
-
-        String[] tokens = new String[2];
-        tokens[0] = newAccessToken;
-        tokens[1] = newRefreshToken;
-        return tokens;
     }
 
     private void addRefreshToken(String loginId, String newRefreshToken) {

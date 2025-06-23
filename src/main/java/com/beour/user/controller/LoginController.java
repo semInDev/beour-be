@@ -27,19 +27,20 @@ public class LoginController {
     @PostMapping("/find-login-id")
     public ApiResponse<FindLoginIdResponseDto> findLoginId(
         @Valid @RequestBody FindLoginIdRequestDto dto) {
-        return loginService.findLoginId(dto);
+        return ApiResponse.ok(loginService.findLoginId(dto));
     }
 
     @PostMapping("/reset-pw")
     public ApiResponse<ResetPasswordResponseDto> resetPassword(
         @Valid @RequestBody ResetPasswordRequestDto dto) {
-        return loginService.resetPassword(dto);
+
+        return ApiResponse.ok(loginService.resetPassword(dto));
     }
 
     @PostMapping("/reissue")
     public ApiResponse<ReissueAccesstokenResponseDto> reissue(HttpServletRequest request,
         HttpServletResponse response) {
-        String[] tokens = loginService.reissueRefreshToken(request, response);
+        String[] tokens = loginService.reissueRefreshToken(request);
         String newAccessToken = tokens[0];
         String newRefreshToken = tokens[1];
         response.setHeader("Authorization", newAccessToken);
