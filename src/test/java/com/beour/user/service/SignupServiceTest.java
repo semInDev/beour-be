@@ -82,14 +82,16 @@ class SignupServiceTest {
     @Test
     public void createUserHasDuplicateLoginId(){
         //given
-        SignupRequestDto dto = new SignupRequestDto();
-        dto.setName("이름");
-        dto.setNickname("닉네임");
-        dto.setRole("GUEST");
-        dto.setEmail("given@gmail.com");
-        dto.setLoginId("test");
-        dto.setPassword("1234");
-        dto.setPhone("01011112222");
+        SignupRequestDto dto = SignupRequestDto.builder()
+            .name("이름")
+            .nickname("닉네임")
+            .role("GUEST")
+            .email("given@gmail.com")
+            .loginId("test")
+            .password("1234")
+            .phone("01011112222")
+            .build();
+
 
         //when then
         List<User> users = userRepository.findAll();
@@ -105,14 +107,16 @@ class SignupServiceTest {
     @Test
     public void createUserHasAdminLoginId(){
         //given
-        SignupRequestDto dto = new SignupRequestDto();
-        dto.setName("이름");
-        dto.setNickname("닉네임");
-        dto.setRole("GUEST");
-        dto.setEmail("given@gmail.com");
-        dto.setLoginId("admin");
-        dto.setPassword("1234");
-        dto.setPhone("01011112222");
+        SignupRequestDto dto = SignupRequestDto.builder()
+            .name("이름")
+            .nickname("닉네임")
+            .role("GUEST")
+            .email("given@gmail.com")
+            .loginId("admin")
+            .password("1234")
+            .phone("01011112222")
+            .build();
+
 
         //when then
         List<User> users = userRepository.findAll();
@@ -128,14 +132,15 @@ class SignupServiceTest {
     @Test
     public void createUserHasDuplicateNickname(){
         //given
-        SignupRequestDto dto = new SignupRequestDto();
-        dto.setName("이름");
-        dto.setNickname("testNick");
-        dto.setRole("GUEST");
-        dto.setEmail("given@gmail.com");
-        dto.setLoginId("loginId");
-        dto.setPassword("1234");
-        dto.setPhone("01011112222");
+        SignupRequestDto dto = SignupRequestDto.builder()
+            .name("이름")
+            .nickname("testNick")
+            .role("GUEST")
+            .email("given@gmail.com")
+            .loginId("loginId")
+            .password("1234")
+            .phone("01011112222")
+            .build();
 
         //when then
         List<User> users = userRepository.findAll();
@@ -152,14 +157,15 @@ class SignupServiceTest {
     public void createUser_success(){
         //given
         String password = "successPw";
-        SignupRequestDto dto = new SignupRequestDto();
-        dto.setName("성공");
-        dto.setNickname("success");
-        dto.setRole("GUEST");
-        dto.setEmail("succ@gmail.com");
-        dto.setLoginId("successId");
-        dto.setPassword(password);
-        dto.setPhone("01011112222");
+        SignupRequestDto dto = SignupRequestDto.builder()
+            .name("성공")
+            .nickname("success")
+            .role("GUEST")
+            .email("succ@gmail.com")
+            .loginId("successId")
+            .password(password)
+            .phone("01011112222")
+            .build();
 
         //when
         User user = signupService.create(dto);
