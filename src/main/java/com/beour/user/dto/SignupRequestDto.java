@@ -8,10 +8,8 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 public class SignupRequestDto {
 
     @NotBlank(message = "이름은 필수입니다.")
@@ -36,4 +34,8 @@ public class SignupRequestDto {
 
     @ValidPhoneNum
     private String phone;
+
+    public void encodingPassword(String encodedPassword){
+        this.password = encodedPassword;
+    }
 }
