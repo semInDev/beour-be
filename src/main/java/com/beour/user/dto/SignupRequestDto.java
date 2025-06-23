@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter
+@Setter
 public class SignupRequestDto {
 
     @NotBlank(message = "이름은 필수입니다.")
