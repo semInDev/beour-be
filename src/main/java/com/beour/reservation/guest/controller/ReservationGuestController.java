@@ -36,13 +36,13 @@ public class ReservationGuestController {
     }
 
     @GetMapping("/api/reservation")
-    public ApiResponse<List<ReservationListResponseDto>> checkReservationList(@RequestParam(value = "guestId") Long guestId){
-        return ApiResponse.ok(reservationGuestService.findReservationList(guestId));
+    public ApiResponse<List<ReservationListResponseDto>> checkReservationList(){
+        return ApiResponse.ok(reservationGuestService.findReservationList());
     }
 
     @GetMapping("/api/reservation/past")
-    public ApiResponse<List<ReservationListResponseDto>> checkPastReservationList(@RequestParam(value = "guestId") Long guestId){
-        return ApiResponse.ok(reservationGuestService.findPastReservationList(guestId));
+    public ApiResponse<List<ReservationListResponseDto>> checkPastReservationList(){
+        return ApiResponse.ok(reservationGuestService.findPastReservationList());
     }
 
     @DeleteMapping("/api/reservation/cancel")

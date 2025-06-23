@@ -13,9 +13,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ReservationCreateRequest {
 
-    @NotNull(message = "예약자의 id 값 필수")
-    private Long guestId;
-
     @NotNull(message = "호스트의 id 값 필수")
     private Long hostId;
 

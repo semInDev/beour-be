@@ -4,6 +4,7 @@ import com.beour.global.exception.exceptionType.InvalidFormatException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.user.dto.ChangePasswordRequestDto;
 import com.beour.user.dto.UpdateUserInfoRequestDto;
+import com.beour.user.dto.UpdateUserInfoResponseDto;
 import com.beour.user.dto.UserInformationDetailResponseDto;
 import com.beour.user.dto.UserInformationSimpleResponseDto;
 import com.beour.user.entity.User;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class MyInformationService {
 
     private final UserRepository userRepository;
+    private final SignupService signupService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Transactional
@@ -32,7 +34,7 @@ public class MyInformationService {
     public UserInformationSimpleResponseDto getUserInformationSimple(){
         User user = findUserFromToken();
 
-        UserInformationSimpleResponseDto dto = new UserInformationSimpleResponseDto();
+        UserInformationSimpleResponseDto dto = new UserInformationSimpleResponseDto(); // 나중에 빌더로 수정해도 좋을 것 같아요. 그리고 UserInformationSimpleResponseDto에 Setter 뺴고
         dto.setUserName(user.getName());
         dto.setUserEmail(user.getEmail());
 
@@ -42,7 +44,7 @@ public class MyInformationService {
     public UserInformationDetailResponseDto getUserInformationDetail(){
         User user = findUserFromToken();
 
-        UserInformationDetailResponseDto dto = new UserInformationDetailResponseDto();
+        UserInformationDetailResponseDto dto = new UserInformationDetailResponseDto(); // 나중에 빌더로 수정해도 좋을 것 같아요. 그리고 UserInformationDetailResponseDto에 Setter 뺴고
         dto.setName(user.getName());
         dto.setEmail(user.getEmail());
         dto.setNickName(user.getNickname());
@@ -52,20 +54,28 @@ public class MyInformationService {
     }
 
     @Transactional
-    public void updateUserInfo(UpdateUserInfoRequestDto requestDto){
+    public UpdateUserInfoResponseDto updateUserInfo(UpdateUserInfoRequestDto requestDto){
         User user = findUserFromToken();
 
         if(!requestDto.getNewNickname().isEmpty()){
+            signupService.checkNicknameDuplicate(requestDto.getNewNickname());
             user.updateNickname(requestDto.getNewNickname());
         }
 
         if(!requestDto.getNewPhone().isEmpty()){
+
             user.updatePhone(requestDto.getNewPhone());
         }
 
         if(requestDto.getNewNickname().isEmpty() && requestDto.getNewPhone().isEmpty()){
             throw new InvalidFormatException("수정할 정보를 입력해주세요.");
         }
+
+        User updatedUser = findUserFromToken();
+        return UpdateUserInfoResponseDto.builder()
+            .newNickname(updatedUser.getNickname())
+            .newPhone(updatedUser.getPhone())
+            .build();
     }
 
     @Transactional

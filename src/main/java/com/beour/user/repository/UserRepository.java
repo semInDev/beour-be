@@ -10,7 +10,6 @@ import org.springframework.data.repository.query.Param;
 public interface UserRepository extends JpaRepository<User, Long> {
 
     Boolean existsByLoginIdAndDeletedAtIsNull(String loginId);
-
     Boolean existsByNicknameAndDeletedAtIsNull(String loginId);
 
     Optional<User> findByLoginId(String loginId);

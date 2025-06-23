@@ -58,7 +58,6 @@ public class GuestSpaceService {
     }
 
     public List<RecentCreatedSpcaceListResponseDto> getRecentCreatedSpace(){
-        User user = findUserFromToken();
         List<Space> spaces = spaceRepository.findTop5ByDeletedAtIsNullOrderByCreatedAtDesc();
 
         if(spaces.isEmpty()){
@@ -67,8 +66,7 @@ public class GuestSpaceService {
 
         return spaces.stream()
             .map(space -> {
-                boolean isLiked = likeRepository.existsByUserIdAndSpaceIdAndDeletedAtIsNull(user.getId(), space.getId());
-                return new RecentCreatedSpcaceListResponseDto().dtoFrom(space, isLiked);
+                return new RecentCreatedSpcaceListResponseDto().dtoFrom(space);
             })
             .collect(Collectors.toList());
     }

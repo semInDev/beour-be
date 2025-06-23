@@ -3,15 +3,15 @@ package com.beour.user.dto;
 import com.beour.global.validator.annotation.ValidLoginId;
 import com.beour.global.validator.annotation.ValidNickname;
 import com.beour.global.validator.annotation.ValidPhoneNum;
+import com.beour.global.validator.annotation.ValidPassword;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
-@Setter
 @Getter
+@Setter
 public class SignupRequestDto {
 
     @NotBlank(message = "이름은 필수입니다.")
@@ -31,8 +31,7 @@ public class SignupRequestDto {
     @ValidLoginId
     private String loginId;
 
-    @NotBlank(message = "비밀번호는 필수입니다.")
-    @Size(min = 4, max = 20, message = "비밀번호는 4자 이상 20자 이하여야 합니다.")
+    @ValidPassword
     private String password;
 
     @ValidPhoneNum

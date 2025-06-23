@@ -48,7 +48,8 @@ public class SecurityConfig {
 
         AuthenticationManager authenticationManager = authenticationManager();
 
-        LoginFilter loginFilter = new LoginFilter(authenticationManager, userRepository, jwtUtil, refreshTokenRepository);
+        LoginFilter loginFilter = new LoginFilter(authenticationManager, userRepository, jwtUtil,
+            refreshTokenRepository);
         loginFilter.setFilterProcessesUrl("/api/users/login");
 
         http.cors((cors) -> cors
@@ -76,14 +77,15 @@ public class SecurityConfig {
         http
             .authorizeHttpRequests((auth) -> auth
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                    .requestMatchers("/api/users/**", "/logout").permitAll()
+                    .requestMatchers("/api/users/**").permitAll()
+                    .requestMatchers("/api/spaces/reserve/available-times", "/api/spaces/search/**",
+                        "/api/spaces/new", "/api/banners").permitAll()
                     .requestMatchers("/admin").hasRole("ADMIN")
-                    .requestMatchers("/api/mypage/**").hasAnyRole("HOST", "GUEST")
                     .requestMatchers("/api/spaces").hasRole("HOST")
-                    .requestMatchers("/api/spaces/reserve", "/api/spaces/reserve/available-times",
-                        "/api/reservation/**", "/api/spaces/search/**", "/api/spaces/new",
-                        "/api/banners")
+                    .requestMatchers("/api/spaces/reserve", "/api/reservation/**")
                     .hasRole("GUEST")
+                    .requestMatchers("/api/mypage/**").hasAnyRole("HOST", "GUEST")
+                    .requestMatchers("/logout").hasAnyRole("HOST", "GUEST", "ADMIN")
                     .anyRequest().authenticated()
 //                .anyRequest().permitAll();
             );
@@ -91,7 +93,8 @@ public class SecurityConfig {
         http
             .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class)
             .addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshTokenRepository), LogoutFilter.class);
+            .addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshTokenRepository),
+                LogoutFilter.class);
 
         http
             .formLogin((auth) -> auth.disable())
