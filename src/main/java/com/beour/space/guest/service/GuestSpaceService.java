@@ -1,21 +1,14 @@
 package com.beour.space.guest.service;
 
-import com.beour.global.exception.exceptionType.InvalidCredentialsException;
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
-import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.space.domain.entity.Space;
 import com.beour.space.domain.entity.Tag;
 import com.beour.space.domain.repository.SpaceRepository;
 import com.beour.space.guest.dto.NearbySpaceResponse;
 import com.beour.space.guest.dto.RecentCreatedSpcaceListResponseDto;
-import com.beour.user.dto.CustomUserDetails;
-import com.beour.user.entity.User;
-import com.beour.user.repository.UserRepository;
 import com.beour.wishlist.repository.LikeRepository;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +18,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GuestSpaceService {
     private final SpaceRepository spaceRepository;
-    private final UserRepository userRepository;
     private final LikeRepository likeRepository;
 
     @Transactional(readOnly = true)
