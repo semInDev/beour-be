@@ -24,13 +24,13 @@ public class SignupService {
     }
 
     private void checkValidUser(SignupRequestDto dto) {
-        checkDuplicateWithAdminId(dto);
+        checkDuplicateWithAdminId(dto.getLoginId());
         checkLoginIdDuplicate(dto.getLoginId());
         checkNicknameDuplicate(dto.getNickname());
     }
 
-    private static void checkDuplicateWithAdminId(SignupRequestDto dto) {
-        if (dto.getLoginId().equals("admin")) {
+    private static void checkDuplicateWithAdminId(String loginId) {
+        if (loginId.equals("admin")) {
             throw new DuplicateUserInfoException("사용할 수 없는 아이디입니다.");
         }
     }
