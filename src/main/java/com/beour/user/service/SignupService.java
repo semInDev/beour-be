@@ -17,7 +17,7 @@ public class SignupService {
 
     public User create(SignupRequestDto dto) {
         checkValidUser(dto);
-        dto.setPassword(bCryptPasswordEncoder.encode(dto.getPassword()));
+        dto.encodingPassword(bCryptPasswordEncoder.encode(dto.getPassword()));
         User user = User.createFrom(dto);
 
         return userRepository.save(user);
