@@ -3,6 +3,7 @@ package com.beour.user.dto;
 import com.beour.global.validator.annotation.ValidPhoneNum;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
@@ -17,5 +18,12 @@ public class FindLoginIdRequestDto {
 
     @ValidPhoneNum
     private String phone;
+
+    @Builder
+    public FindLoginIdRequestDto(String name, String email, String phone) {
+        this.name = name;
+        this.email = email;
+        this.phone = phone;
+    }
 
 }
