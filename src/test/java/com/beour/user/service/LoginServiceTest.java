@@ -3,7 +3,6 @@ package com.beour.user.service;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.beour.global.exception.exceptionType.UserNotFoundException;
-import com.beour.global.response.ApiResponse;
 import com.beour.user.dto.FindLoginIdRequestDto;
 import com.beour.user.dto.FindLoginIdResponseDto;
 import com.beour.user.entity.User;
@@ -25,7 +24,7 @@ class LoginServiceTest {
     private LoginService loginService;
 
     @BeforeEach
-    void setUp(){
+    void setUp() {
         userRepository.deleteAll();
         User user = User.builder()
             .name("유저1")
@@ -51,16 +50,55 @@ class LoginServiceTest {
         userRepository.save(deleteUser);
     }
 
-//    @Test
-//    @DisplayName("로그인아이디찾기-일치하는 회원 없음")
-//    void findLoginId_user_not_found(){
-//        //given
-//        FindLoginIdRequestDto requestDto = new FindLoginIdRequestDto();
-//
-//        //when    then
-//        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> loginService.findLoginId(requestDto));
-//        assertEquals("일치하는 회원을 찾을 수 없습니다.", exception.getMessage());
-//    }
+    @Test
+    @DisplayName("로그인아이디찾기-일치하는 회원 없음")
+    void findLoginId_user_not_found() {
+        //given
+        FindLoginIdRequestDto requestDto = FindLoginIdRequestDto.builder()
+            .name("유저2")
+            .email("user2@gamil.com")
+            .phone("01012345678")
+            .build();
+
+        //when    then
+        UserNotFoundException exception = assertThrows(UserNotFoundException.class,
+            () -> loginService.findLoginId(requestDto));
+        assertEquals("일치하는 회원을 찾을 수 없습니다.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("로그인아이디찾기-탈퇴한 회원")
+    void findLoginId_deleted_user() {
+        //given
+        FindLoginIdRequestDto requestDto = FindLoginIdRequestDto.builder()
+            .name("탈퇴유저")
+            .email("delete1@gamil.com")
+            .phone("01012345678")
+            .build();
+
+        //when    then
+        UserNotFoundException exception = assertThrows(UserNotFoundException.class,
+            () -> loginService.findLoginId(requestDto));
+        assertEquals("일치하는 회원을 찾을 수 없습니다.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("로그인아이디찾기-성공")
+    void success_findLoginId(){
+        //given
+        FindLoginIdRequestDto requestDto = FindLoginIdRequestDto.builder()
+            .name("유저1")
+            .email("user1@gmail.com")
+            .phone("01012345678")
+            .build();
+
+        //when
+        FindLoginIdResponseDto result = loginService.findLoginId(requestDto);
+
+        // then
+        assertEquals("user1", result.getLoginId());
+    }
+
 
 
 
