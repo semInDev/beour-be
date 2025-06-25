@@ -16,6 +16,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByLoginIdAndDeletedAtIsNull(String loginId);
 
     Optional<User> findByNameAndPhoneAndEmailAndDeletedAtIsNull(String name, String phone, String email);
+    Optional<User> findByLoginIdAndNameAndPhoneAndEmailAndDeletedAtIsNull(String loginId, String name, String phone, String email);
 
     @Modifying
     @Query("UPDATE User u SET u.password = :password, u.updatedAt = CURRENT_TIMESTAMP WHERE u.loginId = :loginId")

@@ -44,32 +44,16 @@ public class LoginService {
 
     @Transactional
     public ResetPasswordResponseDto resetPassword(ResetPasswordRequestDto dto) {
-        if (isExistUser(dto)) {
-            String tempPassword = generateTempPassword();
-            String encode = bCryptPasswordEncoder.encode(tempPassword);
-            userRepository.updatePasswordByLoginId(dto.getLoginId(), encode);
-
-            return new ResetPasswordResponseDto(tempPassword);
-        }
-
-        throw new UserNotFoundException("일치하는 회원을 찾을 수 없습니다.");
-    }
-
-    private Boolean isExistUser(ResetPasswordRequestDto dto) {
-        User userByLoginID = userRepository.findByLoginIdAndDeletedAtIsNull(dto.getLoginId()).orElseThrow(
-            () -> new UserNotFoundException("일치하는 회원을 찾을 수 없습니다.")
-        );
-
-        User userByNamePhoneEmail = userRepository.findByNameAndPhoneAndEmailAndDeletedAtIsNull(dto.getName(),
+        User user = userRepository.findByLoginIdAndNameAndPhoneAndEmailAndDeletedAtIsNull(dto.getLoginId(), dto.getName(),
             dto.getPhone(), dto.getEmail()).orElseThrow(
             () -> new UserNotFoundException("일치하는 회원을 찾을 수 없습니다.")
         );
 
-        if (userByLoginID.getId() == userByNamePhoneEmail.getId()) {
-            return true;
-        }
+        String tempPassword = generateTempPassword();
+        String encode = bCryptPasswordEncoder.encode(tempPassword);
+        user.updatePassword(encode);
 
-        throw new UserNotFoundException("일치하는 회원을 찾을 수 없습니다.");
+        return new ResetPasswordResponseDto(tempPassword);
     }
 
     private String generateTempPassword() {
