@@ -1,6 +1,5 @@
 package com.beour.user.controller;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -54,12 +53,6 @@ class LoginControllerTest {
         userRepository.save(deleteUser);
     }
 
-    /**
-     * 비번 재발급 - 회원 없을 경우
-     * 비번 재발급 - 탈퇴한 회원일 경우
-     * 비번 재발급 - 성공
-     */
-
     @Test
     @DisplayName("아이디 찾기 - 회원 없을 경우")
     void findLogId_user_not_found() throws Exception {
@@ -106,7 +99,7 @@ class LoginControllerTest {
 
     @Test
     @DisplayName("아이디 찾기 - 성공")
-    void user_findLogId() throws Exception {
+    void success_findLogId() throws Exception {
         //given
         String requestJson = """
             {
@@ -124,6 +117,73 @@ class LoginControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.loginId").value("user1"));
 
+    }
+
+    @Test
+    @DisplayName("비밀번호 재발급 - 회원 없을 경우")
+    void resetPassword_user_not_found() throws Exception {
+        //given
+        String requestJson = """
+            {
+                "loginId": "user1",
+                "name": "user1",
+                "email": "test@gmail.com",
+                "phone": "01012345678"
+            }
+        """;
+
+        //when then
+        mockMvc.perform(post("/api/users/reset-pw")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson)
+            )
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.message").value("일치하는 회원을 찾을 수 없습니다."));
+
+    }
+
+    @Test
+    @DisplayName("비밀번호 재발급 - 탈퇴한 회원일 경우")
+    void resetPassword_user_deleted() throws Exception {
+        //given
+        String requestJson = """
+            {
+                "loginId": "delete1",
+                "name": "탈퇴유저",
+                "email": "delete1@gmail.com",
+                "phone": "01012345678"
+            }
+        """;
+
+        //when then
+        mockMvc.perform(post("/api/users/reset-pw")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson)
+            )
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.message").value("일치하는 회원을 찾을 수 없습니다."));
+
+    }
+
+    @Test
+    @DisplayName("비밀번호 재발급 - 성공")
+    void success_resetPassword() throws Exception {
+        //given
+        String requestJson = """
+            {
+                "loginId": "user1",
+                "name": "유저1",
+                "email": "user1@gmail.com",
+                "phone": "01012345678"
+            }
+        """;
+
+        //when then
+        mockMvc.perform(post("/api/users/reset-pw")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson)
+            )
+            .andExpect(status().isOk());
     }
 
 
