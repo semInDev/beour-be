@@ -3,6 +3,7 @@ package com.beour.user.service;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.beour.global.exception.exceptionType.InvalidFormatException;
+import com.beour.user.dto.ChangePasswordRequestDto;
 import com.beour.user.dto.UpdateUserInfoRequestDto;
 import com.beour.user.dto.UpdateUserInfoResponseDto;
 import com.beour.user.dto.UserInformationDetailResponseDto;
@@ -18,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -28,10 +28,6 @@ class MyInformationServiceTest {
 
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private SignupService signupService;
-    @Autowired
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
@@ -139,7 +135,7 @@ class MyInformationServiceTest {
     }
 
     @Test
-    @DisplayName("개인정보 수정 - 핸드폰만 변경")
+    @DisplayName("개인정보 수정 - 모두 변경")
     void success_update_user_all(){
         //given
         UpdateUserInfoRequestDto requestDto = UpdateUserInfoRequestDto.builder()
@@ -155,7 +151,19 @@ class MyInformationServiceTest {
         assertEquals("01011112222", result.getNewPhone());
     }
 
+    @Test
+    @DisplayName("비밀번호 변경 - 성공")
+    void success_update_password(){
+        //given
+        ChangePasswordRequestDto requestDto = ChangePasswordRequestDto.builder()
+            .newPassword("newpassword!")
+            .build();
 
+        //when
+        myInformationService.updatePassword(requestDto);
 
-
+        //then
+        User updateUser = userRepository.findById(savedUser.getId()).orElse(null);
+        assertTrue(passwordEncoder.matches("newpassword!", updateUser.getPassword()));
+    }
 }
