@@ -26,12 +26,7 @@ class SignupControllerTest {
     @Autowired
     private UserRepository userRepository;
 
-    /**
-     * 아이디 유효성 검증
-     * 닉네임 유효성 검증
-     * 닉네임 중복일 경우
-     * 닉네임 중복 검증 성공 테스트
-     */
+
     @BeforeEach
     void setUp(){
         userRepository.deleteAll();
