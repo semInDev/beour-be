@@ -34,11 +34,7 @@ public class MyInformationService {
     public UserInformationSimpleResponseDto getUserInformationSimple(){
         User user = findUserFromToken();
 
-        UserInformationSimpleResponseDto dto = new UserInformationSimpleResponseDto(); // 나중에 빌더로 수정해도 좋을 것 같아요. 그리고 UserInformationSimpleResponseDto에 Setter 뺴고
-        dto.setUserName(user.getName());
-        dto.setUserEmail(user.getEmail());
-
-        return dto;
+        return new UserInformationSimpleResponseDto(user.getName(), user.getEmail());
     }
 
     public UserInformationDetailResponseDto getUserInformationDetail(){
