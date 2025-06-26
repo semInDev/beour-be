@@ -20,5 +20,4 @@ public class UserInformationDetailResponseDto {
         this.nickName = nickName;
         this.phoneNum = phoneNum;
     }
-
 }
