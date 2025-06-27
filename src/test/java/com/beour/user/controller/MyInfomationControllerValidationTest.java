@@ -66,13 +66,6 @@ public class MyInfomationControllerValidationTest {
         userRepository.deleteAll();
     }
 
-    /**
-     * 비번 공백 비번
-     * 특수문자 미포함
-     * 비번 21자리
-     * 비번 7자리
-     */
-
     @Test
     @DisplayName("내 정보 수정 - 닉네임, 핸드폰 공백")
     void update_user_info_blank() throws Exception {
@@ -155,6 +148,86 @@ public class MyInfomationControllerValidationTest {
             )
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.message").value("전화번호는 숫자만 10~11자리로 입력하세요."));
+    }
+
+    @Test
+    @DisplayName("비밀번호 수정 - 비밀번호 공백")
+    void update_user_info_password_blank() throws Exception {
+        //given
+        String requestJson = """
+                {
+                    "newPassword": ""
+                }
+            """;
+
+        //when //then
+        mockMvc.perform(patch("/api/mypage/password")
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson)
+            )
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("비밀번호는 8자 이상 20자 이하, 특수문자를 1개 이상 포함시켜야합니다."));
+    }
+
+    @Test
+    @DisplayName("비밀번호 수정 - 특수문자 미포함")
+    void update_user_info_password_without_special_char() throws Exception {
+        //given
+        String requestJson = """
+                {
+                    "newPassword": "oldpassword"
+                }
+            """;
+
+        //when //then
+        mockMvc.perform(patch("/api/mypage/password")
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson)
+            )
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("비밀번호는 8자 이상 20자 이하, 특수문자를 1개 이상 포함시켜야합니다."));
+    }
+
+    @Test
+    @DisplayName("비밀번호 수정 - 길이 21자리")
+    void update_user_info_password_length_twentyone() throws Exception {
+        //given
+        String requestJson = """
+                {
+                    "newPassword": "123456789012345678901"
+                }
+            """;
+
+        //when //then
+        mockMvc.perform(patch("/api/mypage/password")
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson)
+            )
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("비밀번호는 8자 이상 20자 이하, 특수문자를 1개 이상 포함시켜야합니다."));
+    }
+
+    @Test
+    @DisplayName("비밀번호 수정 - 길이 7자리")
+    void update_user_info_password_length_seven() throws Exception {
+        //given
+        String requestJson = """
+                {
+                    "newPassword": "1234567"
+                }
+            """;
+
+        //when //then
+        mockMvc.perform(patch("/api/mypage/password")
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson)
+            )
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("비밀번호는 8자 이상 20자 이하, 특수문자를 1개 이상 포함시켜야합니다."));
     }
 
 
