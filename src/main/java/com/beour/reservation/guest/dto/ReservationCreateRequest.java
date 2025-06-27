@@ -1,7 +1,9 @@
 package com.beour.reservation.guest.dto;
 
+import com.beour.reservation.commons.enums.UsagePurpose;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import lombok.AllArgsConstructor;
@@ -34,4 +36,9 @@ public class ReservationCreateRequest {
     @Min(1)
     private int guestCount;
 
+    @NotNull(message = "이용 목적 필수")
+    private UsagePurpose usagePurpose;
+
+    @Size(max = 200, message = "요청 사항은 200자 이내로 입력해주세요.")
+    private String requestMessage;
 }

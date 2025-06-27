@@ -8,11 +8,8 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-<<<<<<< test/MyInformationService
 @AllArgsConstructor
 @Builder
-=======
->>>>>>> develop
 public class ChangePasswordRequestDto {
 
     @ValidPassword
