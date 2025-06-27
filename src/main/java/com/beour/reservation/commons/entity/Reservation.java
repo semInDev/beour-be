@@ -2,8 +2,10 @@ package com.beour.reservation.commons.entity;
 
 import com.beour.global.entity.BaseTimeEntity;
 import com.beour.reservation.commons.enums.ReservationStatus;
+import com.beour.reservation.commons.enums.UsagePurpose;
 import com.beour.space.domain.entity.Space;
 import com.beour.user.entity.User;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -43,6 +45,13 @@ public class Reservation extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     private ReservationStatus status;
+
+    @Enumerated(EnumType.STRING)
+    private UsagePurpose usagePurpose;
+
+    @Column(length = 200)
+    private String requestMessage;
+
     private LocalDate date;
     private LocalTime startTime;
     private LocalTime endTime;
@@ -59,11 +68,15 @@ public class Reservation extends BaseTimeEntity {
     }
 
     @Builder
-    private Reservation(User guest, User host, Space space, ReservationStatus status, LocalDate date, LocalTime startTime, LocalTime endTime, int price, int guestCount){
+    private Reservation(User guest, User host, Space space, ReservationStatus status,
+                        UsagePurpose usagePurpose, String requestMessage, LocalDate date,
+                        LocalTime startTime, LocalTime endTime, int price, int guestCount){
         this.guest = guest;
         this.host = host;
         this.space = space;
         this.status = status;
+        this.usagePurpose = usagePurpose;
+        this.requestMessage = requestMessage;
         this.date = date;
         this.startTime = startTime;
         this.endTime = endTime;

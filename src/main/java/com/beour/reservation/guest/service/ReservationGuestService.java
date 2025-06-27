@@ -41,25 +41,27 @@ public class ReservationGuestService {
     public ReservationResponseDto createReservation(ReservationCreateRequest requestDto) {
         User guest = findUserFromToken();
         User host = userRepository.findById(requestDto.getHostId()).orElseThrow(
-            () -> new UserNotFoundException("존재하지 않는 유저입니다.")
+                () -> new UserNotFoundException("존재하지 않는 유저입니다.")
         );
         Space space = spaceRepository.findById(requestDto.getSpaceId()).orElseThrow(
-            () -> new SpaceNotFoundException("존재하지 않는 공간입니다.")
+                () -> new SpaceNotFoundException("존재하지 않는 공간입니다.")
         );
 
         checkReservationAvailable(requestDto, space);
 
         Reservation reservation = Reservation.builder()
-            .guest(guest)
-            .host(host)
-            .space(space)
-            .status(ReservationStatus.PENDING)
-            .date(requestDto.getDate())
-            .startTime(requestDto.getStartTime())
-            .endTime(requestDto.getEndTime())
-            .price(requestDto.getPrice())
-            .guestCount(requestDto.getGuestCount())
-            .build();
+                .guest(guest)
+                .host(host)
+                .space(space)
+                .status(ReservationStatus.PENDING)
+                .date(requestDto.getDate())
+                .startTime(requestDto.getStartTime())
+                .endTime(requestDto.getEndTime())
+                .price(requestDto.getPrice())
+                .guestCount(requestDto.getGuestCount())
+                .usagePurpose(requestDto.getUsagePurpose())
+                .requestMessage(requestDto.getRequestMessage())
+                .build();
 
         return ReservationResponseDto.of(reservationRepository.save(reservation));
     }
@@ -68,7 +70,7 @@ public class ReservationGuestService {
         checkPriceCorrect(requestDto, space);
         checkValidCapacity(requestDto, space);
         checkReservationAvailableDate(requestDto);
-        checkReservationAvailabeTime(requestDto);
+        checkReservationAvailableTime(requestDto);
     }
 
     private static void checkValidCapacity(ReservationCreateRequest requestDto, Space space) {
@@ -86,31 +88,31 @@ public class ReservationGuestService {
 
     private void checkReservationAvailableDate(ReservationCreateRequest requestDto) {
         AvailableTime availableTime = checkAvailableTimeService.checkReservationAvailableDateAndGetAvailableTime(
-            new CheckAvailableTimesRequestDto(
-                requestDto.getSpaceId(), requestDto.getDate()));
+                new CheckAvailableTimesRequestDto(
+                        requestDto.getSpaceId(), requestDto.getDate()));
 
         if(requestDto.getDate().equals(LocalDate.now()) && requestDto.getStartTime().isBefore(LocalTime.now())){
             throw new AvailableTimeNotFound("예약 가능한 시간이 존재하지 않습니다.");
         }
 
         if (availableTime.getStartTime().isAfter(requestDto.getStartTime())
-            || availableTime.getEndTime().isBefore(
-            requestDto.getEndTime())) {
+                || availableTime.getEndTime().isBefore(
+                requestDto.getEndTime())) {
             throw new AvailableTimeNotFound("예약이 불가능한 시간입니다.");
         }
     }
 
-    private void checkReservationAvailabeTime(ReservationCreateRequest requestDto) {
+    private void checkReservationAvailableTime(ReservationCreateRequest requestDto) {
         List<Reservation> reservationList = reservationRepository.findBySpaceIdAndDateAndDeletedAtIsNull(
-            requestDto.getSpaceId(), requestDto.getDate());
+                requestDto.getSpaceId(), requestDto.getDate());
 
         LocalTime startTime = requestDto.getStartTime();
         while (startTime.isBefore(requestDto.getEndTime())) {
             LocalTime currentTime = requestDto.getStartTime();
 
             boolean isReserved = reservationList.stream().anyMatch(reservation ->
-                reservation.getStartTime().isBefore(currentTime.plusHours(1)) &&
-                    reservation.getEndTime().isAfter(currentTime)
+                    reservation.getStartTime().isBefore(currentTime.plusHours(1)) &&
+                            reservation.getEndTime().isAfter(currentTime)
             );
 
             if (isReserved) {
@@ -124,7 +126,7 @@ public class ReservationGuestService {
     public List<ReservationListResponseDto> findReservationList() {
         User guest = findUserFromToken();
         List<Reservation> reservationList = reservationRepository.findUpcomingReservationsByGuest(
-            guest.getId(), LocalDate.now(), LocalTime.now());
+                guest.getId(), LocalDate.now(), LocalTime.now());
 
         checkEmptyReservation(reservationList);
 
@@ -140,7 +142,7 @@ public class ReservationGuestService {
     public List<ReservationListResponseDto> findPastReservationList() {
         User user = findUserFromToken();
         List<Reservation> reservationList = reservationRepository.findPastReservationsByGuest(
-            user.getId(), LocalDate.now(), LocalTime.now());
+                user.getId(), LocalDate.now(), LocalTime.now());
 
         checkEmptyReservation(reservationList);
 
@@ -150,7 +152,7 @@ public class ReservationGuestService {
                 reservation.updateStatus(ReservationStatus.COMPLETED);
             }
             Review review = reviewRepository.findByGuestIdAndSpaceIdAndReservedDateAndDeletedAtIsNull(
-                user.getId(), reservation.getSpace().getId(), reservation.getDate()).orElse(null);
+                    user.getId(), reservation.getSpace().getId(), reservation.getDate()).orElse(null);
             Long reviewId = 0L;
             if (review != null) {
                 reviewId = review.getId();
@@ -170,7 +172,7 @@ public class ReservationGuestService {
     @Transactional
     public void cancelReservation(Long reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(
-            () -> new ReservationNotFound("해당 예약이 존재하지 않습니다.")
+                () -> new ReservationNotFound("해당 예약이 존재하지 않습니다.")
         );
 
         if (reservation.getStatus() == ReservationStatus.COMPLETED) {
@@ -184,7 +186,7 @@ public class ReservationGuestService {
         String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
 
         return userRepository.findByLoginIdAndDeletedAtIsNull(loginId).orElseThrow(
-            () -> new UserNotFoundException("해당 유저를 찾을 수 없습니다.")
+                () -> new UserNotFoundException("해당 유저를 찾을 수 없습니다.")
         );
     }
 }
