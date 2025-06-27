@@ -4,6 +4,7 @@ import com.beour.space.domain.entity.Space;
 import com.beour.space.host.enums.SpaceCategory;
 import com.beour.space.host.enums.UseCategory;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -42,5 +43,7 @@ public interface SpaceRepository extends JpaRepository<Space, Long> {
     List<Space> findBySpaceCategory(SpaceCategory spaceCategory);
     List<Space> findByUseCategory(UseCategory useCategory);
     List<Space> findTop5ByDeletedAtIsNullOrderByCreatedAtDesc();
+
+    Optional<Space> findByIdAndDeletedAtIsNull(Long id);
 
 }

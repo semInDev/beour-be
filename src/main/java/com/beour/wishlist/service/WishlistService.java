@@ -63,14 +63,9 @@ public class WishlistService {
     }
 
     private Space getSpace(Long spaceId) {
-        Space space = spaceRepository.findById(spaceId).orElseThrow(
+        return spaceRepository.findByIdAndDeletedAtIsNull(spaceId).orElseThrow(
             () -> new SpaceNotFoundException("해당 공간은 존재하지 않습니다.")
         );
-
-        if(space.isDeleted()){
-            throw new SpaceNotFoundException("해당 공간은 존재하지 않습니다.");
-        }
-        return space;
     }
 
     public List<SpaceListSpaceResponseDto> getWishlist(){
