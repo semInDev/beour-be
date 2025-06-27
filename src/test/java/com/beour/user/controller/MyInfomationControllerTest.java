@@ -65,11 +65,6 @@ class MyInfomationControllerTest {
         userRepository.deleteAll();
     }
 
-
-    /**
-     * 비번 수정 완료
-     */
-
     @Test
     @DisplayName("사용자 메인 정보 조회 - 성공")
     void success_read_user_info() throws Exception {
@@ -137,6 +132,26 @@ class MyInfomationControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.newNickname").value("newNick"))
             .andExpect(jsonPath("$.data.newPhone").value("01011112222"));
+    }
+
+    @Test
+    @DisplayName("비밀번호 변경 - 성공")
+    void success_update_password() throws Exception {
+        //given
+        String requestJson = """
+            {
+                "newPassword" : "newpassword!"
+            }
+            """;
+
+        //when //then
+        mockMvc.perform(patch("/api/mypage/password")
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson)
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data").value("비밀번호 변경이 완료되었습니다."));
     }
 
 }
