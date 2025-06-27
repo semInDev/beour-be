@@ -51,7 +51,6 @@ public class MyInfomationControllerValidationTest {
 
         userRepository.save(savedUser);
 
-        // 2. 토큰 생성
         accessToken = jwtUtil.createJwt(
             "access",
             savedUser.getLoginId(),
