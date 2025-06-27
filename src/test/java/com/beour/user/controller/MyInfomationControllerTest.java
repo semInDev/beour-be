@@ -67,9 +67,6 @@ class MyInfomationControllerTest {
 
 
     /**
-     * 닉네임 중복일 경우
-     * 내 정보 수정 완료
-     * <p>
      * 비번 수정 완료
      */
 
@@ -97,6 +94,49 @@ class MyInfomationControllerTest {
             .andExpect(jsonPath("$.data.email").value(savedUser.getEmail()))
             .andExpect(jsonPath("$.data.nickName").value(savedUser.getNickname()))
             .andExpect(jsonPath("$.data.phoneNum").value(savedUser.getPhone()));
+    }
+
+    @Test
+    @DisplayName("사용자 정보 수정 - 닉네임 중복")
+    void fail_update_user_info_duplicate_nickname() throws Exception {
+        //given
+        String requestJson = """
+            {
+                "newNickname" : "test",
+                "newPhone" : ""
+            }
+            """;
+
+        //when //then
+        mockMvc.perform(patch("/api/mypage/detail")
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson)
+            )
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.message").value("이미 사용중인 닉네임입니다."));
+    }
+
+    @Test
+    @DisplayName("사용자 정보 수정 - 성공")
+    void success_update_user_info() throws Exception {
+        //given
+        String requestJson = """
+            {
+                "newNickname" : "newNick",
+                "newPhone" : "01011112222"
+            }
+            """;
+
+        //when //then
+        mockMvc.perform(patch("/api/mypage/detail")
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson)
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.newNickname").value("newNick"))
+            .andExpect(jsonPath("$.data.newPhone").value("01011112222"));
     }
 
 }
