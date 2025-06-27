@@ -34,23 +34,18 @@ public class MyInformationService {
     public UserInformationSimpleResponseDto getUserInformationSimple(){
         User user = findUserFromToken();
 
-        UserInformationSimpleResponseDto dto = new UserInformationSimpleResponseDto(); // 나중에 빌더로 수정해도 좋을 것 같아요. 그리고 UserInformationSimpleResponseDto에 Setter 뺴고
-        dto.setUserName(user.getName());
-        dto.setUserEmail(user.getEmail());
-
-        return dto;
+        return new UserInformationSimpleResponseDto(user.getName(), user.getEmail());
     }
 
     public UserInformationDetailResponseDto getUserInformationDetail(){
         User user = findUserFromToken();
 
-        UserInformationDetailResponseDto dto = new UserInformationDetailResponseDto(); // 나중에 빌더로 수정해도 좋을 것 같아요. 그리고 UserInformationDetailResponseDto에 Setter 뺴고
-        dto.setName(user.getName());
-        dto.setEmail(user.getEmail());
-        dto.setNickName(user.getNickname());
-        dto.setPhoneNum(user.getPhone());
-
-        return dto;
+        return UserInformationDetailResponseDto.builder()
+            .name(user.getName())
+            .email(user.getEmail())
+            .nickName(user.getNickname())
+            .phoneNum(user.getPhone())
+            .build();
     }
 
     @Transactional
