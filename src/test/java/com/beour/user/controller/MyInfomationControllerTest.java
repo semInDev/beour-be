@@ -67,9 +67,6 @@ class MyInfomationControllerTest {
 
 
     /**
-     * 메인 정보 조회
-     * 세부 정보 조회
-     * <p>
      * 닉네임 중복일 경우
      * 내 정보 수정 완료
      * <p>
@@ -77,8 +74,8 @@ class MyInfomationControllerTest {
      */
 
     @Test
-    @DisplayName("메인 정보 조회 - 성공")
-    void update_user_info_blank() throws Exception {
+    @DisplayName("사용자 메인 정보 조회 - 성공")
+    void success_read_user_info() throws Exception {
         //when //then
         mockMvc.perform(get("/api/mypage")
                 .header("Authorization", "Bearer " + accessToken)
@@ -86,6 +83,20 @@ class MyInfomationControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.userName").value(savedUser.getName()))
             .andExpect(jsonPath("$.data.userEmail").value(savedUser.getEmail()));
+    }
+
+    @Test
+    @DisplayName("사용자 세부 정보 조회 - 성공")
+    void success_read_user_info_detail() throws Exception {
+        //when //then
+        mockMvc.perform(get("/api/mypage/detail")
+                .header("Authorization", "Bearer " + accessToken)
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.name").value(savedUser.getName()))
+            .andExpect(jsonPath("$.data.email").value(savedUser.getEmail()))
+            .andExpect(jsonPath("$.data.nickName").value(savedUser.getNickname()))
+            .andExpect(jsonPath("$.data.phoneNum").value(savedUser.getPhone()));
     }
 
 }
