@@ -20,22 +20,20 @@ public class ReservationHostController {
     private final ReservationHostService reservationHostService;
 
     @GetMapping("/api/host/spaces")
-    public ApiResponse<List<HostSpaceListResponseDto>> getHostSpaces(@RequestParam(value = "hostId") Long hostId) {
-        return ApiResponse.ok(reservationHostService.getHostSpaces(hostId));
+    public ApiResponse<List<HostSpaceListResponseDto>> getHostSpaces() {
+        return ApiResponse.ok(reservationHostService.getHostSpaces());
     }
 
     @GetMapping("/api/host/reservations")
     public ApiResponse<List<HostReservationListResponseDto>> getHostReservationsByDate(
-            @RequestParam(value = "hostId") Long hostId,
             @RequestParam(value = "date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        return ApiResponse.ok(reservationHostService.getHostReservationsByDate(hostId, date));
+        return ApiResponse.ok(reservationHostService.getHostReservationsByDate(date));
     }
 
     @GetMapping("/api/host/reservations/space")
     public ApiResponse<List<HostReservationListResponseDto>> getHostReservationsByDateAndSpace(
-            @RequestParam(value = "hostId") Long hostId,
             @RequestParam(value = "date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam(value = "spaceId") Long spaceId) {
-        return ApiResponse.ok(reservationHostService.getHostReservationsByDateAndSpace(hostId, date, spaceId));
+        return ApiResponse.ok(reservationHostService.getHostReservationsByDateAndSpace(date, spaceId));
     }
 }
