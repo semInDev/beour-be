@@ -1,5 +1,6 @@
 package com.beour.wishlist.controller;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -15,7 +16,6 @@ import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
 import com.beour.wishlist.entity.Like;
 import com.beour.wishlist.repository.LikeRepository;
-import com.beour.wishlist.service.WishlistService;
 import java.util.ArrayList;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -172,16 +172,6 @@ class WishlistControllerTest {
             .andExpect(jsonPath("$.data.message").value("찜 등록이 완료되었습니다."));
     }
 
-    /**
-     * 찜 삭제
-     * - 없는 공간일 경우
-     * - 성공
-     *
-     * 찜 목록 조회
-     * - 성공
-     * - 아무것도 없을 경우
-     */
-
     @Test
     @DisplayName("찜 삭제 - 목록에 없는 공간일 경우")
     void delete_wish_not_exist_space() throws Exception{
@@ -212,4 +202,48 @@ class WishlistControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data").value("찜 삭제가 되었습니다."));
     }
+
+    /**
+     * 찜 목록 조회
+     * - 성공
+     * - 아무것도 없을 경우
+     */
+    @Test
+    @DisplayName("찜 목록 조회 - 아무것도 없을 경우")
+    void get_wishlist_empty() throws Exception{
+        //when  then
+        mockMvc.perform(get("/api/wishlist/all")
+                .header("Authorization", "Bearer " + accessToken)
+            )
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.message").value("찜 목록이 비어있습니다."));
+    }
+
+    @Test
+    @DisplayName("찜 목록 조회 - 성공")
+    void success_get_wishlist() throws Exception{
+        //given
+        Like like1 = Like.builder()
+            .user(guest)
+            .space(space1)
+            .build();
+        likeRepository.save(like1);
+
+        Like like2 = Like.builder()
+            .user(guest)
+            .space(space2)
+            .build();
+        likeRepository.save(like2);
+
+        //when  then
+        mockMvc.perform(get("/api/wishlist/all")
+                .header("Authorization", "Bearer " + accessToken)
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data", hasSize(2)))
+            .andExpect(jsonPath("$.data[0].spaceId").value(space1.getId()))
+            .andExpect(jsonPath("$.data[1].spaceId").value(space2.getId()));
+    }
+
+
 }
