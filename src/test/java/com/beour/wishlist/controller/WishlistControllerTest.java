@@ -203,11 +203,6 @@ class WishlistControllerTest {
             .andExpect(jsonPath("$.data").value("찜 삭제가 되었습니다."));
     }
 
-    /**
-     * 찜 목록 조회
-     * - 성공
-     * - 아무것도 없을 경우
-     */
     @Test
     @DisplayName("찜 목록 조회 - 아무것도 없을 경우")
     void get_wishlist_empty() throws Exception{
@@ -244,6 +239,4 @@ class WishlistControllerTest {
             .andExpect(jsonPath("$.data[0].spaceId").value(space1.getId()))
             .andExpect(jsonPath("$.data[1].spaceId").value(space2.getId()));
     }
-
-
 }
