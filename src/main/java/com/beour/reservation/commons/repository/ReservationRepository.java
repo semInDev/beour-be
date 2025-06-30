@@ -32,5 +32,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
         @Param("now") LocalTime now
     );
 
-
+    List<Reservation> findByHostIdAndDateAndDeletedAtIsNull(Long hostId, LocalDate date);
+    List<Reservation> findByHostIdAndDateAndSpaceIdAndDeletedAtIsNull(Long hostId, LocalDate date, Long spaceId);
 }
