@@ -141,20 +141,6 @@ class WishlistControllerTest {
         userRepository.deleteAll();
     }
 
-    /**
-     * 찜하기
-     * - 찜 등록
-     * - 이미 존재하는 공간일 경우
-     *
-     * 찜 삭제
-     * - 없는 공간일 경우
-     * - 성공
-     *
-     * 찜 목록 조회
-     * - 성공
-     * - 아무것도 없을 경우
-     */
-
     @Test
     @DisplayName("찜 등록 - 이미 목록에 존재하는 공간")
     void add_wishlist_with_exist_space() throws Exception {
@@ -186,4 +172,44 @@ class WishlistControllerTest {
             .andExpect(jsonPath("$.data.message").value("찜 등록이 완료되었습니다."));
     }
 
+    /**
+     * 찜 삭제
+     * - 없는 공간일 경우
+     * - 성공
+     *
+     * 찜 목록 조회
+     * - 성공
+     * - 아무것도 없을 경우
+     */
+
+    @Test
+    @DisplayName("찜 삭제 - 목록에 없는 공간일 경우")
+    void delete_wish_not_exist_space() throws Exception{
+        //when  then
+        mockMvc.perform(delete("/api/wishlist")
+                .param("spaceId", space1.getId().toString())
+                .header("Authorization", "Bearer " + accessToken)
+            )
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.message").value("찜 목록에 존재하지 않습니다."));
+    }
+
+    @Test
+    @DisplayName("찜 삭제 - 성공")
+    void success_delete_wish() throws Exception{
+        //given
+        Like like = Like.builder()
+            .user(guest)
+            .space(space1)
+            .build();
+        likeRepository.save(like);
+
+        //when  then
+        mockMvc.perform(delete("/api/wishlist")
+                .param("spaceId", space1.getId().toString())
+                .header("Authorization", "Bearer " + accessToken)
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data").value("찜 삭제가 되었습니다."));
+    }
 }
