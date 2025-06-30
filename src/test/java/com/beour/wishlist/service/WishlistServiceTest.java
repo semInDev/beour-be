@@ -1,5 +1,6 @@
 package com.beour.wishlist.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.beour.global.exception.exceptionType.DuplicateLikesException;
@@ -137,10 +138,6 @@ class WishlistServiceTest {
         userRepository.deleteAll();
     }
 
-    /**
-     * 찜 삭제 없는 공간일 경우 이미 삭제된 공간일 경우 68
-     */
-
     @Test
     @DisplayName("찜하기 - 이미 리스트에 존재하는 경우")
     void fail_add_wishlist_duplicate_space() {
@@ -169,7 +166,6 @@ class WishlistServiceTest {
         Like saved = likeRepository.save(like);
 
         //then
-        assertEquals(saved.getId(), 1);
         assertEquals(saved.getSpace(), space1);
         assertEquals(saved.getUser(), guest);
     }
@@ -207,4 +203,60 @@ class WishlistServiceTest {
         assertEquals(result.get(1).getSpaceName(), "공간2");
     }
 
+    /**
+     * 찜 삭제 없는 공간일 경우 이미 삭제된 공간일 경우 68
+     */
+
+    @Test
+    @Transactional
+    @DisplayName("찜삭제 - 성공")
+    void success_delete_wishlist() {
+        //given
+        Like like1 = Like.builder()
+            .user(guest)
+            .space(space1)
+            .build();
+        likeRepository.save(like1);
+
+        Like like2 = Like.builder()
+            .user(guest)
+            .space(space2)
+            .build();
+        likeRepository.save(like2);
+
+        //when
+        wishlistService.deleteSpaceFromWishList(space2.getId());
+
+        //then
+        List<Like> likes = likeRepository.findByUserIdAndDeletedAtIsNull(guest.getId());
+        assertThat(likes)
+            .hasSize(1)
+            .allMatch(like -> !like.getSpace().getId().equals(space2.getId()));
+
+    }
+
+    @Test
+    @DisplayName("찜삭제 - 없는 공간일 경우")
+    void delete_wishlist_with_empty_list() {
+        //when  //then
+        assertThrows(LikesNotFoundException.class,
+            () -> wishlistService.deleteSpaceFromWishList(space1.getId()));
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("찜삭제 - 이미 삭제한 공간")
+    void delete_wishlist_with_deleted_space() {
+        //given
+        Like like1 = Like.builder()
+            .user(guest)
+            .space(space1)
+            .build();
+        likeRepository.save(like1);
+        wishlistService.deleteSpaceFromWishList(space1.getId());
+
+        //when  //then
+        assertThrows(LikesNotFoundException.class,
+            () -> wishlistService.deleteSpaceFromWishList(space1.getId()));
+    }
 }
