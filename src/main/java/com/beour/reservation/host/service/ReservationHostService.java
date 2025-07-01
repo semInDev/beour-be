@@ -3,6 +3,7 @@ package com.beour.reservation.host.service;
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.reservation.commons.entity.Reservation;
+import com.beour.reservation.commons.enums.ReservationStatus;
 import com.beour.reservation.commons.exceptionType.ReservationNotFound;
 import com.beour.reservation.commons.repository.ReservationRepository;
 import com.beour.reservation.host.dto.HostReservationListResponseDto;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -50,12 +52,17 @@ public class ReservationHostService {
         List<Reservation> reservationList = reservationRepository.findByHostIdAndDateAndDeletedAtIsNull(
                 host.getId(), date);
 
-        if (reservationList.isEmpty()) {
-            throw new ReservationNotFound("해당 날짜에 예약이 없습니다.");
+        // 예약 상태가 ACCEPTED인 것만 필터링
+        List<Reservation> acceptedReservations = reservationList.stream()
+                .filter(reservation -> reservation.getStatus() == ReservationStatus.ACCEPTED)
+                .collect(Collectors.toList());
+
+        if (acceptedReservations.isEmpty()) {
+            throw new ReservationNotFound("해당 날짜에 확정된 예약이 없습니다.");
         }
 
         List<HostReservationListResponseDto> responseDtoList = new ArrayList<>();
-        for (Reservation reservation : reservationList) {
+        for (Reservation reservation : acceptedReservations) {
             responseDtoList.add(HostReservationListResponseDto.of(reservation));
         }
 
@@ -77,12 +84,17 @@ public class ReservationHostService {
         List<Reservation> reservationList = reservationRepository.findByHostIdAndDateAndSpaceIdAndDeletedAtIsNull(
                 host.getId(), date, spaceId);
 
-        if (reservationList.isEmpty()) {
-            throw new ReservationNotFound("해당 날짜와 공간에 예약이 없습니다.");
+        // 예약 상태가 ACCEPTED인 것만 필터링
+        List<Reservation> acceptedReservations = reservationList.stream()
+                .filter(reservation -> reservation.getStatus() == ReservationStatus.ACCEPTED)
+                .collect(Collectors.toList());
+
+        if (acceptedReservations.isEmpty()) {
+            throw new ReservationNotFound("해당 날짜와 공간에 확정된 예약이 없습니다.");
         }
 
         List<HostReservationListResponseDto> responseDtoList = new ArrayList<>();
-        for (Reservation reservation : reservationList) {
+        for (Reservation reservation : acceptedReservations) {
             responseDtoList.add(HostReservationListResponseDto.of(reservation));
         }
 
