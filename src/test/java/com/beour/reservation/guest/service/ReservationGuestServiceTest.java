@@ -299,7 +299,7 @@ class ReservationGuestServiceTest {
             .guest(guest)
             .host(host)
             .space(space)
-            .status(ReservationStatus.COMPLETED)
+            .status(ReservationStatus.ACCEPTED)
             .usagePurpose(UsagePurpose.BARISTA_TRAINING)
             .requestMessage("테슽뚜")
             .date(LocalDate.now().plusDays(1))
@@ -344,7 +344,7 @@ class ReservationGuestServiceTest {
             .guest(guest)
             .host(host)
             .space(space)
-            .status(ReservationStatus.COMPLETED)
+            .status(ReservationStatus.ACCEPTED)
             .usagePurpose(UsagePurpose.BARISTA_TRAINING)
             .requestMessage("테슽뚜")
             .date(LocalDate.now())
@@ -368,14 +368,57 @@ class ReservationGuestServiceTest {
 
     /**
      * #73
-     * 지난 예약 조회
-     * - 성공
-     * - 시간 지나면 예약 사용 완료 상태로 변경
-     *
      * 예약 취소
      * - 성공
      * - 존재하지 않는 예약일 경우
      * - 이미 확정된 예약일 경우
      */
+
+    @Test
+    @DisplayName("지난 예약 조회 - 시간 지나면 예약 사용 완료 상태로 변경")
+    void get_past_reservation_list_change_status(){
+        //given
+        Reservation reservationPast = Reservation.builder()
+            .guest(guest)
+            .host(host)
+            .space(space)
+            .status(ReservationStatus.ACCEPTED)
+            .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+            .requestMessage("테슽뚜")
+            .date(LocalDate.now().minusDays(1))
+            .startTime(LocalTime.of(12, 0, 0))
+            .endTime(LocalTime.of(14, 0, 0))
+            .price(30000)
+            .guestCount(2)
+            .build();
+        reservationRepository.save(reservationPast);
+        Reservation reservationFuture = Reservation.builder()
+            .guest(guest)
+            .host(host)
+            .space(space)
+            .status(ReservationStatus.ACCEPTED)
+            .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+            .requestMessage("테슽뚜")
+            .date(LocalDate.now().plusDays(1))
+            .startTime(LocalTime.of(15, 0, 0))
+            .endTime(LocalTime.of(16, 0, 0))
+            .price(15000)
+            .guestCount(2)
+            .build();
+        reservationRepository.save(reservationFuture);
+
+        //when
+        List<ReservationListResponseDto> result = reservationGuestService.findPastReservationList();
+
+        //then
+        assertThat(result).hasSize(1);
+        assertEquals(reservationPast.getSpace().getName(), result.get(0).getSpaceName());
+        assertEquals(reservationPast.getDate(), result.get(0).getDate());
+        assertEquals(reservationPast.getStartTime(), result.get(0).getStartTime());
+        assertEquals(reservationPast.getEndTime(), result.get(0).getEndTime());
+        assertEquals(ReservationStatus.COMPLETED, result.get(0).getStatus());
+    }
+
+
 
 }
