@@ -2,8 +2,13 @@ package com.beour.reservation.guest.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.beour.reservation.commons.entity.Reservation;
+import com.beour.reservation.commons.enums.ReservationStatus;
+import com.beour.reservation.commons.enums.UsagePurpose;
 import com.beour.reservation.commons.exceptionType.AvailableTimeNotFound;
+import com.beour.reservation.commons.repository.ReservationRepository;
 import com.beour.reservation.guest.dto.CheckAvailableTimesRequestDto;
+import com.beour.reservation.guest.dto.SpaceAvailableTimeResponseDto;
 import com.beour.space.domain.entity.AvailableTime;
 import com.beour.space.domain.entity.Space;
 import com.beour.space.domain.repository.AvailableTimeRepository;
@@ -17,6 +22,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -44,6 +50,8 @@ class CheckAvailableTimeServiceTest {
     private TagRepository tagRepository;
     @Autowired
     private AvailableTimeRepository availableTimeRepository;
+    @Autowired
+    private ReservationRepository reservationRepository;
 
     private User guest;
     private User host;
@@ -132,19 +140,10 @@ class CheckAvailableTimeServiceTest {
         SecurityContextHolder.clearContext();
         tagRepository.deleteAll();
         availableTimeRepository.deleteAll();
+        reservationRepository.deleteAll();
         spaceRepository.deleteAll();
         userRepository.deleteAll();
     }
-
-
-    /**
-     * #73
-     * 예약 가능한 시간 조회
-     *  - 과거 날짜일 경우
-     *  - 예약 거절된 상태인 시간 조회 가능한지
-     *  - 오늘날짜로 조회할 경우 현재 이후의 시간만 조회 가능한지
-     *  - 예약 날짜 시간을 제외하고 조회가 가능한지
-     */
 
     @Test
     @DisplayName("시간, 날짜 유효성 조회 - 과거 날짜로 조회")
@@ -181,6 +180,113 @@ class CheckAvailableTimeServiceTest {
         assertEquals(availableTimeNext.getStartTime(), availableTime.getStartTime());
         assertEquals(availableTimeNext.getEndTime(), availableTime.getEndTime());
     }
+
+    @Test
+    @DisplayName("예약 가능한 시간 조회 - 과거 날짜로 조회")
+    void past_date_findAvailableTime(){
+        //given
+        CheckAvailableTimesRequestDto requestDto = new CheckAvailableTimesRequestDto(space.getId(), LocalDate.now().minusDays(1));
+
+        //when  //then
+        assertThrows(AvailableTimeNotFound.class, () -> checkAvailableTimeService.findAvailableTime(requestDto));
+    }
+
+    @Test
+    @DisplayName("예약 가능한 시간 조회 - 가능한 시간 없을 경우")
+    void non_existent_available_time_findAvailableTime(){
+        //given
+        CheckAvailableTimesRequestDto requestDto = new CheckAvailableTimesRequestDto(space.getId(), LocalDate.now().plusDays(2));
+
+        //when  //then
+        assertThrows(AvailableTimeNotFound.class, () -> checkAvailableTimeService.findAvailableTime(requestDto));
+    }
+
+    @Test
+    @DisplayName("예약 가능한 시간 조회 - 오늘 날짜일 경우 현재 이후의 시간만 조회")
+    void get_available_time_after_current(){
+        //given
+        CheckAvailableTimesRequestDto requestDto = new CheckAvailableTimesRequestDto(space.getId(), LocalDate.now());
+        List<LocalTime> expectedHours = new ArrayList<>();
+        for(int i = LocalTime.now().getHour() + 1; i < 23; i++){
+            expectedHours.add(LocalTime.of(i, 0, 0));
+        }
+
+        //when
+        SpaceAvailableTimeResponseDto result = checkAvailableTimeService.findAvailableTime(requestDto);
+
+        //then
+        assertEquals(expectedHours.size(), result.getTimeList().size());
+        assertIterableEquals(expectedHours, result.getTimeList());
+    }
+
+    @Test
+    @DisplayName("예약 가능한 시간 조회 - 예약있는 시간 제외한 예약 가능 시간 조회")
+    void get_availabe_time_except_reservation(){
+        //given
+        Reservation reservation = Reservation.builder()
+            .guest(guest)
+            .host(host)
+            .space(space)
+            .status(ReservationStatus.ACCEPTED)
+            .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+            .requestMessage("테슽뚜")
+            .date(LocalDate.now().plusDays(1))
+            .startTime(LocalTime.of(12, 0, 0))
+            .endTime(LocalTime.of(16, 0, 0))
+            .price(60000)
+            .guestCount(2)
+            .build();
+        reservationRepository.save(reservation);
+        CheckAvailableTimesRequestDto requestDto = new CheckAvailableTimesRequestDto(space.getId(), LocalDate.now().plusDays(1));
+        List<LocalTime> expectedHours = new ArrayList<>();
+        for(int i = 1; i < 12; i++){
+            expectedHours.add(LocalTime.of(i, 0, 0));
+        }
+        for(int i = 16; i < 23; i++){
+            expectedHours.add(LocalTime.of(i, 0, 0));
+        }
+
+
+        //when
+        SpaceAvailableTimeResponseDto result = checkAvailableTimeService.findAvailableTime(requestDto);
+
+        //then
+        assertEquals(expectedHours.size(), result.getTimeList().size());
+        assertIterableEquals(expectedHours, result.getTimeList());
+    }
+
+    @Test
+    @DisplayName("예약 가능한 시간 조회 - 예약 거절된 시간 포함해 예약 가능 시간 조회")
+    void get_availabe_time_include_rejected_reservation(){
+        //given
+        Reservation reservation = Reservation.builder()
+            .guest(guest)
+            .host(host)
+            .space(space)
+            .status(ReservationStatus.REJECTED)
+            .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+            .requestMessage("테슽뚜")
+            .date(LocalDate.now().plusDays(1))
+            .startTime(LocalTime.of(12, 0, 0))
+            .endTime(LocalTime.of(16, 0, 0))
+            .price(60000)
+            .guestCount(2)
+            .build();
+        reservationRepository.save(reservation);
+        CheckAvailableTimesRequestDto requestDto = new CheckAvailableTimesRequestDto(space.getId(), LocalDate.now().plusDays(1));
+        List<LocalTime> expectedHours = new ArrayList<>();
+        for(int i = 1; i < 23; i++){
+            expectedHours.add(LocalTime.of(i, 0, 0));
+        }
+
+        //when
+        SpaceAvailableTimeResponseDto result = checkAvailableTimeService.findAvailableTime(requestDto);
+
+        //then
+        assertEquals(expectedHours.size(), result.getTimeList().size());
+        assertIterableEquals(expectedHours, result.getTimeList());
+    }
+
 
 
 }
