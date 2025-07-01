@@ -35,4 +35,5 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     List<Reservation> findByHostIdAndDateAndDeletedAtIsNull(Long hostId, LocalDate date);
     List<Reservation> findByHostIdAndDateAndSpaceIdAndDeletedAtIsNull(Long hostId, LocalDate date, Long spaceId);
     List<Reservation> findByHostIdAndDateAndStatusAndDeletedAtIsNull(Long hostId, LocalDate date, ReservationStatus status);
+    List<Reservation> findByHostIdAndDateAndSpaceIdAndStatusAndDeletedAtIsNull(Long hostId, LocalDate date, Long spaceId, ReservationStatus status);
 }

@@ -20,19 +20,22 @@ public class ReservationCalendarController {
 
     @GetMapping("/api/host/calendar/reservations")
     public ApiResponse<List<CalendarReservationResponseDto>> getHostCalendarReservations(
-            @RequestParam(value = "date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        return ApiResponse.ok(reservationCalendarService.getHostCalendarReservations(date));
+            @RequestParam(value = "date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(value = "spaceId", required = false) Long spaceId) {
+        return ApiResponse.ok(reservationCalendarService.getHostCalendarReservations(date, spaceId));
     }
 
     @GetMapping("/api/host/calendar/reservations/pending")
     public ApiResponse<List<CalendarReservationResponseDto>> getHostPendingReservations(
-            @RequestParam(value = "date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        return ApiResponse.ok(reservationCalendarService.getHostPendingReservations(date));
+            @RequestParam(value = "date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(value = "spaceId", required = false) Long spaceId) {
+        return ApiResponse.ok(reservationCalendarService.getHostPendingReservations(date, spaceId));
     }
 
     @GetMapping("/api/host/calendar/reservations/accepted")
     public ApiResponse<List<CalendarReservationResponseDto>> getHostAcceptedReservations(
-            @RequestParam(value = "date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        return ApiResponse.ok(reservationCalendarService.getHostAcceptedReservations(date));
+            @RequestParam(value = "date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(value = "spaceId", required = false) Long spaceId) {
+        return ApiResponse.ok(reservationCalendarService.getHostAcceptedReservations(date, spaceId));
     }
 }
