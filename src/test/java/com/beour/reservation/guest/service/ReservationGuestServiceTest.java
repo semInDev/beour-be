@@ -1,5 +1,6 @@
 package com.beour.reservation.guest.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
@@ -9,8 +10,10 @@ import com.beour.reservation.commons.enums.ReservationStatus;
 import com.beour.reservation.commons.enums.UsagePurpose;
 import com.beour.reservation.commons.exceptionType.AvailableTimeNotFound;
 import com.beour.reservation.commons.exceptionType.MissMatch;
+import com.beour.reservation.commons.exceptionType.ReservationNotFound;
 import com.beour.reservation.commons.repository.ReservationRepository;
 import com.beour.reservation.guest.dto.ReservationCreateRequest;
+import com.beour.reservation.guest.dto.ReservationListResponseDto;
 import com.beour.reservation.guest.dto.ReservationResponseDto;
 import com.beour.space.domain.entity.AvailableTime;
 import com.beour.space.domain.entity.Space;
@@ -24,6 +27,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -142,23 +146,6 @@ class ReservationGuestServiceTest {
         userRepository.deleteAll();
     }
 
-
-    /**
-     * 예약 현황 조회
-     * - 성공
-     * - 과거 예약 잘 걸러지는지
-     * - 현 시점의 시간 이전의 시간 잘 걸러지는지
-     *
-     * 지난 예약 조회
-     * - 성공
-     * - 시간 지나면 예약 사용 완료 상태로 변경
-     *
-     * 예약 취소
-     * - 성공
-     * - 존재하지 않는 예약일 경우
-     * - 이미 확정된 예약일 경우
-     */
-
     @Test
     @DisplayName("공간 예약 - 시간당 가격과 총 가격이 불일치할 경우")
     void create_reservation_not_same_price() {
@@ -180,7 +167,8 @@ class ReservationGuestServiceTest {
             UsagePurpose.BARISTA_TRAINING, "테슽뚜");
 
         //when  then
-        assertThrows(AvailableTimeNotFound.class, () -> reservationGuestService.createReservation(request));
+        assertThrows(AvailableTimeNotFound.class,
+            () -> reservationGuestService.createReservation(request));
     }
 
     @Test
@@ -192,7 +180,8 @@ class ReservationGuestServiceTest {
             UsagePurpose.BARISTA_TRAINING, "테슽뚜");
 
         //when  then
-        assertThrows(AvailableTimeNotFound.class, () -> reservationGuestService.createReservation(request));
+        assertThrows(AvailableTimeNotFound.class,
+            () -> reservationGuestService.createReservation(request));
     }
 
     @Test
@@ -231,7 +220,8 @@ class ReservationGuestServiceTest {
             UsagePurpose.BARISTA_TRAINING, "테슽뚜");
 
         //when  then
-        assertThrows(AvailableTimeNotFound.class, () -> reservationGuestService.createReservation(request));
+        assertThrows(AvailableTimeNotFound.class,
+            () -> reservationGuestService.createReservation(request));
     }
 
     @Test
@@ -243,7 +233,8 @@ class ReservationGuestServiceTest {
             UsagePurpose.BARISTA_TRAINING, "테슽뚜");
 
         //when  then
-        assertThrows(UserNotFoundException.class, () -> reservationGuestService.createReservation(request));
+        assertThrows(UserNotFoundException.class,
+            () -> reservationGuestService.createReservation(request));
     }
 
     @Test
@@ -255,7 +246,8 @@ class ReservationGuestServiceTest {
             UsagePurpose.BARISTA_TRAINING, "테슽뚜");
 
         //when  then
-        assertThrows(SpaceNotFoundException.class, () -> reservationGuestService.createReservation(request));
+        assertThrows(SpaceNotFoundException.class,
+            () -> reservationGuestService.createReservation(request));
     }
 
     @Test
@@ -277,5 +269,113 @@ class ReservationGuestServiceTest {
         assertEquals(request.getEndTime(), savedReservation.getEndTime());
         assertEquals(request.getRequestMessage(), savedReservation.getRequestMessage());
     }
+
+    @Test
+    @DisplayName("예약 현황 조회 - 없음")
+    void get_reservation_list(){
+        //when   //then
+        assertThrows(ReservationNotFound.class, ()-> reservationGuestService.findReservationList());
+    }
+
+    @Test
+    @DisplayName("예약 현황 조회 - 과거 예약 잘 걸러지는지")
+    void get_reservation_list_filtering_past_reservation(){
+        //given
+        Reservation reservationPast = Reservation.builder()
+            .guest(guest)
+            .host(host)
+            .space(space)
+            .status(ReservationStatus.COMPLETED)
+            .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+            .requestMessage("테슽뚜")
+            .date(LocalDate.now().minusDays(1))
+            .startTime(LocalTime.of(12, 0, 0))
+            .endTime(LocalTime.of(16, 0, 0))
+            .price(60000)
+            .guestCount(2)
+            .build();
+        reservationRepository.save(reservationPast);
+        Reservation reservationFuture = Reservation.builder()
+            .guest(guest)
+            .host(host)
+            .space(space)
+            .status(ReservationStatus.COMPLETED)
+            .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+            .requestMessage("테슽뚜")
+            .date(LocalDate.now().plusDays(1))
+            .startTime(LocalTime.of(12, 0, 0))
+            .endTime(LocalTime.of(16, 0, 0))
+            .price(60000)
+            .guestCount(2)
+            .build();
+        reservationRepository.save(reservationFuture);
+
+        //when
+        List<ReservationListResponseDto> result = reservationGuestService.findReservationList();
+
+        //then
+        assertThat(result).hasSize(1);
+        assertEquals(reservationFuture.getSpace().getName(), result.get(0).getSpaceName());
+        assertEquals(reservationFuture.getDate(), result.get(0).getDate());
+        assertEquals(reservationFuture.getStartTime(), result.get(0).getStartTime());
+        assertEquals(reservationFuture.getEndTime(), result.get(0).getEndTime());
+    }
+
+    @Test
+    @DisplayName("예약 현황 조회 - 현 시점의 시간 이전의 시간 잘 걸러지는지")
+    void get_reservation_list_filtering_past_time_reservation(){
+        //given
+        int currentTime = LocalTime.now().getHour();
+        Reservation reservationPast = Reservation.builder()
+            .guest(guest)
+            .host(host)
+            .space(space)
+            .status(ReservationStatus.COMPLETED)
+            .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+            .requestMessage("테슽뚜")
+            .date(LocalDate.now())
+            .startTime(LocalTime.of(currentTime - 3, 0, 0))
+            .endTime(LocalTime.of(currentTime - 1, 0, 0))
+            .price(30000)
+            .guestCount(2)
+            .build();
+        reservationRepository.save(reservationPast);
+        Reservation reservationFuture = Reservation.builder()
+            .guest(guest)
+            .host(host)
+            .space(space)
+            .status(ReservationStatus.COMPLETED)
+            .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+            .requestMessage("테슽뚜")
+            .date(LocalDate.now())
+            .startTime(LocalTime.of(currentTime + 1, 0, 0))
+            .endTime(LocalTime.of(currentTime + 2, 0, 0))
+            .price(15000)
+            .guestCount(2)
+            .build();
+        reservationRepository.save(reservationFuture);
+
+        //when
+        List<ReservationListResponseDto> result = reservationGuestService.findReservationList();
+
+        //then
+        assertThat(result).hasSize(1);
+        assertEquals(reservationFuture.getSpace().getName(), result.get(0).getSpaceName());
+        assertEquals(reservationFuture.getDate(), result.get(0).getDate());
+        assertEquals(reservationFuture.getStartTime(), result.get(0).getStartTime());
+        assertEquals(reservationFuture.getEndTime(), result.get(0).getEndTime());
+    }
+
+    /**
+     * #73
+     * 지난 예약 조회
+     * - 성공
+     * - 시간 지나면 예약 사용 완료 상태로 변경
+     *
+     * 예약 취소
+     * - 성공
+     * - 존재하지 않는 예약일 경우
+     * - 이미 확정된 예약일 경우
+     */
 
 }
