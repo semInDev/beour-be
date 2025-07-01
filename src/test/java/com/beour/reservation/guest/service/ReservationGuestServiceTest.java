@@ -419,6 +419,29 @@ class ReservationGuestServiceTest {
         assertEquals(ReservationStatus.COMPLETED, result.get(0).getStatus());
     }
 
+    @Test
+    @DisplayName("지난 예약 조회 - 과거 예약 없을 경우")
+    void get_past_reservation_list_non_existent_past_reservation(){
+        //given
+        Reservation reservationFuture = Reservation.builder()
+            .guest(guest)
+            .host(host)
+            .space(space)
+            .status(ReservationStatus.ACCEPTED)
+            .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+            .requestMessage("테슽뚜")
+            .date(LocalDate.now().plusDays(1))
+            .startTime(LocalTime.of(15, 0, 0))
+            .endTime(LocalTime.of(16, 0, 0))
+            .price(15000)
+            .guestCount(2)
+            .build();
+        reservationRepository.save(reservationFuture);
+
+        //when  //then
+        assertThrows(ReservationNotFound.class, () -> reservationGuestService.findPastReservationList());
+    }
+
 
 
 }
