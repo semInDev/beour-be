@@ -1,10 +1,13 @@
 package com.beour.space.guest.service;
 
+import com.beour.global.exception.exceptionType.SpaceNotFoundException;
 import com.beour.space.domain.entity.Space;
 import com.beour.space.domain.entity.Tag;
 import com.beour.space.domain.repository.SpaceRepository;
 import com.beour.space.guest.dto.NearbySpaceResponse;
+import com.beour.space.guest.dto.RecentCreatedSpcaceListResponseDto;
 import com.beour.wishlist.repository.LikeRepository;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +47,20 @@ public class GuestSpaceService {
                             .tags(tags)
                             .build();
                 }).toList();
+    }
+
+    public List<RecentCreatedSpcaceListResponseDto> getRecentCreatedSpace(){
+        List<Space> spaces = spaceRepository.findTop5ByDeletedAtIsNullOrderByCreatedAtDesc();
+
+        if(spaces.isEmpty()){
+            throw new SpaceNotFoundException("최근 등록된 공간이 없습니다.");
+        }
+
+        return spaces.stream()
+            .map(space -> {
+                return new RecentCreatedSpcaceListResponseDto().dtoFrom(space);
+            })
+            .collect(Collectors.toList());
     }
 
 /*    // 거리 계산 함수 (Haversine)

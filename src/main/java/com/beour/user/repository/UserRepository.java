@@ -9,17 +9,18 @@ import org.springframework.data.repository.query.Param;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
-  boolean existsByLoginId(String loginId);
+    Boolean existsByLoginIdAndDeletedAtIsNull(String loginId);
+    Boolean existsByNicknameAndDeletedAtIsNull(String nickName);
 
-  boolean existsByNickname(String nickname);
+    Optional<User> findByLoginId(String loginId);
+    Optional<User> findByLoginIdAndDeletedAtIsNull(String loginId);
 
-  Optional<User> findByLoginId(String loginId);
+    Optional<User> findByNameAndPhoneAndEmailAndDeletedAtIsNull(String name, String phone, String email);
+    Optional<User> findByLoginIdAndNameAndPhoneAndEmailAndDeletedAtIsNull(String loginId, String name, String phone, String email);
 
-  Optional<User> findByNameAndPhoneAndEmail(String name, String phone, String email);
-
-  @Modifying
-  @Query("UPDATE User u SET u.password = :password, u.updatedAt = CURRENT_TIMESTAMP WHERE u.loginId = :loginId")
-  void updatePasswordByLoginId(@Param("loginId") String loginId,
-      @Param("password") String password);
+    @Modifying
+    @Query("UPDATE User u SET u.password = :password, u.updatedAt = CURRENT_TIMESTAMP WHERE u.loginId = :loginId")
+    void updatePasswordByLoginId(@Param("loginId") String loginId,
+        @Param("password") String password);
 
 }
