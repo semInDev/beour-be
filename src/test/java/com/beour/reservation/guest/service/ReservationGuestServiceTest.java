@@ -38,6 +38,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -366,14 +367,6 @@ class ReservationGuestServiceTest {
         assertEquals(reservationFuture.getEndTime(), result.get(0).getEndTime());
     }
 
-    /**
-     * #73
-     * 예약 취소
-     * - 성공
-     * - 존재하지 않는 예약일 경우
-     * - 이미 확정된 예약일 경우
-     */
-
     @Test
     @DisplayName("지난 예약 조회 - 시간 지나면 예약 사용 완료 상태로 변경")
     void get_past_reservation_list_change_status(){
@@ -442,6 +435,61 @@ class ReservationGuestServiceTest {
         assertThrows(ReservationNotFound.class, () -> reservationGuestService.findPastReservationList());
     }
 
+    @Test
+    @DisplayName("예약 취소 - 해당 예약이 존재하지 않을 경우")
+    void cancel_reservation_with_not_found_reservation(){
+        //when  //then
+        assertThrows(ReservationNotFound.class, () -> reservationGuestService.cancelReservation(1L));
+    }
 
+    @Test
+    @DisplayName("예약 취소 - 예약이 확정되었을 경우")
+    void cancel_reservation_with_reservation_status_accepted(){
+        //given
+        Reservation reservationFuture = Reservation.builder()
+            .guest(guest)
+            .host(host)
+            .space(space)
+            .status(ReservationStatus.ACCEPTED)
+            .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+            .requestMessage("테슽뚜")
+            .date(LocalDate.now().plusDays(1))
+            .startTime(LocalTime.of(15, 0, 0))
+            .endTime(LocalTime.of(16, 0, 0))
+            .price(15000)
+            .guestCount(2)
+            .build();
+        reservationRepository.save(reservationFuture);
+
+        //when  //then
+        assertThrows(IllegalStateException.class, () -> reservationGuestService.cancelReservation(1L));
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("예약 취소 - 성공")
+    void success_cancel_reservation(){
+        //given
+        Reservation reservationFuture = Reservation.builder()
+            .guest(guest)
+            .host(host)
+            .space(space)
+            .status(ReservationStatus.PENDING)
+            .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+            .requestMessage("테슽뚜")
+            .date(LocalDate.now().plusDays(1))
+            .startTime(LocalTime.of(15, 0, 0))
+            .endTime(LocalTime.of(16, 0, 0))
+            .price(15000)
+            .guestCount(2)
+            .build();
+        reservationRepository.save(reservationFuture);
+
+        //when
+        reservationGuestService.cancelReservation(reservationFuture.getId());
+
+        //then
+        assertEquals(ReservationStatus.REJECTED, reservationFuture.getStatus());
+    }
 
 }
