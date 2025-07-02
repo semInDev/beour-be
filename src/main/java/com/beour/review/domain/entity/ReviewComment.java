@@ -22,21 +22,15 @@ public class ReviewComment extends BaseTimeEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "review_id", nullable = false)
     private Review review;
 
     @Column(length = 500)
     private String content;
 
-    private LocalDate deletedAt;
-
     public void updateContent(String content) {
         this.content = content;
-    }
-
-    public void delete() {
-        this.deletedAt = LocalDate.now();
     }
 
 }
