@@ -28,53 +28,45 @@ public class ReservationCalendarService {
 
     public List<CalendarReservationResponseDto> getHostCalendarReservations(LocalDate date, Long spaceId) {
         User host = findUserFromToken();
-
-        List<Reservation> reservationList;
-
-        if (spaceId != null) {
-            validateSpaceOwnership(host, spaceId);
-            reservationList = reservationRepository.findByHostIdAndDateAndSpaceIdAndDeletedAtIsNull(
-                    host.getId(), date, spaceId);
-        } else {
-            reservationList = reservationRepository.findByHostIdAndDateAndDeletedAtIsNull(
-                    host.getId(), date);
-        }
-
+        List<Reservation> reservationList = getReservationListDependingOnSpaceId(host, date, spaceId, null);
         return convertToCalendarResponseDto(reservationList);
     }
 
     public List<CalendarReservationResponseDto> getHostPendingReservations(LocalDate date, Long spaceId) {
         User host = findUserFromToken();
-
-        List<Reservation> reservationList;
-
-        if (spaceId != null) {
-            validateSpaceOwnership(host, spaceId);
-            reservationList = reservationRepository.findByHostIdAndDateAndSpaceIdAndStatusAndDeletedAtIsNull(
-                    host.getId(), date, spaceId, ReservationStatus.PENDING);
-        } else {
-            reservationList = reservationRepository.findByHostIdAndDateAndStatusAndDeletedAtIsNull(
-                    host.getId(), date, ReservationStatus.PENDING);
-        }
-
+        List<Reservation> reservationList = getReservationListDependingOnSpaceId(host, date, spaceId, ReservationStatus.PENDING);
         return convertToCalendarResponseDto(reservationList);
     }
 
     public List<CalendarReservationResponseDto> getHostAcceptedReservations(LocalDate date, Long spaceId) {
         User host = findUserFromToken();
+        List<Reservation> reservationList = getReservationListDependingOnSpaceId(host, date, spaceId, ReservationStatus.ACCEPTED);
+        return convertToCalendarResponseDto(reservationList);
+    }
 
-        List<Reservation> reservationList;
-
+    private List<Reservation> getReservationListDependingOnSpaceId(User host, LocalDate date, Long spaceId, ReservationStatus status) {
         if (spaceId != null) {
             validateSpaceOwnership(host, spaceId);
-            reservationList = reservationRepository.findByHostIdAndDateAndSpaceIdAndStatusAndDeletedAtIsNull(
-                    host.getId(), date, spaceId, ReservationStatus.ACCEPTED);
+            if (status != null) {
+                return reservationRepository.findByHostIdAndDateAndSpaceIdAndStatusAndDeletedAtIsNull(
+                        host.getId(), date, spaceId, status
+                );
+            } else {
+                return reservationRepository.findByHostIdAndDateAndSpaceIdAndDeletedAtIsNull(
+                        host.getId(), date, spaceId
+                );
+            }
         } else {
-            reservationList = reservationRepository.findByHostIdAndDateAndStatusAndDeletedAtIsNull(
-                    host.getId(), date, ReservationStatus.ACCEPTED);
+            if (status != null) {
+                return reservationRepository.findByHostIdAndDateAndStatusAndDeletedAtIsNull(
+                        host.getId(), date, status
+                );
+            } else {
+                return reservationRepository.findByHostIdAndDateAndDeletedAtIsNull(
+                        host.getId(), date
+                );
+            }
         }
-
-        return convertToCalendarResponseDto(reservationList);
     }
 
     private void validateSpaceOwnership(User host, Long spaceId) {
