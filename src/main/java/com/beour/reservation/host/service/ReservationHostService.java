@@ -52,21 +52,7 @@ public class ReservationHostService {
         List<Reservation> reservationList = reservationRepository.findByHostIdAndDateAndDeletedAtIsNull(
                 host.getId(), date);
 
-        // 예약 상태가 ACCEPTED인 것만 필터링
-        List<Reservation> acceptedReservations = reservationList.stream()
-                .filter(reservation -> reservation.getStatus() == ReservationStatus.ACCEPTED)
-                .collect(Collectors.toList());
-
-        if (acceptedReservations.isEmpty()) {
-            throw new ReservationNotFound("해당 날짜에 확정된 예약이 없습니다.");
-        }
-
-        List<HostReservationListResponseDto> responseDtoList = new ArrayList<>();
-        for (Reservation reservation : acceptedReservations) {
-            responseDtoList.add(HostReservationListResponseDto.of(reservation));
-        }
-
-        return responseDtoList;
+        return filterAcceptedReservationsAndConvert(reservationList, "해당 날짜에 확정된 예약이 없습니다.");
     }
 
     public List<HostReservationListResponseDto> getHostReservationsByDateAndSpace(LocalDate date, Long spaceId) {
@@ -84,21 +70,21 @@ public class ReservationHostService {
         List<Reservation> reservationList = reservationRepository.findByHostIdAndDateAndSpaceIdAndDeletedAtIsNull(
                 host.getId(), date, spaceId);
 
-        // 예약 상태가 ACCEPTED인 것만 필터링
+        return filterAcceptedReservationsAndConvert(reservationList, "해당 날짜와 공간에 확정된 예약이 없습니다.");
+    }
+
+    private List<HostReservationListResponseDto> filterAcceptedReservationsAndConvert(List<Reservation> reservationList, String emptyMessage) {
         List<Reservation> acceptedReservations = reservationList.stream()
                 .filter(reservation -> reservation.getStatus() == ReservationStatus.ACCEPTED)
                 .collect(Collectors.toList());
 
         if (acceptedReservations.isEmpty()) {
-            throw new ReservationNotFound("해당 날짜와 공간에 확정된 예약이 없습니다.");
+            throw new ReservationNotFound(emptyMessage);
         }
 
-        List<HostReservationListResponseDto> responseDtoList = new ArrayList<>();
-        for (Reservation reservation : acceptedReservations) {
-            responseDtoList.add(HostReservationListResponseDto.of(reservation));
-        }
-
-        return responseDtoList;
+        return acceptedReservations.stream()
+                .map(HostReservationListResponseDto::of)
+                .collect(Collectors.toList());
     }
 
     private User findUserFromToken() {
