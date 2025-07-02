@@ -14,9 +14,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     List<Reservation> findBySpaceIdAndDateAndDeletedAtIsNull(Long spaceId, LocalDate date);
     List<Reservation> findBySpaceIdAndDateAndStatusNot(Long spaceId, LocalDate date, ReservationStatus status);
 
-    @Query("SELECT r FROM Reservation r " +
-            "WHERE r.guest.id = :guestId AND " +
-            "(r.date > :today OR (r.date = :today AND r.startTime > :now))")
+    @Query("SELECT r FROM Reservation r JOIN FETCH r.space " +
     List<Reservation> findUpcomingReservationsByGuest(
             @Param("guestId") Long guestId,
             @Param("today") LocalDate today,

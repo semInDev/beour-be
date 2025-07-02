@@ -175,8 +175,8 @@ public class ReservationGuestService {
                 () -> new ReservationNotFound("해당 예약이 존재하지 않습니다.")
         );
 
-        if (reservation.getStatus() == ReservationStatus.COMPLETED) {
-            throw new IllegalStateException("이미 완료된 예약은 취소할 수 없습니다.");
+        if (reservation.getStatus() != ReservationStatus.PENDING) {
+            throw new IllegalStateException("해당 예약은 취소할 수 없습니다.");
         }
 
         reservation.cancel();
