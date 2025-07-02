@@ -6,6 +6,7 @@ import com.beour.reservation.host.service.ReservationCalendarService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -37,5 +38,21 @@ public class ReservationCalendarController {
             @RequestParam(value = "date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam(value = "spaceId", required = false) Long spaceId) {
         return ApiResponse.ok(reservationCalendarService.getHostAcceptedReservations(date, spaceId));
+    }
+
+    @PatchMapping("/api/host/calendar/reservations/accept")
+    public ApiResponse<String> acceptReservation(
+            @RequestParam(value = "reservationId") Long reservationId,
+            @RequestParam(value = "spaceId") Long spaceId) {
+        reservationCalendarService.acceptReservation(reservationId, spaceId);
+        return ApiResponse.ok("예약이 승인되었습니다.");
+    }
+
+    @PatchMapping("/api/host/calendar/reservations/reject")
+    public ApiResponse<String> rejectReservation(
+            @RequestParam(value = "reservationId") Long reservationId,
+            @RequestParam(value = "spaceId") Long spaceId) {
+        reservationCalendarService.rejectReservation(reservationId, spaceId);
+        return ApiResponse.ok("예약이 거부되었습니다.");
     }
 }
