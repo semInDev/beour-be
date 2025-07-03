@@ -48,17 +48,12 @@ class ReservationGuestControllerValidationTest {
     private UserRepository userRepository;
     @Autowired
     private SpaceRepository spaceRepository;
-    @Autowired
-    private AvailableTimeRepository availableTimeRepository;
 
 
     private User guest;
     private User host;
     private Space space;
     private String accessToken;
-    private AvailableTime availableTimePast;
-    private AvailableTime availableTimeCurrent;
-    private AvailableTime availableTimeNext;
 
     @BeforeEach
     void setUp() {
@@ -100,33 +95,6 @@ class ReservationGuestControllerValidationTest {
             .availableTimes(new ArrayList<>())
             .build();
         spaceRepository.save(space);
-
-//        availableTimePast = AvailableTime.builder()
-//            .space(space)
-//            .date(LocalDate.now().minusDays(1))
-//            .startTime(LocalTime.of(1, 0, 0))
-//            .endTime(LocalTime.of(23, 0, 0))
-//            .build();
-//        availableTimeRepository.save(availableTimePast);
-//        space.getAvailableTimes().add(availableTimePast);
-//
-//        availableTimeCurrent = AvailableTime.builder()
-//            .space(space)
-//            .date(LocalDate.now())
-//            .startTime(LocalTime.of(1, 0, 0))
-//            .endTime(LocalTime.of(23, 0, 0))
-//            .build();
-//        availableTimeRepository.save(availableTimeCurrent);
-//        space.getAvailableTimes().add(availableTimeCurrent);
-//
-//        availableTimeNext = AvailableTime.builder()
-//            .space(space)
-//            .date(LocalDate.now().plusDays(1))
-//            .startTime(LocalTime.of(1, 0, 0))
-//            .endTime(LocalTime.of(23, 0, 0))
-//            .build();
-//        availableTimeRepository.save(availableTimeNext);
-//        space.getAvailableTimes().add(availableTimeNext);
 
         accessToken = jwtUtil.createJwt(
             "access",
