@@ -178,5 +178,50 @@ class ReservationRepositoryTest {
         assertEquals(reservation.getEndTime(), result.get(0).getEndTime());
     }
 
+    @Test
+    void findBySpaceIdAndDateAndStatusNot_test() {
+        //given
+        Reservation reservation = Reservation.builder()
+            .guest(guest)
+            .host(host)
+            .space(space)
+            .status(ReservationStatus.ACCEPTED)
+            .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+            .requestMessage("테슽뚜")
+            .date(LocalDate.now().plusDays(1))
+            .startTime(LocalTime.of(12, 0, 0))
+            .endTime(LocalTime.of(16, 0, 0))
+            .price(60000)
+            .guestCount(2)
+            .build();
+        reservationRepository.save(reservation);
+
+        Reservation reservation2 = Reservation.builder()
+            .guest(guest)
+            .host(host)
+            .space(space)
+            .status(ReservationStatus.REJECTED)
+            .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+            .requestMessage("테슽뚜")
+            .date(LocalDate.now().plusDays(1))
+            .startTime(LocalTime.of(16, 0, 0))
+            .endTime(LocalTime.of(17, 0, 0))
+            .price(15000)
+            .guestCount(2)
+            .build();
+        reservationRepository.save(reservation2);
+
+        //when
+        List<Reservation> result = reservationRepository.findBySpaceIdAndDateAndStatusNot(
+            space.getId(), LocalDate.now().plusDays(1), ReservationStatus.REJECTED);
+
+        //then
+        assertEquals(1, result.size());
+        assertEquals(reservation.getStartTime(), result.get(0).getStartTime());
+        assertEquals(reservation.getEndTime(), result.get(0).getEndTime());
+        assertEquals(reservation.getStatus(), result.get(0).getStatus());
+    }
+
+
 
 }
