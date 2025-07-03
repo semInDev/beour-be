@@ -5,6 +5,7 @@ import com.beour.space.host.dto.SpaceRegisterRequestDto;
 import com.beour.space.host.dto.SpaceUpdateRequestDto;
 import com.beour.space.host.dto.SpaceSimpleResponseDto;
 import com.beour.space.host.service.SpaceService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,37 +37,42 @@ public class SpaceController {
   
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateSpace(@PathVariable Long id,
-                                            @RequestBody SpaceUpdateRequestDto dto) {
+                                            @RequestBody @Valid SpaceUpdateRequestDto dto) {
         spaceService.updateSpace(id, dto);
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}/basic")
-    public ResponseEntity<Void> updateSpaceBasic(@PathVariable Long id, @RequestBody SpaceUpdateRequestDto dto) {
+    public ResponseEntity<Void> updateSpaceBasic(@PathVariable Long id,
+                                                 @RequestBody @Valid SpaceUpdateRequestDto dto) {
         spaceService.updateSpaceBasic(id, dto);
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}/description")
-    public ResponseEntity<Void> updateSpaceDescription(@PathVariable Long id, @RequestBody SpaceUpdateRequestDto dto) {
+    public ResponseEntity<Void> updateSpaceDescription(@PathVariable Long id,
+                                                       @RequestBody @Valid SpaceUpdateRequestDto dto) {
         spaceService.updateSpaceDescription(id, dto);
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}/tags")
-    public ResponseEntity<Void> updateTags(@PathVariable Long id, @RequestBody SpaceUpdateRequestDto dto) {
+    public ResponseEntity<Void> updateTags(@PathVariable Long id,
+                                           @RequestBody @Valid SpaceUpdateRequestDto dto) {
         spaceService.updateTags(id, dto);
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}/available-times")
-    public ResponseEntity<Void> updateAvailableTimes(@PathVariable Long id, @RequestBody SpaceUpdateRequestDto dto) {
+    public ResponseEntity<Void> updateAvailableTimes(@PathVariable Long id,
+                                                     @RequestBody @Valid SpaceUpdateRequestDto dto) {
         spaceService.updateAvailableTimes(id, dto);
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}/images")
-    public ResponseEntity<Void> updateSpaceImages(@PathVariable Long id, @RequestBody SpaceUpdateRequestDto dto) {
+    public ResponseEntity<Void> updateSpaceImages(@PathVariable Long id,
+                                                  @RequestBody @Valid SpaceUpdateRequestDto dto) {
         spaceService.updateSpaceImages(id, dto);
         return ResponseEntity.noContent().build();
     }
