@@ -176,7 +176,7 @@ public class ReservationGuestService {
         );
 
         if (reservation.getStatus() != ReservationStatus.PENDING) {
-            throw new IllegalStateException("해당 예약은 취소할 수 없습니다.");
+            throw new MissMatch("해당 예약은 취소할 수 없습니다.");
         }
 
         reservation.cancel();

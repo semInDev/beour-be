@@ -1,5 +1,6 @@
 package com.beour.reservation.guest.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -637,11 +638,74 @@ class ReservationGuestControllerTest {
             .andExpect(jsonPath("$.data[0].status").value("COMPLETED"));
     }
 
-    /**
-     * 예약 취소
-     * - 성공
-     * - 존재하지 않는 예약일 경우
-     * - 이미 확정된 예약일 경우
-     */
+    @Test
+    @DisplayName("예약 취소 - 존재하지 않는 에약일 경우")
+    void cancel_reservation_not_found() throws Exception {
+        //when  then
+        mockMvc.perform(delete("/api/reservation/cancel")
+                .param("reservationId", "100")
+                .header("Authorization", "Bearer " + accessToken)
+            )
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.message").value("해당 예약이 존재하지 않습니다."));
+    }
 
+    @Test
+    @DisplayName("예약 취소 - 이미 확정된 예약일 경우")
+    void cancel_reservation_status_accepted() throws Exception {
+        //given
+        Reservation reservation = Reservation.builder()
+            .guest(guest)
+            .host(host)
+            .space(space)
+            .status(ReservationStatus.ACCEPTED)
+            .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+            .requestMessage("테슽뚜")
+            .date(LocalDate.now().plusDays(1))
+            .startTime(LocalTime.of(13, 0, 0))
+            .endTime(LocalTime.of(14, 0, 0))
+            .price(15000)
+            .guestCount(2)
+            .build();
+        reservationRepository.save(reservation);
+
+        //when  then
+        mockMvc.perform(delete("/api/reservation/cancel")
+                .param("reservationId", String.format("%d", reservation.getId()))
+                .header("Authorization", "Bearer " + accessToken)
+            )
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("해당 예약은 취소할 수 없습니다."));
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("예약 취소 - 성공")
+    void success_cancel_reservation() throws Exception {
+        //given
+        Reservation reservation = Reservation.builder()
+            .guest(guest)
+            .host(host)
+            .space(space)
+            .status(ReservationStatus.PENDING)
+            .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+            .requestMessage("테슽뚜")
+            .date(LocalDate.now().plusDays(1))
+            .startTime(LocalTime.of(13, 0, 0))
+            .endTime(LocalTime.of(14, 0, 0))
+            .price(15000)
+            .guestCount(2)
+            .build();
+        reservationRepository.save(reservation);
+
+        //when  then
+        mockMvc.perform(delete("/api/reservation/cancel")
+                .param("reservationId", String.format("%d", reservation.getId()))
+                .header("Authorization", "Bearer " + accessToken)
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data").value("예약이 성공적으로 취소되었습니다."));
+
+        assertEquals(ReservationStatus.REJECTED, reservation.getStatus());
+    }
 }
