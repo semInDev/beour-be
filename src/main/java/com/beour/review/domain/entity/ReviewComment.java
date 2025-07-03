@@ -5,8 +5,6 @@ import com.beour.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
-
 @Entity
 @Getter
 @NoArgsConstructor
@@ -32,5 +30,4 @@ public class ReviewComment extends BaseTimeEntity {
     public void updateContent(String content) {
         this.content = content;
     }
-
 }
