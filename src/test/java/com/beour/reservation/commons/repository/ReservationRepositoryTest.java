@@ -222,6 +222,96 @@ class ReservationRepositoryTest {
         assertEquals(reservation.getStatus(), result.get(0).getStatus());
     }
 
+    @Test
+    void findUpcomingReservationsByGuest_test() {
+        //given
+        int currentTime = LocalTime.now().getHour();
+        Reservation reservation = Reservation.builder()
+            .guest(guest)
+            .host(host)
+            .space(space)
+            .status(ReservationStatus.ACCEPTED)
+            .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+            .requestMessage("테슽뚜")
+            .date(LocalDate.now())
+            .startTime(LocalTime.of(currentTime - 1, 0, 0))
+            .endTime(LocalTime.of(currentTime + 1, 0, 0))
+            .price(30000)
+            .guestCount(2)
+            .build();
+        reservationRepository.save(reservation);
 
+        Reservation reservation2 = Reservation.builder()
+            .guest(guest)
+            .host(host)
+            .space(space)
+            .status(ReservationStatus.REJECTED)
+            .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+            .requestMessage("테슽뚜")
+            .date(LocalDate.now())
+            .startTime(LocalTime.of(currentTime + 1, 0, 0))
+            .endTime(LocalTime.of(currentTime + 2, 0, 0))
+            .price(15000)
+            .guestCount(2)
+            .build();
+        reservationRepository.save(reservation2);
+
+        //when
+        List<Reservation> result = reservationRepository.findUpcomingReservationsByGuest(
+            guest.getId(), LocalDate.now(), LocalTime.now());
+
+        //then
+        assertEquals(1, result.size());
+        assertEquals(reservation2.getDate(), result.get(0).getDate());
+        assertEquals(reservation2.getStartTime(), result.get(0).getStartTime());
+        assertEquals(reservation2.getEndTime(), result.get(0).getEndTime());
+        assertEquals(reservation2.getStatus(), result.get(0).getStatus());
+    }
+
+    @Test
+    void findPastReservationsByGuest_test() {
+        //given
+        int currentTime = LocalTime.now().getHour();
+        Reservation reservation = Reservation.builder()
+            .guest(guest)
+            .host(host)
+            .space(space)
+            .status(ReservationStatus.ACCEPTED)
+            .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+            .requestMessage("테슽뚜")
+            .date(LocalDate.now())
+            .startTime(LocalTime.of(currentTime - 3, 0, 0))
+            .endTime(LocalTime.of(currentTime - 1, 0, 0))
+            .price(30000)
+            .guestCount(2)
+            .build();
+        reservationRepository.save(reservation);
+
+        Reservation reservation2 = Reservation.builder()
+            .guest(guest)
+            .host(host)
+            .space(space)
+            .status(ReservationStatus.REJECTED)
+            .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+            .requestMessage("테슽뚜")
+            .date(LocalDate.now())
+            .startTime(LocalTime.of(currentTime + 1, 0, 0))
+            .endTime(LocalTime.of(currentTime + 2, 0, 0))
+            .price(15000)
+            .guestCount(2)
+            .build();
+        reservationRepository.save(reservation2);
+
+        //when
+        List<Reservation> result = reservationRepository.findPastReservationsByGuest(
+            guest.getId(), LocalDate.now(), LocalTime.now());
+
+        //then
+        assertEquals(1, result.size());
+        assertEquals(reservation.getDate(), result.get(0).getDate());
+        assertEquals(reservation.getStartTime(), result.get(0).getStartTime());
+        assertEquals(reservation.getEndTime(), result.get(0).getEndTime());
+        assertEquals(reservation.getStatus(), result.get(0).getStatus());
+    }
 
 }
