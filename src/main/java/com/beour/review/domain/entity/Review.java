@@ -55,8 +55,4 @@ public class Review extends BaseTimeEntity {
     public void updateRating(int rating) {
         this.rating = rating;
     }
-
-    public void softDelete() {
-        super.softDelete();
-    }
 }
