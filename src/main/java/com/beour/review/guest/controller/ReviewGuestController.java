@@ -8,6 +8,7 @@ import com.beour.review.guest.dto.ReviewUpdateRequestDto;
 import com.beour.review.guest.dto.ReviewableReservationResponseDto;
 import com.beour.review.guest.dto.WrittenReviewResponseDto;
 import com.beour.review.guest.service.ReviewGuestService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,7 +37,7 @@ public class ReviewGuestController {
     }
 
     @PostMapping("/api/guest/reviews")
-    public ApiResponse<String> createReview(@RequestBody ReviewRequestDto requestDto) {
+    public ApiResponse<String> createReview(@RequestBody @Valid ReviewRequestDto requestDto) {
         reviewGuestService.createReview(requestDto);
         return ApiResponse.ok("Review가 저장되었습니다.");
     }
@@ -48,7 +49,8 @@ public class ReviewGuestController {
     }
 
     @PatchMapping("/api/guest/reviews/{reviewId}")
-    public ApiResponse<String> updateReview(@PathVariable Long reviewId, @RequestBody ReviewUpdateRequestDto requestDto) {
+    public ApiResponse<String> updateReview(@PathVariable Long reviewId,
+                                            @RequestBody @Valid ReviewUpdateRequestDto requestDto) {
         reviewGuestService.updateReview(reviewId, requestDto);
         return ApiResponse.ok("Review가 수정되었습니다.");
     }
