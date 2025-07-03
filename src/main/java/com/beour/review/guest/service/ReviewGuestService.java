@@ -1,5 +1,6 @@
 package com.beour.review.guest.service;
 
+import com.beour.global.exception.exceptionType.ReviewNotFoundException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
@@ -10,12 +11,14 @@ import com.beour.review.domain.entity.ReviewComment;
 import com.beour.review.domain.entity.ReviewImage;
 import com.beour.review.domain.repository.ReviewImageRepository;
 import com.beour.review.domain.repository.ReviewRepository;
+import com.beour.review.guest.dto.RecentWrittenReviewResponseDto;
 import com.beour.review.guest.dto.ReviewDetailResponseDto;
 import com.beour.review.guest.dto.ReviewForReservationResponseDto;
 import com.beour.review.guest.dto.ReviewRequestDto;
 import com.beour.review.guest.dto.ReviewUpdateRequestDto;
 import com.beour.review.guest.dto.ReviewableReservationResponseDto;
 import com.beour.review.guest.dto.WrittenReviewResponseDto;
+import com.beour.space.domain.entity.Space;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -122,6 +125,28 @@ public class ReviewGuestService {
         validateReviewOwner(review, guest);
 
         review.softDelete();
+    }
+
+    public List<RecentWrittenReviewResponseDto> getRecentWrittenReviews(){
+        List<Review> reviews = reviewRepository.findTop5ByDeletedAtIsNullOrderByCreatedAtDesc();
+
+        if(reviews.isEmpty()){
+            throw new ReviewNotFoundException("최근 등록된 리뷰가 없습니다.");
+        }
+
+        return reviews.stream()
+            .map(review -> {
+                return RecentWrittenReviewResponseDto.builder()
+                    .spaceNameAndAddress(review.getSpace().getName() + " " + review.getSpace().getAddress().split(" ")[1])
+                    .reviewerNickName(review.getGuest().getNickname())
+                    .reviewCreatedAt(review.getCreatedAt())
+                    .rating(review.getRating())
+                    .images(review.getImages().stream()
+                        .map(ReviewImage::getImageUrl)
+                        .toList())
+                    .reviewContent(review.getContent())
+                    .build();
+            }).collect(Collectors.toList());
     }
 
     private User findUserFromToken() {
