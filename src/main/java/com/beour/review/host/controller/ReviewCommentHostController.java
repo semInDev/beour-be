@@ -6,6 +6,7 @@ import com.beour.review.host.dto.ReviewCommentResponseDto;
 import com.beour.review.host.dto.ReviewCommentUpdateRequestDto;
 import com.beour.review.host.dto.ReviewCommentableResponseDto;
 import com.beour.review.host.service.ReviewCommentHostService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,14 +29,14 @@ public class ReviewCommentHostController {
     }
 
     @PostMapping("/api/host/review-comments")
-    public ApiResponse<String> createReviewComment(@RequestBody ReviewCommentCreateRequestDto requestDto) {
+    public ApiResponse<String> createReviewComment(@RequestBody @Valid ReviewCommentCreateRequestDto requestDto) {
         reviewCommentHostService.createReviewComment(requestDto);
         return ApiResponse.ok("답글이 저장되었습니다.");
     }
 
     @PatchMapping("/api/host/review-comments/{commentId}")
     public ApiResponse<String> updateReviewComment(@PathVariable Long commentId,
-                                                 @RequestBody ReviewCommentUpdateRequestDto requestDto) {
+                                                 @RequestBody @Valid ReviewCommentUpdateRequestDto requestDto) {
         reviewCommentHostService.updateReviewComment(commentId, requestDto);
         return ApiResponse.ok("답글이 수정되었습니다.");
     }
