@@ -1,5 +1,7 @@
 package com.beour.space.host.service;
 
+import com.beour.global.exception.exceptionType.SpaceNotFoundException;
+import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.space.domain.entity.*;
 import com.beour.space.domain.repository.*;
 import com.beour.space.host.dto.SpaceDetailResponseDto;
@@ -7,7 +9,9 @@ import com.beour.space.host.dto.SpaceRegisterRequestDto;
 import com.beour.space.host.dto.SpaceUpdateRequestDto;
 import com.beour.space.host.dto.SpaceSimpleResponseDto;
 import com.beour.user.entity.User;
+import com.beour.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,15 +25,13 @@ public class SpaceService {
     private final SpaceRepository spaceRepository;
     private final DescriptionRepository descriptionRepository;
     private final TagRepository tagRepository;
-    private final AvailableTimeRepository availableTimeRepository;
     private final SpaceImageRepository spaceImageRepository;
-
+    private final UserRepository userRepository;
     private final KakaoMapService kakaoMapService;
-    private final UserService userService;
 
     @Transactional
     public Long registerSpace(SpaceRegisterRequestDto dto) {
-        User host = userService.getUserById(dto.getHostId());
+        User host = findUserFromToken();
         double[] latitudeAndLongitude = kakaoMapService.getLatitudeAndLongitude(dto.getAddress());
 
         // 1. Space
@@ -63,36 +65,28 @@ public class SpaceService {
         descriptionRepository.save(description);
 
         // 3. Tags
-        List<Tag> tags = dto.getTags().stream()
-                .map(content -> Tag.builder().space(space).contents(content).build())
-                .toList();
-        tagRepository.saveAll(tags);
+        if (dto.getTags() != null && !dto.getTags().isEmpty()) {
+            List<Tag> tags = dto.getTags().stream()
+                    .map(content -> Tag.builder().space(space).contents(content).build())
+                    .toList();
+            tagRepository.saveAll(tags);
+        }
 
-        // 4. AvailableTimes
-        List<AvailableTime> availableTimes = dto.getAvailableTimes().stream()
-                .map(at -> AvailableTime.builder()
-                        .space(space)
-                        .date(at.getDate())
-                        .startTime(at.getStartTime())
-                        .endTime(at.getEndTime())
-                        .build())
-                .toList();
-        availableTimeRepository.saveAll(availableTimes);
-
-        // 5. SpaceImages
-        List<SpaceImage> images = dto.getImageUrls().stream()
-                .map(url -> SpaceImage.builder().space(space).imageUrl(url).build())
-                .toList();
-        spaceImageRepository.saveAll(images);
+        // 4. SpaceImages
+        if (dto.getImageUrls() != null && !dto.getImageUrls().isEmpty()) {
+            List<SpaceImage> images = dto.getImageUrls().stream()
+                    .map(url -> SpaceImage.builder().space(space).imageUrl(url).build())
+                    .toList();
+            spaceImageRepository.saveAll(images);
+        }
 
         return space.getId();
     }
 
-  
     @Transactional(readOnly = true)
     public SpaceSimpleResponseDto getSimpleSpaceInfo(Long spaceId) {
-        Space space = spaceRepository.findById(spaceId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공간입니다."));
+        Space space = spaceRepository.findByIdAndDeletedAtIsNull(spaceId)
+                .orElseThrow(() -> new SpaceNotFoundException("존재하지 않는 공간입니다."));
 
         List<String> tagContents = space.getTags().stream()
                 .map(Tag::getContents)
@@ -115,8 +109,8 @@ public class SpaceService {
 
     @Transactional(readOnly = true)
     public SpaceDetailResponseDto getDetailedSpaceInfo(Long spaceId) {
-        Space space = spaceRepository.findById(spaceId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공간입니다."));
+        Space space = spaceRepository.findByIdAndDeletedAtIsNull(spaceId)
+                .orElseThrow(() -> new SpaceNotFoundException("존재하지 않는 공간입니다."));
 
         Description desc = space.getDescription();
 
@@ -138,20 +132,13 @@ public class SpaceService {
                 .refundPolicy(desc.getRefundPolicy())
                 .websiteUrl(desc.getWebsiteUrl())
                 .tags(space.getTags().stream().map(Tag::getContents).toList())
-                .availableTimes(space.getAvailableTimes().stream()
-                        .map(t -> new SpaceDetailResponseDto.AvailableTimeDto(
-                                t.getDate(), t.getStartTime(), t.getEndTime()))
-                        .toList())
                 .imageUrls(space.getSpaceImages().stream().map(SpaceImage::getImageUrl).toList())
                 .build();
     }
-  
-  
+
     @Transactional
     public void updateSpace(Long spaceId, SpaceUpdateRequestDto dto) {
-        Space space = spaceRepository.findById(spaceId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공간입니다."));
-
+        Space space = findSpaceByIdAndCheckOwnership(spaceId);
         double[] latitudeAndLongitude = kakaoMapService.getLatitudeAndLongitude(dto.getAddress());
 
         // 1. Space 수정
@@ -169,35 +156,31 @@ public class SpaceService {
         );
 
         // 3. Tags 재저장
-        tagRepository.deleteAll(space.getTags());
-        List<Tag> tags = dto.getTags().stream()
-                .map(content -> Tag.builder().space(space).contents(content).build())
-                .toList();
-        tagRepository.saveAll(tags);
+        if (dto.getTags() != null) {
+            tagRepository.deleteBySpace(space);
+            if (!dto.getTags().isEmpty()) {
+                List<Tag> tags = dto.getTags().stream()
+                        .map(content -> Tag.builder().space(space).contents(content).build())
+                        .toList();
+                tagRepository.saveAll(tags);
+            }
+        }
 
-        // 4. AvailableTimes 재저장
-        availableTimeRepository.deleteAll(space.getAvailableTimes());
-        List<AvailableTime> times = dto.getAvailableTimes().stream()
-                .map(t -> AvailableTime.builder()
-                        .space(space)
-                        .date(t.getDate())
-                        .startTime(t.getStartTime())
-                        .endTime(t.getEndTime())
-                        .build())
-                .toList();
-        availableTimeRepository.saveAll(times);
-
-        // 5. Images 재저장
-        spaceImageRepository.deleteAll(space.getSpaceImages());
-        List<SpaceImage> images = dto.getImageUrls().stream()
-                .map(url -> SpaceImage.builder().space(space).imageUrl(url).build())
-                .toList();
-        spaceImageRepository.saveAll(images);
+        // 4. Images 재저장
+        if (dto.getImageUrls() != null) {
+            spaceImageRepository.deleteBySpace(space);
+            if (!dto.getImageUrls().isEmpty()) {
+                List<SpaceImage> images = dto.getImageUrls().stream()
+                        .map(url -> SpaceImage.builder().space(space).imageUrl(url).build())
+                        .toList();
+                spaceImageRepository.saveAll(images);
+            }
+        }
     }
 
     @Transactional
     public void updateSpaceBasic(Long id, SpaceUpdateRequestDto dto) {
-        Space space = spaceRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공간입니다."));
+        Space space = findSpaceByIdAndCheckOwnership(id);
 
         if (dto.getName() != null) space.updateName(dto.getName());
         if (dto.getAddress() != null) {
@@ -214,8 +197,9 @@ public class SpaceService {
 
     @Transactional
     public void updateSpaceDescription(Long id, SpaceUpdateRequestDto dto) {
-        Space space = spaceRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공간입니다."));
+        Space space = findSpaceByIdAndCheckOwnership(id);
         Description desc = space.getDescription();
+
         if (desc != null) {
             if (dto.getDescription() != null) desc.updateDescription(dto.getDescription());
             if (dto.getPriceGuide() != null) desc.updatePriceGuide(dto.getPriceGuide());
@@ -229,46 +213,55 @@ public class SpaceService {
 
     @Transactional
     public void updateTags(Long id, SpaceUpdateRequestDto dto) {
-        Space space = spaceRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공간입니다."));
+        Space space = findSpaceByIdAndCheckOwnership(id);
+
         if (dto.getTags() != null) {
             tagRepository.deleteBySpace(space);
-            List<Tag> newTags = dto.getTags().stream()
-                    .map(content -> new Tag(space, content))
-                    .toList();
-            tagRepository.saveAll(newTags);
-        }
-    }
-
-    @Transactional
-    public void updateAvailableTimes(Long id, SpaceUpdateRequestDto dto) {
-        Space space = spaceRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공간입니다."));
-        if (dto.getAvailableTimes() != null) {
-            availableTimeRepository.deleteBySpace(space);
-            List<AvailableTime> newTimes = dto.getAvailableTimes().stream()
-                    .map(t -> new AvailableTime(space, t.getDate(), t.getStartTime(), t.getEndTime()))
-                    .toList();
-            availableTimeRepository.saveAll(newTimes);
+            if (!dto.getTags().isEmpty()) {
+                List<Tag> newTags = dto.getTags().stream()
+                        .map(content -> new Tag(space, content))
+                        .toList();
+                tagRepository.saveAll(newTags);
+            }
         }
     }
 
     @Transactional
     public void updateSpaceImages(Long id, SpaceUpdateRequestDto dto) {
-        Space space = spaceRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공간입니다."));
+        Space space = findSpaceByIdAndCheckOwnership(id);
+
         if (dto.getImageUrls() != null) {
             spaceImageRepository.deleteBySpace(space);
-            List<SpaceImage> newImages = dto.getImageUrls().stream()
-                    .map(url -> new SpaceImage(space, url))
-                    .toList();
-            spaceImageRepository.saveAll(newImages);
+            if (!dto.getImageUrls().isEmpty()) {
+                List<SpaceImage> newImages = dto.getImageUrls().stream()
+                        .map(url -> new SpaceImage(space, url))
+                        .toList();
+                spaceImageRepository.saveAll(newImages);
+            }
         }
     }
 
-
     @Transactional
     public void deleteSpace(Long spaceId) {
-        Space space = spaceRepository.findById(spaceId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공간입니다."));
+        Space space = findSpaceByIdAndCheckOwnership(spaceId);
         space.delete();
     }
 
+    private Space findSpaceByIdAndCheckOwnership(Long spaceId) {
+        User currentUser = findUserFromToken();
+        Space space = spaceRepository.findByIdAndDeletedAtIsNull(spaceId)
+                .orElseThrow(() -> new SpaceNotFoundException("존재하지 않는 공간입니다."));
+
+        if (!space.getHost().getId().equals(currentUser.getId())) {
+            throw new IllegalStateException("해당 공간에 대한 권한이 없습니다.");
+        }
+
+        return space;
+    }
+
+    private User findUserFromToken() {
+        String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByLoginIdAndDeletedAtIsNull(loginId)
+                .orElseThrow(() -> new UserNotFoundException("해당 유저를 찾을 수 없습니다."));
+    }
 }

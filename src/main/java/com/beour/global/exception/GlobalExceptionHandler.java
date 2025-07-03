@@ -2,9 +2,7 @@ package com.beour.global.exception;
 
 import com.beour.global.exception.exceptionType.InputInvalidFormatException;
 import com.beour.global.response.ErrorResponse;
-import com.beour.space.host.enums.SpaceCategory;
 import jakarta.validation.ConstraintViolationException;
-import java.util.Arrays;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;

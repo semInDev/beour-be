@@ -1,8 +1,8 @@
 package com.beour.space.domain.entity;
 
 import com.beour.global.entity.BaseTimeEntity;
-import com.beour.space.host.enums.SpaceCategory;
-import com.beour.space.host.enums.UseCategory;
+import com.beour.space.domain.enums.SpaceCategory;
+import com.beour.space.domain.enums.UseCategory;
 import com.beour.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
