@@ -1,6 +1,6 @@
 package com.beour.reservation.guest.controller;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.hamcrest.Matchers.contains;
@@ -389,22 +389,6 @@ class ReservationGuestControllerTest {
             .andExpect(status().isOk());
     }
 
-    /**
-     * 예약 현황 조회
-     * - 성공
-     * - 현 시점의 시간 이전의 시간 잘 걸러지는지
-     * - 예약 없을 경우
-     *
-     * 지난 예약 조회
-     * - 예약 없을 경우
-     * - 시간 지나면 예약 사용 완료 상태로 변경
-     *
-     * 예약 취소
-     * - 성공
-     * - 존재하지 않는 예약일 경우
-     * - 이미 확정된 예약일 경우
-     */
-
     @Test
     @DisplayName("이용 가능한 시간 조회 - 과거 날짜로 조회")
     void check_available_time_with_past_date() throws Exception {
@@ -559,4 +543,105 @@ class ReservationGuestControllerTest {
             .andExpect(jsonPath("$.data.timeList.length()").value(availableTimes.size()))
             .andExpect(jsonPath("$.data.timeList").value(contains(availableTimes.toArray())));
     }
+
+    @Test
+    @DisplayName("예약 현황 조회 - 현 시점의 시간 이전의 시간 잘 걸러지는지")
+    void check_reservation_list_filtering_past_reservation() throws Exception {
+        //given
+        int currentHour = LocalTime.now().getHour();
+        Reservation reservationPast = Reservation.builder()
+            .guest(guest)
+            .host(host)
+            .space(space)
+            .status(ReservationStatus.COMPLETED)
+            .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+            .requestMessage("테슽뚜")
+            .date(LocalDate.now())
+            .startTime(LocalTime.of(currentHour -1, 0, 0))
+            .endTime(LocalTime.of(currentHour, 0, 0))
+            .price(15000)
+            .guestCount(2)
+            .build();
+        reservationRepository.save(reservationPast);
+        Reservation reservationFuture = Reservation.builder()
+            .guest(guest)
+            .host(host)
+            .space(space)
+            .status(ReservationStatus.ACCEPTED)
+            .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+            .requestMessage("테슽뚜")
+            .date(LocalDate.now())
+            .startTime(LocalTime.of(currentHour + 1, 0, 0))
+            .endTime(LocalTime.of(currentHour + 2, 0, 0))
+            .price(15000)
+            .guestCount(2)
+            .build();
+        reservationRepository.save(reservationFuture);
+
+        //when  then
+        mockMvc.perform(get("/api/reservation")
+                .header("Authorization", "Bearer " + accessToken)
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data[0].spaceName").value(reservationFuture.getSpace().getName()))
+            .andExpect(jsonPath("$.data[0].startTime").value(String.format("%02d:00:00", reservationFuture.getStartTime().getHour())))
+            .andExpect(jsonPath("$.data[0].endTime").value(String.format("%02d:00:00", reservationFuture.getEndTime().getHour())));
+    }
+
+    @Test
+    @DisplayName("예약 현황 조회 - 예약 없을 경우")
+    void check_reservation_list_not_found() throws Exception {
+        //when  then
+        mockMvc.perform(get("/api/reservation")
+                .header("Authorization", "Bearer " + accessToken)
+            )
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.message").value("예약이 없습니다."));
+    }
+
+    @Test
+    @DisplayName("지난 예약 현황 조회 - 예약 없을 경우")
+    void check_past_reservation_list_not_found() throws Exception {
+        //when  then
+        mockMvc.perform(get("/api/reservation/past")
+                .header("Authorization", "Bearer " + accessToken)
+            )
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.message").value("예약이 없습니다."));
+    }
+
+    @Test
+    @DisplayName("지난 예약 현황 조회 - 시간 지나면 예약 사용 완료 상태로 변경")
+    void check_past_reservation_list_use_complete() throws Exception {
+        //given
+        Reservation reservationPast = Reservation.builder()
+            .guest(guest)
+            .host(host)
+            .space(space)
+            .status(ReservationStatus.ACCEPTED)
+            .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+            .requestMessage("테슽뚜")
+            .date(LocalDate.now().minusDays(1))
+            .startTime(LocalTime.of(13, 0, 0))
+            .endTime(LocalTime.of(14, 0, 0))
+            .price(15000)
+            .guestCount(2)
+            .build();
+        reservationRepository.save(reservationPast);
+
+        //when  then
+        mockMvc.perform(get("/api/reservation/past")
+                .header("Authorization", "Bearer " + accessToken)
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data[0].status").value("COMPLETED"));
+    }
+
+    /**
+     * 예약 취소
+     * - 성공
+     * - 존재하지 않는 예약일 경우
+     * - 이미 확정된 예약일 경우
+     */
+
 }
