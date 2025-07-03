@@ -1,7 +1,7 @@
 package com.beour.space.host.dto;
 
-import com.beour.space.host.enums.SpaceCategory;
-import com.beour.space.host.enums.UseCategory;
+import com.beour.space.domain.enums.SpaceCategory;
+import com.beour.space.domain.enums.UseCategory;
 import lombok.Getter;
 
 import java.time.LocalDate;

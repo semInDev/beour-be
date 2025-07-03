@@ -6,19 +6,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.beour.global.jwt.JWTUtil;
-import com.beour.reservation.commons.enums.UsagePurpose;
-import com.beour.reservation.commons.repository.ReservationRepository;
-import com.beour.reservation.guest.dto.ReservationCreateRequest;
-import com.beour.space.domain.entity.AvailableTime;
 import com.beour.space.domain.entity.Space;
-import com.beour.space.domain.repository.AvailableTimeRepository;
 import com.beour.space.domain.repository.SpaceRepository;
-import com.beour.space.host.enums.SpaceCategory;
-import com.beour.space.host.enums.UseCategory;
+import com.beour.space.domain.enums.SpaceCategory;
+import com.beour.space.domain.enums.UseCategory;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

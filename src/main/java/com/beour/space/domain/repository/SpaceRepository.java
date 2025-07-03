@@ -1,8 +1,8 @@
 package com.beour.space.domain.repository;
 
 import com.beour.space.domain.entity.Space;
-import com.beour.space.host.enums.SpaceCategory;
-import com.beour.space.host.enums.UseCategory;
+import com.beour.space.domain.enums.SpaceCategory;
+import com.beour.space.domain.enums.UseCategory;
 import java.util.List;
 import java.util.Optional;
 import com.beour.user.entity.User;

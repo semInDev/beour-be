@@ -1,4 +1,4 @@
-package com.beour.space.host.enums;
+package com.beour.space.domain.enums;
 
 public enum UseCategory {
     MEETING, COOKING, BARISTA, FLEA_MARKET, FILMING, ETC
