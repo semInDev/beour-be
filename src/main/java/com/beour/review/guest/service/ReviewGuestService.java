@@ -38,7 +38,6 @@ public class ReviewGuestService {
     public List<ReviewableReservationResponseDto> getReviewableReservations() {
         User guest = findUserFromToken();
 
-        // COMPLETED 상태의 예약만 조회
         List<Reservation> completedReservations = reservationRepository.findAll()
                 .stream()
                 .filter(reservation -> reservation.getGuest().getId().equals(guest.getId()))
@@ -54,7 +53,6 @@ public class ReviewGuestService {
     public List<WrittenReviewResponseDto> getWrittenReviews() {
         User guest = findUserFromToken();
 
-        // 게스트가 작성한 리뷰 조회
         List<Review> writtenReviews = reviewRepository.findAll()
                 .stream()
                 .filter(review -> review.getGuest().getId().equals(guest.getId()))
@@ -85,22 +83,10 @@ public class ReviewGuestService {
         Reservation reservation = findReservationById(requestDto.getReservationId());
 
         validateReservationOwner(reservation, guest);
+        validateReservationStatus(reservation);
+        checkDuplicateReview(guest.getId(), reservation.getSpace().getId(), reservation.getDate());
 
-        // 이미 리뷰가 작성되었는지 확인
-        if (reviewRepository.findByGuestIdAndSpaceIdAndReservedDateAndDeletedAtIsNull(
-                guest.getId(), reservation.getSpace().getId(), reservation.getDate()).isPresent()) {
-            throw new IllegalArgumentException("이미 해당 예약에 대한 리뷰가 작성되었습니다.");
-        }
-
-        Review review = Review.builder()
-                .guest(guest)
-                .space(reservation.getSpace())
-                .reservation(reservation)
-                .rating(requestDto.getRating())
-                .content(requestDto.getContent())
-                .reservedDate(reservation.getDate())
-                .build();
-
+        Review review = buildReview(guest, reservation, requestDto.getRating(), requestDto.getContent());
         Review savedReview = reviewRepository.save(review);
 
         saveReviewImages(savedReview, requestDto.getImageUrls());
@@ -122,13 +108,10 @@ public class ReviewGuestService {
 
         validateReviewOwner(review, guest);
 
-        // 리뷰 업데이트
         review.updateRating(requestDto.getRating());
         review.updateContent(requestDto.getContent());
 
-        // 기존 이미지 삭제 후 새로운 이미지 저장
-        deleteExistingImages(review);
-        saveReviewImages(review, requestDto.getImageUrls());
+        updateReviewImages(review, requestDto.getImageUrls());
     }
 
     @Transactional
@@ -166,10 +149,34 @@ public class ReviewGuestService {
         }
     }
 
+    private void validateReservationStatus(Reservation reservation) {
+        if (reservation.getStatus() != ReservationStatus.COMPLETED) {
+            throw new IllegalArgumentException("완료된 예약에 대해서만 리뷰를 작성할 수 있습니다.");
+        }
+    }
+
+    private void checkDuplicateReview(Long guestId, Long spaceId, java.time.LocalDate reservedDate) {
+        if (reviewRepository.findByGuestIdAndSpaceIdAndReservedDateAndDeletedAtIsNull(
+                guestId, spaceId, reservedDate).isPresent()) {
+            throw new IllegalArgumentException("이미 해당 예약에 대한 리뷰가 작성되었습니다.");
+        }
+    }
+
     private void validateReviewOwner(Review review, User guest) {
         if (!review.getGuest().getId().equals(guest.getId())) {
             throw new IllegalArgumentException("해당 리뷰에 대한 권한이 없습니다.");
         }
+    }
+
+    private Review buildReview(User guest, Reservation reservation, int rating, String content) {
+        return Review.builder()
+                .guest(guest)
+                .space(reservation.getSpace())
+                .reservation(reservation)
+                .rating(rating)
+                .content(content)
+                .reservedDate(reservation.getDate())
+                .build();
     }
 
     private void saveReviewImages(Review review, List<String> imageUrls) {
@@ -183,6 +190,14 @@ public class ReviewGuestService {
 
             reviewImageRepository.saveAll(images);
         }
+    }
+
+    private void updateReviewImages(Review review, List<String> imageUrls) {
+        // 기존 이미지 삭제
+        deleteExistingImages(review);
+
+        // 새로운 이미지 저장
+        saveReviewImages(review, imageUrls);
     }
 
     private void deleteExistingImages(Review review) {
