@@ -7,10 +7,12 @@ import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class ReservationCreateRequest {
@@ -30,10 +32,10 @@ public class ReservationCreateRequest {
     @NotNull(message = "이용 마감 시간 필수")
     private LocalTime endTime;
 
-    @Min(0)
+    @Min(value = 0, message = "가격은 0원부터 입력가능합니다.")
     private int price;
 
-    @Min(1)
+    @Min(value = 1, message = "최소 인원은 1명입니다.")
     private int guestCount;
 
     @NotNull(message = "이용 목적 필수")
