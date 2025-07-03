@@ -11,9 +11,6 @@ import java.util.List;
 @Getter
 public class SpaceRegisterRequestDto {
     // 1. Space
-    @NotNull(message = "hostId는 필수입니다.")
-    private Long hostId;
-
     @NotBlank(message = "공간명은 필수입니다.")
     private String name;
 
