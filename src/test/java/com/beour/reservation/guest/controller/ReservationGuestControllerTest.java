@@ -3,6 +3,7 @@ package com.beour.reservation.guest.controller;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.hamcrest.Matchers.contains;
 
 import com.beour.global.jwt.JWTUtil;
 import com.beour.reservation.commons.entity.Reservation;
@@ -20,6 +21,7 @@ import com.beour.user.repository.UserRepository;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -32,6 +34,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -389,7 +392,6 @@ class ReservationGuestControllerTest {
     /**
      * 예약 현황 조회
      * - 성공
-     * - 과거 예약 잘 걸러지는지
      * - 현 시점의 시간 이전의 시간 잘 걸러지는지
      * - 예약 없을 경우
      *
@@ -402,4 +404,159 @@ class ReservationGuestControllerTest {
      * - 존재하지 않는 예약일 경우
      * - 이미 확정된 예약일 경우
      */
+
+    @Test
+    @DisplayName("이용 가능한 시간 조회 - 과거 날짜로 조회")
+    void check_available_time_with_past_date() throws Exception {
+        //given
+        String requestJson = String.format("""
+            {
+                "spaceId": %d,
+                "date": "%s"
+            }
+            """, space.getId(), LocalDate.now().minusDays(1));
+
+        //when  then
+        mockMvc.perform(post("/api/spaces/reserve/available-times")
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson)
+            )
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.message").value("예약 가능한 시간이 없습니다."));
+    }
+
+    @Test
+    @DisplayName("이용 가능한 시간 조회 - 오늘 날짜로 조회")
+    void check_available_time_with_today() throws Exception {
+        //given
+        int currentHour = LocalTime.now().getHour();
+        String requestJson = String.format("""
+            {
+                "spaceId": %d,
+                "date": "%s"
+            }
+            """, space.getId(), LocalDate.now());
+        List<String> availableTimes = new ArrayList<>();
+        for(int i = currentHour + 1; i <= 22; i++){
+            availableTimes.add(String.format("%02d:00:00", i));
+        }
+
+        //when  then
+        mockMvc.perform(post("/api/spaces/reserve/available-times")
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson)
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.timeList.length()").value(availableTimes.size()))
+            .andExpect(jsonPath("$.data.timeList").value(contains(availableTimes.toArray())));
+    }
+
+    @Test
+    @DisplayName("이용 가능한 시간 조회 - 가능한 시간 없을 경우")
+    void check_available_time_not_found() throws Exception {
+        //given
+        String requestJson = String.format("""
+            {
+                "spaceId": %d,
+                "date": "%s"
+            }
+            """, space.getId(), LocalDate.now().plusDays(3));
+
+        //when  then
+        mockMvc.perform(post("/api/spaces/reserve/available-times")
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson)
+            )
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.message").value("예약 가능한 시간이 없습니다."));
+    }
+
+    @Test
+    @DisplayName("이용 가능한 시간 조회 - 해당 날에 예약이 있을 경우")
+    void check_available_time_has_other_reservation() throws Exception {
+        //given
+        Reservation reservationPast = Reservation.builder()
+            .guest(guest)
+            .host(host)
+            .space(space)
+            .status(ReservationStatus.COMPLETED)
+            .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+            .requestMessage("테슽뚜")
+            .date(LocalDate.now().plusDays(1))
+            .startTime(LocalTime.of(1, 0, 0))
+            .endTime(LocalTime.of(5, 0, 0))
+            .price(60000)
+            .guestCount(2)
+            .build();
+        reservationRepository.save(reservationPast);
+
+        String requestJson = String.format("""
+            {
+                "spaceId": %d,
+                "date": "%s"
+            }
+            """, space.getId(), LocalDate.now().plusDays(1));
+
+        List<String> availableTimes = new ArrayList<>();
+        for(int i = 5; i <= 22; i++){
+            availableTimes.add(String.format("%02d:00:00", i));
+        }
+
+        //when  then
+        mockMvc.perform(post("/api/spaces/reserve/available-times")
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson)
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.timeList.length()").value(availableTimes.size()))
+            .andExpect(jsonPath("$.data.timeList").value(contains(availableTimes.toArray())));
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("이용 가능한 시간 조회 - 예약 거절된 시간 조회")
+    void check_available_time_has_other_rejected_reservation() throws Exception {
+        //given
+        Reservation reservation = Reservation.builder()
+            .guest(guest)
+            .host(host)
+            .space(space)
+            .status(ReservationStatus.COMPLETED)
+            .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+            .requestMessage("테슽뚜")
+            .date(LocalDate.now().plusDays(1))
+            .startTime(LocalTime.of(1, 0, 0))
+            .endTime(LocalTime.of(5, 0, 0))
+            .price(60000)
+            .guestCount(2)
+            .build();
+        reservationRepository.save(reservation);
+        reservation.updateStatus(ReservationStatus.REJECTED);
+
+        String requestJson = String.format("""
+            {
+                "spaceId": %d,
+                "date": "%s"
+            }
+            """, space.getId(), LocalDate.now().plusDays(1));
+
+        List<String> availableTimes = new ArrayList<>();
+        for(int i = 1; i <= 22; i++){
+            availableTimes.add(String.format("%02d:00:00", i));
+        }
+
+        //when  then
+        mockMvc.perform(post("/api/spaces/reserve/available-times")
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson)
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.timeList.length()").value(availableTimes.size()))
+            .andExpect(jsonPath("$.data.timeList").value(contains(availableTimes.toArray())));
+    }
 }
