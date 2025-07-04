@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface ReviewRepository extends JpaRepository<Review, Long> {
     Optional<Review> findByGuestIdAndSpaceIdAndReservedDateAndDeletedAtIsNull(Long guestId, Long spaceId, LocalDate reservedDate);
 
+    long countBySpaceIdAndDeletedAtIsNull(Long spaceId);
 }
