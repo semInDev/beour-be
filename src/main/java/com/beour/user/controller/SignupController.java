@@ -9,10 +9,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Validated
@@ -29,14 +29,16 @@ public class SignupController {
         return ApiResponse.ok("회원가입 완료");
     }
 
-    @GetMapping("/signup/check/loginId")
-    public ApiResponse<String> checkDuplicateLoginId(@ValidLoginId @RequestParam("loginId") String loginId) {
+    @GetMapping("/signup/check/loginId/{loginId}")
+    public ApiResponse<String> checkDuplicateLoginId(
+        @ValidLoginId @PathVariable("loginId") String loginId) {
         signupService.checkLoginIdDuplicate(loginId);
         return ApiResponse.ok("사용 가능한 아이디입니다.");
     }
 
-    @GetMapping("/signup/check/nickname")
-    public ApiResponse<String> checkDuplicateNickName(@ValidNickname @RequestParam("nickname") String nickname) {
+    @GetMapping("/signup/check/nickname/{nickname}")
+    public ApiResponse<String> checkDuplicateNickName(
+        @ValidNickname @PathVariable("nickname") String nickname) {
         signupService.checkNicknameDuplicate(nickname);
         return ApiResponse.ok("사용 가능한 닉네임입니다.");
     }
