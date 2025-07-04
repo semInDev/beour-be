@@ -18,7 +18,6 @@ import com.beour.review.guest.dto.ReviewRequestDto;
 import com.beour.review.guest.dto.ReviewUpdateRequestDto;
 import com.beour.review.guest.dto.ReviewableReservationResponseDto;
 import com.beour.review.guest.dto.WrittenReviewResponseDto;
-import com.beour.space.domain.entity.Space;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -137,7 +136,7 @@ public class ReviewGuestService {
         return reviews.stream()
             .map(review -> {
                 return RecentWrittenReviewResponseDto.builder()
-                    .spaceNameAndAddress(review.getSpace().getName() + " " + review.getSpace().getAddress().split(" ")[1])
+                    .spaceName(review.getSpace().getName())
                     .reviewerNickName(review.getGuest().getNickname())
                     .reviewCreatedAt(review.getCreatedAt())
                     .rating(review.getRating())
