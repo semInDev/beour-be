@@ -144,6 +144,7 @@ public class SpaceService {
                     long reviewCount = getReviewCountBySpaceId(space.getId());
                     return HostMySpaceListResponseDto.of(
                             space.getId(),
+                            space.getName(),
                             extractDongFromAddress(space.getAddress()),
                             space.getMaxCapacity(),
                             space.getAvgRating(),
