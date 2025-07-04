@@ -1,6 +1,7 @@
 package com.beour.review.guest.controller;
 
 import com.beour.global.response.ApiResponse;
+import com.beour.review.guest.dto.RecentWrittenReviewResponseDto;
 import com.beour.review.guest.dto.ReviewDetailResponseDto;
 import com.beour.review.guest.dto.ReviewForReservationResponseDto;
 import com.beour.review.guest.dto.ReviewRequestDto;
@@ -59,5 +60,10 @@ public class ReviewGuestController {
     public ApiResponse<String> deleteReview(@PathVariable Long reviewId) {
         reviewGuestService.deleteReview(reviewId);
         return ApiResponse.ok("Review가 삭제되었습니다.");
+    }
+
+    @GetMapping("/api/reviews/new")
+    public ApiResponse<List<RecentWrittenReviewResponseDto>> getNewReviews(){
+        return ApiResponse.ok(reviewGuestService.getRecentWrittenReviews());
     }
 }
