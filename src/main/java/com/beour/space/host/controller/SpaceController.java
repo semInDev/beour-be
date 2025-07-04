@@ -1,6 +1,7 @@
 package com.beour.space.host.controller;
 
 import com.beour.global.response.ApiResponse;
+import com.beour.space.host.dto.HostMySpaceListResponseDto;
 import com.beour.space.host.dto.SpaceDetailResponseDto;
 import com.beour.space.host.dto.SpaceRegisterRequestDto;
 import com.beour.space.host.dto.SpaceUpdateRequestDto;
@@ -9,6 +10,8 @@ import com.beour.space.host.service.SpaceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -31,6 +34,11 @@ public class SpaceController {
     @GetMapping("/{id}")
     public ApiResponse<SpaceDetailResponseDto> getDetailInfo(@PathVariable Long id) {
         return ApiResponse.ok(spaceService.getDetailedSpaceInfo(id));
+    }
+
+    @GetMapping("/my-spaces")
+    public ApiResponse<List<HostMySpaceListResponseDto>> getMySpaces() {
+        return ApiResponse.ok(spaceService.getMySpaces());
     }
 
     @PutMapping("/{id}")

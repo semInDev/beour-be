@@ -2,12 +2,10 @@ package com.beour.space.host.service;
 
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
+import com.beour.review.domain.repository.ReviewRepository;
 import com.beour.space.domain.entity.*;
 import com.beour.space.domain.repository.*;
-import com.beour.space.host.dto.SpaceDetailResponseDto;
-import com.beour.space.host.dto.SpaceRegisterRequestDto;
-import com.beour.space.host.dto.SpaceUpdateRequestDto;
-import com.beour.space.host.dto.SpaceSimpleResponseDto;
+import com.beour.space.host.dto.*;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +25,7 @@ public class SpaceService {
     private final TagRepository tagRepository;
     private final SpaceImageRepository spaceImageRepository;
     private final UserRepository userRepository;
+    private final ReviewRepository reviewRepository;
     private final KakaoMapService kakaoMapService;
 
     @Transactional
@@ -101,12 +100,6 @@ public class SpaceService {
         );
     }
 
-    // 예: 서울시 강남구 역삼동 어딘가 123 -> 서울시 강남구 역삼동
-    private String extractDongFromAddress(String address) {
-        String[] parts = address.split(" ");
-        return parts.length >= 3 ? String.join(" ", parts[0], parts[1], parts[2]) : address;
-    }
-
     @Transactional(readOnly = true)
     public SpaceDetailResponseDto getDetailedSpaceInfo(Long spaceId) {
         Space space = spaceRepository.findByIdAndDeletedAtIsNull(spaceId)
@@ -134,6 +127,32 @@ public class SpaceService {
                 .tags(space.getTags().stream().map(Tag::getContents).toList())
                 .imageUrls(space.getSpaceImages().stream().map(SpaceImage::getImageUrl).toList())
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public List<HostMySpaceListResponseDto> getMySpaces() {
+        User host = findUserFromToken();
+
+        List<Space> spaces = spaceRepository.findByHostAndDeletedAtIsNull(host);
+
+        if (spaces.isEmpty()) {
+            throw new RuntimeException("등록된 공간이 없습니다.");
+        }
+
+        return spaces.stream()
+                .map(space -> {
+                    long reviewCount = getReviewCountBySpaceId(space.getId());
+                    return HostMySpaceListResponseDto.of(
+                            space.getId(),
+                            space.getName(),
+                            extractDongFromAddress(space.getAddress()),
+                            space.getMaxCapacity(),
+                            space.getAvgRating(),
+                            reviewCount,
+                            space.getThumbnailUrl()
+                    );
+                })
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -245,6 +264,21 @@ public class SpaceService {
     public void deleteSpace(Long spaceId) {
         Space space = findSpaceByIdAndCheckOwnership(spaceId);
         space.delete();
+    }
+
+    // 예: 서울시 강남구 역삼동 어딘가 123 -> 역삼동
+    private String extractDongFromAddress(String address) {
+        String[] parts = address.split(" ");
+        if (parts.length >= 3) {
+            String dong = parts[2];
+            // '동'이 포함되어 있으면 그대로 반환, 없으면 구까지만 반환
+            return dong.contains("동") ? dong : parts[1];
+        }
+        return address;
+    }
+
+    private long getReviewCountBySpaceId(Long spaceId) {
+        return reviewRepository.countBySpaceIdAndDeletedAtIsNull(spaceId);
     }
 
     private Space findSpaceByIdAndCheckOwnership(Long spaceId) {
