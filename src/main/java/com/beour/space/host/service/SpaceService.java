@@ -135,10 +135,6 @@ public class SpaceService {
 
         List<Space> spaces = spaceRepository.findByHostAndDeletedAtIsNull(host);
 
-        if (spaces.isEmpty()) {
-            throw new RuntimeException("등록된 공간이 없습니다.");
-        }
-
         return spaces.stream()
                 .map(space -> {
                     long reviewCount = getReviewCountBySpaceId(space.getId());
