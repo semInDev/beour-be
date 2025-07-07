@@ -153,7 +153,8 @@ class ReviewRepositoryTest {
                 .reservedDate(LocalDate.now().minusDays(1))
                 .build();
         reviewRepository.save(review);
-        review.softDelete(); // 소프트 삭제
+        review.softDelete();
+        reviewRepository.save(review);
 
         //when
         Optional<Review> result = reviewRepository.findByGuestIdAndSpaceIdAndReservedDateAndDeletedAtIsNull(
@@ -167,36 +168,82 @@ class ReviewRepositoryTest {
     @DisplayName("공간ID로 리뷰 수 조회 - 삭제되지 않은 리뷰만 카운트")
     void countBySpaceIdAndDeletedAtIsNull_test() {
         //given
+        Reservation reservation1 = Reservation.builder()
+                .guest(guest)
+                .host(host)
+                .space(space)
+                .status(ReservationStatus.ACCEPTED)
+                .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+                .requestMessage("테스트")
+                .date(LocalDate.now().minusDays(1))
+                .startTime(LocalTime.of(10, 0, 0))
+                .endTime(LocalTime.of(12, 0, 0))
+                .price(30000)
+                .guestCount(2)
+                .build();
+        reservationRepository.save(reservation1);
+
         Review review1 = Review.builder()
                 .guest(guest)
                 .space(space)
-                .reservation(reservation)
+                .reservation(reservation1)
                 .rating(5)
                 .content("좋은 공간입니다")
                 .reservedDate(LocalDate.now().minusDays(1))
                 .build();
         reviewRepository.save(review1);
 
+        Reservation reservation2 = Reservation.builder()
+                .guest(guest)
+                .host(host)
+                .space(space)
+                .status(ReservationStatus.ACCEPTED)
+                .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+                .requestMessage("테스트")
+                .date(LocalDate.now().minusDays(1))
+                .startTime(LocalTime.of(10, 0, 0))
+                .endTime(LocalTime.of(12, 0, 0))
+                .price(30000)
+                .guestCount(2)
+                .build();
+        reservationRepository.save(reservation2);
+
         Review review2 = Review.builder()
                 .guest(guest)
                 .space(space)
-                .reservation(reservation)
+                .reservation(reservation2)
                 .rating(4)
                 .content("괜찮은 공간입니다")
                 .reservedDate(LocalDate.now().minusDays(2))
                 .build();
         reviewRepository.save(review2);
 
+        Reservation reservation3 = Reservation.builder()
+                .guest(guest)
+                .host(host)
+                .space(space)
+                .status(ReservationStatus.ACCEPTED)
+                .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+                .requestMessage("테스트")
+                .date(LocalDate.now().minusDays(1))
+                .startTime(LocalTime.of(10, 0, 0))
+                .endTime(LocalTime.of(12, 0, 0))
+                .price(30000)
+                .guestCount(2)
+                .build();
+        reservationRepository.save(reservation3);
+
         Review review3 = Review.builder()
                 .guest(guest)
                 .space(space)
-                .reservation(reservation)
+                .reservation(reservation3)
                 .rating(3)
                 .content("삭제될 리뷰")
                 .reservedDate(LocalDate.now().minusDays(3))
                 .build();
         reviewRepository.save(review3);
-        review3.softDelete(); // 소프트 삭제
+        review3.softDelete();
+        reviewRepository.save(review3);
 
         //when
         long count = reviewRepository.countBySpaceIdAndDeletedAtIsNull(space.getId());
@@ -210,6 +257,21 @@ class ReviewRepositoryTest {
     void findTop5ByDeletedAtIsNullOrderByCreatedAtDesc_test() {
         //given
         for (int i = 1; i <= 7; i++) {
+            Reservation reservation = Reservation.builder()
+                    .guest(guest)
+                    .host(host)
+                    .space(space)
+                    .status(ReservationStatus.ACCEPTED)
+                    .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+                    .requestMessage("테스트")
+                    .date(LocalDate.now().minusDays(1))
+                    .startTime(LocalTime.of(10, 0, 0))
+                    .endTime(LocalTime.of(12, 0, 0))
+                    .price(30000)
+                    .guestCount(2)
+                    .build();
+            reservationRepository.save(reservation);
+
             Review review = Review.builder()
                     .guest(guest)
                     .space(space)
