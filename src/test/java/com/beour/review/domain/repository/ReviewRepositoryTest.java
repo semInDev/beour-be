@@ -107,7 +107,6 @@ class ReviewRepositoryTest {
 
     @AfterEach
     void tearDown() {
-        SecurityContextHolder.clearContext();
         reviewRepository.deleteAll();
         reservationRepository.deleteAll();
         spaceRepository.deleteAll();
