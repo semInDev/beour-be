@@ -4,6 +4,7 @@ import com.beour.global.exception.exceptionType.ReviewNotFoundException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
+import com.beour.reservation.commons.exceptionType.MissMatch;
 import com.beour.reservation.commons.exceptionType.ReservationNotFound;
 import com.beour.reservation.commons.repository.ReservationRepository;
 import com.beour.review.domain.entity.Review;
@@ -163,32 +164,32 @@ public class ReviewGuestService {
 
     private Review findReviewById(Long reviewId) {
         return reviewRepository.findById(reviewId).orElseThrow(
-                () -> new RuntimeException("해당 리뷰를 찾을 수 없습니다.")
+                () -> new ReviewNotFoundException("해당 리뷰를 찾을 수 없습니다.")
         );
     }
 
     private void validateReservationOwner(Reservation reservation, User guest) {
         if (!reservation.getGuest().getId().equals(guest.getId())) {
-            throw new IllegalArgumentException("해당 예약에 대한 권한이 없습니다.");
+            throw new MissMatch("해당 예약에 대한 권한이 없습니다.");
         }
     }
 
     private void validateReservationStatus(Reservation reservation) {
         if (reservation.getStatus() != ReservationStatus.COMPLETED) {
-            throw new IllegalArgumentException("완료된 예약에 대해서만 리뷰를 작성할 수 있습니다.");
+            throw new MissMatch("완료된 예약에 대해서만 리뷰를 작성할 수 있습니다.");
         }
     }
 
     private void checkDuplicateReview(Long guestId, Long spaceId, java.time.LocalDate reservedDate) {
         if (reviewRepository.findByGuestIdAndSpaceIdAndReservedDateAndDeletedAtIsNull(
                 guestId, spaceId, reservedDate).isPresent()) {
-            throw new IllegalArgumentException("이미 해당 예약에 대한 리뷰가 작성되었습니다.");
+            throw new MissMatch("이미 해당 예약에 대한 리뷰가 작성되었습니다.");
         }
     }
 
     private void validateReviewOwner(Review review, User guest) {
         if (!review.getGuest().getId().equals(guest.getId())) {
-            throw new IllegalArgumentException("해당 리뷰에 대한 권한이 없습니다.");
+            throw new MissMatch("해당 리뷰에 대한 권한이 없습니다.");
         }
     }
 
