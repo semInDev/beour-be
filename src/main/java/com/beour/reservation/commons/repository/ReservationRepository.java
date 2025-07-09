@@ -32,6 +32,9 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             @Param("now") LocalTime now
     );
 
+    @Query("SELECT r FROM Reservation r JOIN FETCH r.space WHERE r.guest.id = :guestId AND r.status = 'COMPLETED' AND r.deletedAt IS NULL")
+    List<Reservation> findCompletedReservationsWithSpaceByGuestId(@Param("guestId") Long guestId);
+
     List<Reservation> findByHostIdAndDateAndDeletedAtIsNull(Long hostId, LocalDate date);
     List<Reservation> findByHostIdAndDateAndSpaceIdAndDeletedAtIsNull(Long hostId, LocalDate date, Long spaceId);
     List<Reservation> findByHostIdAndDateAndStatusAndDeletedAtIsNull(Long hostId, LocalDate date, ReservationStatus status);

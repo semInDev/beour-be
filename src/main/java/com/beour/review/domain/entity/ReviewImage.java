@@ -19,4 +19,8 @@ public class ReviewImage {
     private Review review;
 
     private String imageUrl;
+
+    public void assignReview(Review review) {
+        this.review = review;
+    }
 }
