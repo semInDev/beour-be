@@ -7,6 +7,7 @@ import com.beour.global.exception.exceptionType.ReviewNotFoundException;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
 import com.beour.reservation.commons.enums.UsagePurpose;
+import com.beour.reservation.commons.exceptionType.MissMatch;
 import com.beour.reservation.commons.exceptionType.ReservationNotFound;
 import com.beour.reservation.commons.repository.ReservationRepository;
 import com.beour.review.domain.entity.Review;
@@ -252,7 +253,7 @@ class ReviewGuestServiceTest {
         reservationRepository.save(otherReservation);
 
         //when then
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(MissMatch.class,
                 () -> reviewGuestService.getReservationForReview(otherReservation.getId()));
     }
 
@@ -280,7 +281,7 @@ class ReviewGuestServiceTest {
                 acceptedReservation.getId(), 5, "좋은 공간이었습니다.", null);
 
         //when then
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(MissMatch.class,
                 () -> reviewGuestService.createReview(requestDto));
     }
 
@@ -302,7 +303,7 @@ class ReviewGuestServiceTest {
                 completedReservation.getId(), 5, "좋은 공간이었습니다.", null);
 
         //when then
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(MissMatch.class,
                 () -> reviewGuestService.createReview(requestDto));
     }
 
@@ -334,7 +335,7 @@ class ReviewGuestServiceTest {
     @DisplayName("리뷰 상세 조회 - 존재하지 않는 리뷰")
     void get_review_detail_not_found() {
         //when then
-        assertThrows(RuntimeException.class,
+        assertThrows(ReviewNotFoundException.class,
                 () -> reviewGuestService.getReviewDetail(999L));
     }
 
@@ -364,7 +365,7 @@ class ReviewGuestServiceTest {
         reviewRepository.save(otherReview);
 
         //when then
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(MissMatch.class,
                 () -> reviewGuestService.getReviewDetail(otherReview.getId()));
     }
 
