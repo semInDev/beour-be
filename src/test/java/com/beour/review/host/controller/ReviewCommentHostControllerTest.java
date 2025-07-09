@@ -219,7 +219,6 @@ class ReviewCommentHostControllerTest {
 
     @AfterEach
     void tearDown() {
-        SecurityContextHolder.clearContext();
         reviewCommentRepository.deleteAll();
         reviewRepository.deleteAll();
         reservationRepository.deleteAll();
