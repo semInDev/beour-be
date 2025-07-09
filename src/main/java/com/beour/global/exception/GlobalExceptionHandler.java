@@ -1,7 +1,7 @@
 package com.beour.global.exception;
 
 import com.beour.global.exception.exceptionType.InputInvalidFormatException;
-import com.beour.global.response.ErrorResponse;
+import com.beour.reservation.commons.exceptionType.MissMatch;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,41 +16,45 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(
-        MethodArgumentNotValidException ex) {
+            MethodArgumentNotValidException ex) {
         FieldError fieldError = ex.getBindingResult().getFieldErrors().get(0);
         String message = fieldError.getDefaultMessage();
 
         return ResponseEntity.badRequest()
-            .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "VALIDATION_ERROR", message));
+                .body(new ErrorResponse("VALIDATION_ERROR", message));
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponse> handleEnumBindingException(
-        MethodArgumentTypeMismatchException ex) {
+            MethodArgumentTypeMismatchException ex) {
         return ResponseEntity.badRequest()
-            .body(
-                new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "INVALID_ENUM", "유효하지 않은 값입니다"));
+                .body(new ErrorResponse("INVALID_ENUM", "유효하지 않은 값입니다"));
     }
 
     @ExceptionHandler(InputInvalidFormatException.class)
     public ResponseEntity<ErrorResponse> handleInputFormat(InputInvalidFormatException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "INPUT_INVALID_FORMAT",
-                ex.getMessage()));
+                .body(new ErrorResponse("INPUT_INVALID_FORMAT", ex.getMessage()));
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ErrorResponse> handleConstraintViolation(
-        ConstraintViolationException ex) {
-        String message = ex.getConstraintViolations().iterator().next().getMessage(); // 첫 메시지만 추출
+            ConstraintViolationException ex) {
+        String message = ex.getConstraintViolations().iterator().next().getMessage();
         return ResponseEntity
-            .badRequest()
-            .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(),"VALIDATION_ERROR", message));
+                .badRequest()
+                .body(new ErrorResponse("VALIDATION_ERROR", message));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "INVALID_ARGUMENT", ex.getMessage()));
+                .body(new ErrorResponse("INVALID_ARGUMENT", ex.getMessage()));
+    }
+
+    @ExceptionHandler(MissMatch.class)
+    public ResponseEntity<ErrorResponse> handleMissMatch(MissMatch ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse("MISS_MATCH", ex.getMessage()));
     }
 }

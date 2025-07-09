@@ -26,7 +26,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -41,33 +43,25 @@ public class ReviewGuestService {
     public List<ReviewableReservationResponseDto> getReviewableReservations() {
         User guest = findUserFromToken();
 
-        List<Reservation> completedReservations = reservationRepository.findAll()
-                .stream()
-                .filter(reservation -> reservation.getGuest().getId().equals(guest.getId()))
-                .filter(reservation -> reservation.getStatus() == ReservationStatus.COMPLETED)
-                .filter(reservation -> reservation.getDeletedAt() == null)
-                .collect(Collectors.toList());
+        List<Reservation> completedReservations = reservationRepository
+                .findCompletedReservationsWithSpaceByGuestId(guest.getId());
 
         return completedReservations.stream()
                 .map(ReviewableReservationResponseDto::of)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public List<WrittenReviewResponseDto> getWrittenReviews() {
         User guest = findUserFromToken();
 
-        List<Review> writtenReviews = reviewRepository.findAll()
-                .stream()
-                .filter(review -> review.getGuest().getId().equals(guest.getId()))
-                .filter(review -> review.getDeletedAt() == null)
-                .collect(Collectors.toList());
+        List<Review> writtenReviews = reviewRepository.findAllWithCommentAndImagesByGuestId(guest.getId());
 
         return writtenReviews.stream()
                 .map(review -> {
                     ReviewComment comment = review.getComment();
                     return WrittenReviewResponseDto.of(review, comment);
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
     // 예약 정보 조회 (리뷰 작성을 위한)
@@ -135,18 +129,22 @@ public class ReviewGuestService {
         }
 
         return reviews.stream()
-            .map(review -> {
-                return RecentWrittenReviewResponseDto.builder()
-                    .spaceName(review.getSpace().getName())
-                    .reviewerNickName(review.getGuest().getNickname())
-                    .reviewCreatedAt(review.getCreatedAt())
-                    .rating(review.getRating())
-                    .images(review.getImages().stream()
-                        .map(ReviewImage::getImageUrl)
-                        .toList())
-                    .reviewContent(review.getContent())
-                    .build();
-            }).collect(Collectors.toList());
+                .map(review -> {
+                    List<String> imageUrls = Optional.ofNullable(review.getImages())
+                            .orElse(Collections.emptyList())
+                            .stream()
+                            .map(ReviewImage::getImageUrl)
+                            .toList();
+
+                    return RecentWrittenReviewResponseDto.builder()
+                            .spaceName(review.getSpace().getName())
+                            .reviewerNickName(review.getGuest().getNickname())
+                            .reviewCreatedAt(review.getCreatedAt())
+                            .rating(review.getRating())
+                            .images(imageUrls)
+                            .reviewContent(review.getContent())
+                            .build();
+                }).collect(Collectors.toList());
     }
 
     private User findUserFromToken() {
@@ -208,12 +206,13 @@ public class ReviewGuestService {
         if (imageUrls != null && !imageUrls.isEmpty()) {
             List<ReviewImage> images = imageUrls.stream()
                     .map(url -> ReviewImage.builder()
-                            .review(review)
                             .imageUrl(url)
                             .build())
-                    .collect(Collectors.toList());
-
-            reviewImageRepository.saveAll(images);
+                    .toList();
+            for(ReviewImage image : images) {
+                review.addImage(image);
+            }
+            reviewRepository.save(review);
         }
     }
 
@@ -227,8 +226,8 @@ public class ReviewGuestService {
 
     private void deleteExistingImages(Review review) {
         List<ReviewImage> existingImages = review.getImages();
-        if (!existingImages.isEmpty()) {
-            reviewImageRepository.deleteAll(existingImages);
+        if (existingImages != null) {
+            review.getImages().clear();
         }
     }
 }
