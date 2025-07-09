@@ -20,10 +20,13 @@ public class SpaceListSpaceResponseDto {
     private String thumbnailUrl;
     private boolean like;
     private double average;
+    private Long reviewCount;
     private List<String> tags;
 
     @Builder
-    private SpaceListSpaceResponseDto(Long spaceId, String spaceName, String region, int maxCapacity, int price, String thumbnailUrl, boolean like, double average, List<String> tags){
+    private SpaceListSpaceResponseDto(Long spaceId, String spaceName, String region,
+        int maxCapacity, int price, String thumbnailUrl, boolean like, double average,
+        Long reviewCount, List<String> tags) {
         this.spaceId = spaceId;
         this.spaceName = spaceName;
         this.region = region;
@@ -32,10 +35,11 @@ public class SpaceListSpaceResponseDto {
         this.thumbnailUrl = thumbnailUrl;
         this.like = like;
         this.average = average;
+        this.reviewCount = reviewCount;
         this.tags = tags;
     }
 
-    public static SpaceListSpaceResponseDto of(Space space, boolean like){
+    public static SpaceListSpaceResponseDto of(Space space, boolean like, Long reviewCount) {
         List<String> tagList = space.getTags().stream()
             .map(Tag::getContents)
             .collect(Collectors.toList());
@@ -49,16 +53,17 @@ public class SpaceListSpaceResponseDto {
             .thumbnailUrl(space.getThumbnailUrl())
             .like(like)
             .average(space.getAvgRating())
+            .reviewCount(reviewCount)
             .tags(tagList)
             .build();
     }
 
-    private static String abstractAddress(String address){
+    private static String abstractAddress(String address) {
         String[] splitAddress = address.split(" ");
 
-        if(splitAddress[0].contains("특별시")){
+        if (splitAddress[0].contains("특별시")) {
             splitAddress[0] = splitAddress[0].replace("특별시", "시");
-        }else if(splitAddress[1].contains("광역시")){
+        } else if (splitAddress[1].contains("광역시")) {
             splitAddress[0] = splitAddress[0].replace("광역시", "시");
         }
 

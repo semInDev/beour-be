@@ -4,6 +4,7 @@ import com.beour.global.exception.exceptionType.DuplicateLikesException;
 import com.beour.global.exception.exceptionType.LikesNotFoundException;
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
+import com.beour.review.domain.repository.ReviewRepository;
 import com.beour.space.domain.entity.Space;
 import com.beour.space.domain.repository.SpaceRepository;
 import com.beour.space.guest.dto.SpaceListSpaceResponseDto;
@@ -25,6 +26,7 @@ public class WishlistService {
     private final LikeRepository likeRepository;
     private final SpaceRepository spaceRepository;
     private final UserRepository userRepository;
+    private final ReviewRepository reviewRepository;
 
     @Transactional
     public Like addSpaceToWishList(Long spaceId) {
@@ -68,7 +70,7 @@ public class WishlistService {
         );
     }
 
-    //todo : 리뷰 갯수 따로 컬럼 추가
+    //todo : 리뷰 갯수 따로 컬럼 추가 하면 수정
     public List<SpaceListSpaceResponseDto> getWishlist(){
         User user = findUserFromToken();
         List<Like> whisList = likeRepository.findByUserIdAndDeletedAtIsNull(user.getId());
@@ -78,8 +80,12 @@ public class WishlistService {
         }
 
         return whisList.stream()
-            .map(like -> SpaceListSpaceResponseDto.of(like.getSpace(), true))
+            .map(like -> SpaceListSpaceResponseDto.of(like.getSpace(), true, getReviewCountBySpaceId(like.getSpace().getId())))
             .collect(Collectors.toList());
+    }
+
+    private long getReviewCountBySpaceId(Long spaceId) {
+        return reviewRepository.countBySpaceIdAndDeletedAtIsNull(spaceId);
     }
 
     private User findUserFromToken() {

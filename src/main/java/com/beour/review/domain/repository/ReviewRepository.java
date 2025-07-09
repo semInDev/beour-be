@@ -13,4 +13,5 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     long countBySpaceIdAndDeletedAtIsNull(Long spaceId);
     List<Review> findTop5ByDeletedAtIsNullOrderByCreatedAtDesc();
+
 }
