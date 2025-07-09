@@ -50,14 +50,6 @@ public class WishlistService {
         throw new DuplicateLikesException("wishlist에 존재하는 공간입니다.");
     }
 
-    private boolean isExistInWishList(Long spaceId, User user) {
-        if(likeRepository.existsByUserIdAndSpaceId(user.getId(), spaceId)){
-            return true;
-        }
-
-        return false;
-    }
-
     @Transactional
     public void deleteSpaceFromWishList(Long spaceId) {
         User user = findUserFromToken();
@@ -76,6 +68,7 @@ public class WishlistService {
         );
     }
 
+    //todo : 리뷰 갯수 따로 컬럼 추가
     public List<SpaceListSpaceResponseDto> getWishlist(){
         User user = findUserFromToken();
         List<Like> whisList = likeRepository.findByUserIdAndDeletedAtIsNull(user.getId());

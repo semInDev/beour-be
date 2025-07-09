@@ -43,7 +43,7 @@ public class SpaceListSpaceResponseDto {
         return SpaceListSpaceResponseDto.builder()
             .spaceId(space.getId())
             .spaceName(space.getName())
-            .region(space.getAddress())
+            .region(abstractAddress(space.getAddress()))
             .maxCapacity(space.getMaxCapacity())
             .price(space.getPricePerHour())
             .thumbnailUrl(space.getThumbnailUrl())
@@ -51,6 +51,18 @@ public class SpaceListSpaceResponseDto {
             .average(space.getAvgRating())
             .tags(tagList)
             .build();
+    }
+
+    private static String abstractAddress(String address){
+        String[] splitAddress = address.split(" ");
+
+        if(splitAddress[0].contains("특별시")){
+            splitAddress[0] = splitAddress[0].replace("특별시", "시");
+        }else if(splitAddress[1].contains("광역시")){
+            splitAddress[0] = splitAddress[0].replace("광역시", "시");
+        }
+
+        return splitAddress[0] + " " + splitAddress[1];
     }
 
 }
