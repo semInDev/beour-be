@@ -258,6 +258,7 @@ class ReviewGuestServiceTest {
     }
 
     @Test
+    @Transactional
     @DisplayName("리뷰 작성을 위한 예약 정보 조회 - 성공")
     void get_reservation_for_review_success() {
         //when
@@ -370,9 +371,17 @@ class ReviewGuestServiceTest {
     }
 
     @Test
+    @Transactional
     @DisplayName("리뷰 상세 조회 - 성공")
     void get_review_detail_success() {
         //given
+        ReviewImage image1 = ReviewImage.builder()
+                .imageUrl("https://example.com/image1.jpg")
+                .build();
+        ReviewImage image2 = ReviewImage.builder()
+                .imageUrl("https://example.com/image2.jpg")
+                .build();
+
         Review review = Review.builder()
                 .guest(guest)
                 .space(space)
@@ -381,17 +390,10 @@ class ReviewGuestServiceTest {
                 .content("좋은 공간이었습니다.")
                 .reservedDate(completedReservation.getDate())
                 .build();
-        reviewRepository.save(review);
 
-        ReviewImage image1 = ReviewImage.builder()
-                .review(review)
-                .imageUrl("https://example.com/image1.jpg")
-                .build();
-        ReviewImage image2 = ReviewImage.builder()
-                .review(review)
-                .imageUrl("https://example.com/image2.jpg")
-                .build();
-        reviewImageRepository.saveAll(List.of(image1, image2));
+        review.addImage(image1);
+        review.addImage(image2);
+        reviewRepository.save(review);
 
         //when
         ReviewDetailResponseDto result = reviewGuestService.getReviewDetail(review.getId());
@@ -409,6 +411,10 @@ class ReviewGuestServiceTest {
     @DisplayName("리뷰 수정 - 성공")
     void update_review_success() {
         //given
+        ReviewImage existingImage = ReviewImage.builder()
+                .imageUrl("https://example.com/old-image.jpg")
+                .build();
+
         Review review = Review.builder()
                 .guest(guest)
                 .space(space)
@@ -417,13 +423,9 @@ class ReviewGuestServiceTest {
                 .content("원래 리뷰")
                 .reservedDate(completedReservation.getDate())
                 .build();
-        reviewRepository.save(review);
 
-        ReviewImage existingImage = ReviewImage.builder()
-                .review(review)
-                .imageUrl("https://example.com/old-image.jpg")
-                .build();
-        reviewImageRepository.save(existingImage);
+        review.addImage(existingImage);
+        reviewRepository.save(review);
 
         List<String> newImageUrls = List.of("https://example.com/new-image.jpg");
         ReviewUpdateRequestDto requestDto = new ReviewUpdateRequestDto(
@@ -472,9 +474,25 @@ class ReviewGuestServiceTest {
     }
 
     @Test
+    @Transactional
     @DisplayName("최근 작성된 리뷰 조회 - 성공")
     void get_recent_written_reviews_success() {
         //given
+        Reservation completedReservation2 = Reservation.builder()
+                .guest(guest)
+                .host(host)
+                .space(space)
+                .status(ReservationStatus.COMPLETED)
+                .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+                .requestMessage("테슽뚜")
+                .date(LocalDate.now().minusDays(1))
+                .startTime(LocalTime.of(14, 0, 0))
+                .endTime(LocalTime.of(16, 0, 0))
+                .price(30000)
+                .guestCount(2)
+                .build();
+        reservationRepository.save(completedReservation2);
+
         Review review1 = Review.builder()
                 .guest(guest)
                 .space(space)
@@ -485,21 +503,21 @@ class ReviewGuestServiceTest {
                 .build();
         reviewRepository.save(review1);
 
+        ReviewImage image = ReviewImage.builder()
+                .imageUrl("https://example.com/image.jpg")
+                .build();
+
         Review review2 = Review.builder()
                 .guest(guest)
                 .space(space)
-                .reservation(completedReservation)
+                .reservation(completedReservation2)
                 .rating(4)
                 .content("두 번째 리뷰")
-                .reservedDate(completedReservation.getDate())
+                .reservedDate(completedReservation2.getDate())
                 .build();
-        reviewRepository.save(review2);
 
-        ReviewImage image = ReviewImage.builder()
-                .review(review1)
-                .imageUrl("https://example.com/image.jpg")
-                .build();
-        reviewImageRepository.save(image);
+        review2.addImage(image);
+        reviewRepository.save(review2);
 
         //when
         List<RecentWrittenReviewResponseDto> result = reviewGuestService.getRecentWrittenReviews();
@@ -508,7 +526,7 @@ class ReviewGuestServiceTest {
         assertThat(result).hasSize(2);
         assertEquals(space.getName(), result.get(0).getSpaceName());
         assertEquals(guest.getNickname(), result.get(0).getReviewerNickName());
-        assertEquals(5, result.get(0).getRating());
-        assertEquals("첫 번째 리뷰", result.get(0).getReviewContent());
+        assertEquals(4, result.get(0).getRating());
+        assertEquals("두 번째 리뷰", result.get(0).getReviewContent());
     }
 }
