@@ -1,6 +1,8 @@
 package com.beour.global.exception;
 
 import com.beour.global.exception.exceptionType.InputInvalidFormatException;
+import com.beour.global.exception.exceptionType.ReviewCommentNotFoundException;
+import com.beour.global.response.ErrorResponse;
 import com.beour.reservation.commons.exceptionType.MissMatch;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
@@ -56,5 +58,14 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleMissMatch(MissMatch ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse("MISS_MATCH", ex.getMessage()));
+    }
+
+    @ExceptionHandler(ReviewCommentNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleReviewCommentNotFound(ReviewCommentNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(
+                        HttpStatus.NOT_FOUND.value(),       // status: 404
+                        "REVIEW_COMMENT_NOT_FOUND",         // code
+                        ex.getMessage()));                  // message
     }
 }
