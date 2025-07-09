@@ -135,7 +135,10 @@ class ReservationHostControllerTest {
 
     @AfterEach
     void tearDown() {
+<<<<<<< Updated upstream
         SecurityContextHolder.clearContext();
+=======
+>>>>>>> Stashed changes
         reservationRepository.deleteAll();
         availableTimeRepository.deleteAll();
         spaceRepository.deleteAll();
