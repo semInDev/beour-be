@@ -26,20 +26,28 @@ public class WishlistService {
     private final SpaceRepository spaceRepository;
     private final UserRepository userRepository;
 
+    @Transactional
     public Like addSpaceToWishList(Long spaceId) {
         User user = findUserFromToken();
         Space space = getSpace(spaceId);
 
-        if(isExistInWishList(spaceId, user)){
-            throw new DuplicateLikesException("wishlist에 존재하는 공간입니다.");
+        Like like = likeRepository.findByUserIdAndSpaceId(user.getId(), spaceId);
+
+        if(like == null){
+            Like saveLike = Like.builder()
+                .space(space)
+                .user(user)
+                .build();
+
+            return likeRepository.save(saveLike);
         }
 
-        Like like = Like.builder()
-            .space(space)
-            .user(user)
-            .build();
+        if(like.isDeleted()){
+            like.resetDelete();
+            return like;
+        }
 
-        return likeRepository.save(like);
+        throw new DuplicateLikesException("wishlist에 존재하는 공간입니다.");
     }
 
     private boolean isExistInWishList(Long spaceId, User user) {
