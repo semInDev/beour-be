@@ -1,5 +1,6 @@
 package com.beour.global.exception;
 
+import com.beour.global.exception.exceptionType.HostSpaceNotFoundException;
 import com.beour.global.exception.exceptionType.InputInvalidFormatException;
 import com.beour.global.exception.exceptionType.ReviewCommentNotFoundException;
 import com.beour.global.response.ErrorResponse;
@@ -78,5 +79,13 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(
                         HttpStatus.NOT_FOUND.value(),
                         "REVIEW_COMMENT_NOT_FOUND", ex.getMessage()));
+    }
+
+    @ExceptionHandler(HostSpaceNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleHostSpaceNotFound(HostSpaceNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(
+                        HttpStatus.NOT_FOUND.value(),
+                        "HOST_SPACE_NOT_FOUND", ex.getMessage()));
     }
 }

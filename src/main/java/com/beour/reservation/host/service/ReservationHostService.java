@@ -1,5 +1,6 @@
 package com.beour.reservation.host.service;
 
+import com.beour.global.exception.exceptionType.HostSpaceNotFoundException;
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.reservation.commons.entity.Reservation;
@@ -35,7 +36,7 @@ public class ReservationHostService {
         List<Space> spaceList = spaceRepository.findByHostAndDeletedAtIsNull(host);
 
         if (spaceList.isEmpty()) {
-            throw new RuntimeException("해당 호스트가 등록한 공간이 없습니다.");
+            throw new HostSpaceNotFoundException();
         }
 
         List<HostSpaceListResponseDto> responseDtoList = new ArrayList<>();
