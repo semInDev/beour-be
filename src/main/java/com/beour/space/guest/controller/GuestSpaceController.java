@@ -44,13 +44,7 @@ public class GuestSpaceController {
     @GetMapping("/search")
     public ApiResponse<List<SearchSpaceResponseDto>> searchSpaces(
         @RequestParam(value = "request") String request) {
-        List<Space> spaces = guestSpaceSearchService.search(request);
-
-        List<SearchSpaceResponseDto> response = spaces.stream()
-            .map(SearchSpaceResponseDto::of)
-            .toList();
-
-        return ApiResponse.ok(response);
+        return ApiResponse.ok(guestSpaceSearchService.search(request));
     }
 
     @PostMapping("/search/filter")

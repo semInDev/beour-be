@@ -2,6 +2,7 @@ package com.beour.space.guest.service;
 
 import com.beour.global.exception.exceptionType.InputInvalidFormatException;
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
+import com.beour.review.domain.repository.ReviewRepository;
 import com.beour.space.domain.entity.Space;
 import com.beour.space.domain.repository.SpaceRepository;
 import com.beour.space.guest.dto.FilteringSearchRequestDto;
@@ -18,81 +19,98 @@ import org.springframework.stereotype.Service;
 public class GuestSpaceSearchService {
 
     private final SpaceRepository spaceRepository;
+    private final ReviewRepository reviewRepository;
 
-    public List<Space> search(String keyword){
-        if(keyword.isEmpty()){
+    public List<SearchSpaceResponseDto> search(String keyword) {
+        List<Space> spaces = searchWithKeyword(keyword);
+
+        return changeToSearchResponseDtoFrom(spaces);
+    }
+
+    private List<Space> searchWithKeyword(String keyword) {
+        if (keyword.isEmpty()) {
             throw new InputInvalidFormatException("키워드를 입력해주세요");
         }
 
         List<Space> result = spaceRepository.searchByKeyword("%" + keyword + "%");
-        if(result.isEmpty()){
+        if (result.isEmpty()) {
             throw new SpaceNotFoundException("키워드에 해당되는 공간이 없습니다.");
         }
-
 
         return result;
     }
 
-    public List<SearchSpaceResponseDto> searchWithFiltering(FilteringSearchRequestDto requestDto){
-        List<Space> spaceListWithKeyword = search(requestDto.getKeyword());
+    public List<SearchSpaceResponseDto> searchWithFiltering(FilteringSearchRequestDto requestDto) {
+        List<Space> spaceListWithKeyword = searchWithKeyword(requestDto.getKeyword());
         List<Space> filtering = filterSpaces(spaceListWithKeyword, requestDto);
 
-        if(filtering.isEmpty()){
+        if (filtering.isEmpty()) {
             throw new SpaceNotFoundException("해당 조건에 일치하는 공간이 없습니다.");
         }
 
         return changeToSearchResponseDtoFrom(filtering);
     }
 
-    private List<Space> filterSpaces(List<Space> spaceListWithKeyword, FilteringSearchRequestDto requestDto) {
+    private List<Space> filterSpaces(List<Space> spaceListWithKeyword,
+        FilteringSearchRequestDto requestDto) {
         return spaceListWithKeyword.stream()
             .filter(space -> space.getDeletedAt() == null)
 
             .filter(space -> space.getPricePerHour() >= requestDto.getMinPrice())
-            .filter(space -> requestDto.getMaxPrice() == 0 || space.getPricePerHour() <= requestDto.getMaxPrice())
+            .filter(space -> requestDto.getMaxPrice() == 0
+                || space.getPricePerHour() <= requestDto.getMaxPrice())
 
             .filter(space -> requestDto.getAddress() == null ||
                 space.getAddress() != null && space.getAddress().contains(requestDto.getAddress()))
 
-            .filter(space -> requestDto.getMinCapacity() == 0 || space.getMaxCapacity() >= requestDto.getMinCapacity())
+            .filter(space -> requestDto.getMinCapacity() == 0
+                || space.getMaxCapacity() >= requestDto.getMinCapacity())
 
-            .filter(space -> requestDto.getSpaceCategories() == null || requestDto.getSpaceCategories().isEmpty() ||
-                requestDto.getSpaceCategories().contains(space.getSpaceCategory()))
+            .filter(
+                space -> requestDto.getSpaceCategories() == null || requestDto.getSpaceCategories()
+                    .isEmpty() ||
+                    requestDto.getSpaceCategories().contains(space.getSpaceCategory()))
 
-            .filter(space -> requestDto.getUseCategories() == null || requestDto.getUseCategories().isEmpty() ||
+            .filter(space -> requestDto.getUseCategories() == null || requestDto.getUseCategories()
+                .isEmpty() ||
                 requestDto.getUseCategories().contains(space.getUseCategory()))
 
             .filter(space -> requestDto.getDate() == null ||
                 space.getAvailableTimes().stream()
-                    .anyMatch(at -> at.getDeletedAt() == null && requestDto.getDate().equals(at.getDate())))
+                    .anyMatch(at -> at.getDeletedAt() == null && requestDto.getDate()
+                        .equals(at.getDate())))
 
             .collect(Collectors.toList());
     }
 
-    public List<SearchSpaceResponseDto> searchSpaceWithSpaceCategory(SpaceCategory request){
+    public List<SearchSpaceResponseDto> searchSpaceWithSpaceCategory(SpaceCategory request) {
         List<Space> space = spaceRepository.findBySpaceCategory(request);
 
-        if(space.isEmpty()){
+        if (space.isEmpty()) {
             throw new SpaceNotFoundException("해당 유형의 공간은 존재하지 않습니다.");
         }
 
         return changeToSearchResponseDtoFrom(space);
     }
 
-    public List<SearchSpaceResponseDto> searchSpaceWithUseCategory(UseCategory request){
+    public List<SearchSpaceResponseDto> searchSpaceWithUseCategory(UseCategory request) {
         List<Space> space = spaceRepository.findByUseCategory(request);
 
-        if(space.isEmpty()){
+        if (space.isEmpty()) {
             throw new SpaceNotFoundException("해당 유형의 공간은 존재하지 않습니다.");
         }
 
         return changeToSearchResponseDtoFrom(space);
     }
 
-    private static List<SearchSpaceResponseDto> changeToSearchResponseDtoFrom(List<Space> space) {
-        return space.stream()
-            .map(SearchSpaceResponseDto::of)
+    private List<SearchSpaceResponseDto> changeToSearchResponseDtoFrom(List<Space> spaces) {
+        return spaces.stream()
+            .map(space -> SearchSpaceResponseDto.of(space, getReviewCountBySpaceId(space.getId())))
             .toList();
+    }
+
+    private long getReviewCountBySpaceId(Long spaceId) {
+        return reviewRepository.countBySpaceIdAndDeletedAtIsNull(spaceId);
     }
 
 }
