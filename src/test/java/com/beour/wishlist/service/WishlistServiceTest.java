@@ -154,20 +154,35 @@ class WishlistServiceTest {
     }
 
     @Test
-    @DisplayName("찜하기 - 성공")
-    void success_add_wishlist() {
+    @Transactional
+    @DisplayName("찜하기 - 같은 공간 찜 삭제 후 다시 찜 등록할 경우")
+    void fail_add_wishlist_same_space_again_likes() {
         //given
         Like like = Like.builder()
             .user(guest)
             .space(space1)
             .build();
+        likeRepository.save(like);
+        like.softDelete();
 
         //when
-        Like saved = likeRepository.save(like);
+        Like saved = wishlistService.addSpaceToWishList(space1.getId());
 
         //then
-        assertEquals(saved.getSpace(), space1);
+        assertEquals(space1.getName(), saved.getSpace().getName());
+        assertEquals(null, saved.getDeletedAt());
         assertEquals(saved.getUser(), guest);
+    }
+
+    @Test
+    @DisplayName("찜하기 - 성공")
+    void success_add_wishlist() {
+        //when
+        Like saved = wishlistService.addSpaceToWishList(space1.getId());
+
+        //then
+        assertEquals(space1.getId(), saved.getSpace().getId());
+        assertEquals(guest.getId(), saved.getUser().getId());
     }
 
     @Test

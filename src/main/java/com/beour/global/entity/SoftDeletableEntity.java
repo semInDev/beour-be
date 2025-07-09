@@ -12,6 +12,10 @@ public abstract class SoftDeletableEntity {
         this.deletedAt = LocalDateTime.now();
     }
 
+    public void resetDelete(){
+        this.deletedAt = null;
+    }
+
     public boolean isDeleted(){
         return this.deletedAt != null;
     }

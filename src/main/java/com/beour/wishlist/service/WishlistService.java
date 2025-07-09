@@ -4,6 +4,7 @@ import com.beour.global.exception.exceptionType.DuplicateLikesException;
 import com.beour.global.exception.exceptionType.LikesNotFoundException;
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
+import com.beour.review.domain.repository.ReviewRepository;
 import com.beour.space.domain.entity.Space;
 import com.beour.space.domain.repository.SpaceRepository;
 import com.beour.space.guest.dto.SpaceListSpaceResponseDto;
@@ -25,29 +26,30 @@ public class WishlistService {
     private final LikeRepository likeRepository;
     private final SpaceRepository spaceRepository;
     private final UserRepository userRepository;
+    private final ReviewRepository reviewRepository;
 
+    @Transactional
     public Like addSpaceToWishList(Long spaceId) {
         User user = findUserFromToken();
         Space space = getSpace(spaceId);
 
-        if(isExistInWishList(spaceId, user)){
-            throw new DuplicateLikesException("wishlist에 존재하는 공간입니다.");
+        Like like = likeRepository.findByUserIdAndSpaceId(user.getId(), spaceId);
+
+        if(like == null){
+            Like saveLike = Like.builder()
+                .space(space)
+                .user(user)
+                .build();
+
+            return likeRepository.save(saveLike);
         }
 
-        Like like = Like.builder()
-            .space(space)
-            .user(user)
-            .build();
-
-        return likeRepository.save(like);
-    }
-
-    private boolean isExistInWishList(Long spaceId, User user) {
-        if(likeRepository.existsByUserIdAndSpaceId(user.getId(), spaceId)){
-            return true;
+        if(like.isDeleted()){
+            like.resetDelete();
+            return like;
         }
 
-        return false;
+        throw new DuplicateLikesException("wishlist에 존재하는 공간입니다.");
     }
 
     @Transactional
@@ -68,6 +70,7 @@ public class WishlistService {
         );
     }
 
+    //todo : 리뷰 갯수 따로 컬럼 추가 하면 수정
     public List<SpaceListSpaceResponseDto> getWishlist(){
         User user = findUserFromToken();
         List<Like> whisList = likeRepository.findByUserIdAndDeletedAtIsNull(user.getId());
@@ -77,8 +80,12 @@ public class WishlistService {
         }
 
         return whisList.stream()
-            .map(like -> SpaceListSpaceResponseDto.of(like.getSpace(), true))
+            .map(like -> SpaceListSpaceResponseDto.of(like.getSpace(), true, getReviewCountBySpaceId(like.getSpace().getId())))
             .collect(Collectors.toList());
+    }
+
+    private long getReviewCountBySpaceId(Long spaceId) {
+        return reviewRepository.countBySpaceIdAndDeletedAtIsNull(spaceId);
     }
 
     private User findUserFromToken() {
