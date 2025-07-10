@@ -399,7 +399,7 @@ class ReviewCommentHostControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("존재하지 않는 댓글입니다."));
+                .andExpect(jsonPath("$.message").value(CommentErrorCode.COMMENT_NOT_FOUND.getMessage()));
     }
 
     @Test
@@ -455,7 +455,7 @@ class ReviewCommentHostControllerTest {
         mockMvc.perform(delete("/api/host/review-comments/999")
                         .header("Authorization", "Bearer " + hostAccessToken))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("존재하지 않는 댓글입니다."));
+                .andExpect(jsonPath("$.message").value(CommentErrorCode.COMMENT_NOT_FOUND.getMessage()));
     }
 
     @Test

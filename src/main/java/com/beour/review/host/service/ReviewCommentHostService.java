@@ -9,7 +9,6 @@ import com.beour.global.exception.exceptionType.ReviewCommentNotFoundException;
 import com.beour.global.exception.exceptionType.ReviewNotFoundException;
 import com.beour.global.exception.exceptionType.UnauthorityException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
-import com.beour.reservation.commons.exceptionType.MissMatch;
 import com.beour.review.domain.entity.Review;
 import com.beour.review.domain.entity.ReviewComment;
 import com.beour.review.domain.repository.ReviewCommentRepository;
@@ -124,7 +123,7 @@ public class ReviewCommentHostService {
 
     private ReviewComment findReviewCommentById(Long commentId) {
         return reviewCommentRepository.findById(commentId)
-                .orElseThrow(() -> new ReviewCommentNotFoundException("존재하지 않는 댓글입니다."));
+                .orElseThrow(() -> new ReviewCommentNotFoundException(CommentErrorCode.COMMENT_NOT_FOUND));
     }
 
     private void validateHostOwnership(User host, Review review) {
