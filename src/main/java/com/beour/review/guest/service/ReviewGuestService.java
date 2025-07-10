@@ -175,10 +175,9 @@ public class ReviewGuestService {
         }
     }
 
-    //todo : MissMatch exception 변경
     private void validateReservationStatus(Reservation reservation) {
         if (reservation.getStatus() != ReservationStatus.COMPLETED) {
-            throw new MissMatch("완료된 예약에 대해서만 리뷰를 작성할 수 있습니다.");
+            throw new MissMatch(ReviewErrorCode.ONLY_COMPLETED_CAN_REVIEW);
         }
     }
 
