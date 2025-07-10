@@ -1,5 +1,6 @@
 package com.beour.reservation.guest.service;
 
+import com.beour.global.exception.error.errorcode.ReservationErrorCode;
 import com.beour.global.exception.error.errorcode.SpaceErrorCode;
 import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
@@ -167,14 +168,14 @@ public class ReservationGuestService {
 
     private static void checkEmptyReservation(List<Reservation> reservationList) {
         if (reservationList.isEmpty()) {
-            throw new ReservationNotFound("예약이 없습니다.");
+            throw new ReservationNotFound(ReservationErrorCode.RESERVATION_NOT_FOUND);
         }
     }
 
     @Transactional
     public void cancelReservation(Long reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(
-                () -> new ReservationNotFound("해당 예약이 존재하지 않습니다.")
+                () -> new ReservationNotFound(ReservationErrorCode.RESERVATION_NOT_FOUND)
         );
 
         if (reservation.getStatus() != ReservationStatus.PENDING) {

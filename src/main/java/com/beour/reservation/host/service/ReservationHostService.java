@@ -1,5 +1,6 @@
 package com.beour.reservation.host.service;
 
+import com.beour.global.exception.error.errorcode.ReservationErrorCode;
 import com.beour.global.exception.error.errorcode.SpaceErrorCode;
 import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.exception.exceptionType.HostSpaceNotFoundException;
@@ -82,7 +83,7 @@ public class ReservationHostService {
                 .collect(Collectors.toList());
 
         if (acceptedReservations.isEmpty()) {
-            throw new ReservationNotFound(emptyMessage);
+            throw new ReservationNotFound(ReservationErrorCode.RESERVATION_NOT_FOUND);
         }
 
         return acceptedReservations.stream()

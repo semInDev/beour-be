@@ -1,5 +1,6 @@
 package com.beour.reservation.host.service;
 
+import com.beour.global.exception.error.errorcode.ReservationErrorCode;
 import com.beour.global.exception.error.errorcode.SpaceErrorCode;
 import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
@@ -65,7 +66,7 @@ public class ReservationCalendarService {
     private Reservation validateReservationAndSpaceOwnership(Long reservationId, Long spaceId, User host) {
         // 예약 존재 확인
         Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new ReservationNotFound("존재하지 않는 예약입니다."));
+                .orElseThrow(() -> new ReservationNotFound(ReservationErrorCode.RESERVATION_NOT_FOUND));
 
         // 공간 존재 확인
         Space space = spaceRepository.findById(spaceId)
