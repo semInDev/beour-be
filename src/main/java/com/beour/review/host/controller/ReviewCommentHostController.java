@@ -35,14 +35,14 @@ public class ReviewCommentHostController {
     }
 
     @PatchMapping("/api/host/review-comments/{commentId}")
-    public ApiResponse<String> updateReviewComment(@PathVariable Long commentId,
+    public ApiResponse<String> updateReviewComment(@PathVariable(value = "commentId") Long commentId,
                                                  @RequestBody @Valid ReviewCommentUpdateRequestDto requestDto) {
         reviewCommentHostService.updateReviewComment(commentId, requestDto);
         return ApiResponse.ok("답글이 수정되었습니다.");
     }
 
     @DeleteMapping("/api/host/review-comments/{commentId}")
-    public ApiResponse<String> deleteReviewComment(@PathVariable Long commentId) {
+    public ApiResponse<String> deleteReviewComment(@PathVariable(value = "commentId") Long commentId) {
         reviewCommentHostService.deleteReviewComment(commentId);
         return ApiResponse.ok("답글이 삭제되었습니다.");
     }
