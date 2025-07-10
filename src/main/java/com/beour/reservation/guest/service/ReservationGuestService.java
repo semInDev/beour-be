@@ -1,5 +1,6 @@
 package com.beour.reservation.guest.service;
 
+import com.beour.global.exception.error.errorcode.AvailableTimeErrorCode;
 import com.beour.global.exception.error.errorcode.ReservationErrorCode;
 import com.beour.global.exception.error.errorcode.SpaceErrorCode;
 import com.beour.global.exception.error.errorcode.UserErrorCode;
@@ -96,13 +97,13 @@ public class ReservationGuestService {
 
         if (requestDto.getDate().equals(LocalDate.now()) && requestDto.getStartTime()
             .isBefore(LocalTime.now())) {
-            throw new AvailableTimeNotFound("예약 가능한 시간이 존재하지 않습니다.");
+            throw new AvailableTimeNotFound(AvailableTimeErrorCode.AVAILABLE_TIME_NOT_FOUND);
         }
 
         if (availableTime.getStartTime().isAfter(requestDto.getStartTime())
             || availableTime.getEndTime().isBefore(
             requestDto.getEndTime())) {
-            throw new AvailableTimeNotFound("예약이 불가능한 시간입니다.");
+            throw new MissMatch(AvailableTimeErrorCode.TIME_UNAVAILABLE);
         }
     }
 
@@ -120,7 +121,7 @@ public class ReservationGuestService {
             );
 
             if (isReserved) {
-                throw new AvailableTimeNotFound("예약이 불가능한 시간입니다.");
+                throw new MissMatch(AvailableTimeErrorCode.TIME_UNAVAILABLE);
             }
 
             startTime = startTime.plusHours(1);

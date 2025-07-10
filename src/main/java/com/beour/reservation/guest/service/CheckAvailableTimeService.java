@@ -1,5 +1,6 @@
 package com.beour.reservation.guest.service;
 
+import com.beour.global.exception.error.errorcode.AvailableTimeErrorCode;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
 import com.beour.reservation.commons.exceptionType.AvailableTimeNotFound;
@@ -33,7 +34,7 @@ public class CheckAvailableTimeService {
         List<LocalTime> findTimeList = getAvailableTimeList(availableTime, reservationList,
             requestDto.getDate());
         if (findTimeList.isEmpty()) {
-            throw new AvailableTimeNotFound("예약 가능한 시간이 없습니다.");
+            throw new AvailableTimeNotFound(AvailableTimeErrorCode.AVAILABLE_TIME_NOT_FOUND);
         }
 
         return SpaceAvailableTimeResponseDto.of(findTimeList);
@@ -42,12 +43,12 @@ public class CheckAvailableTimeService {
     public AvailableTime checkReservationAvailableDateAndGetAvailableTime(
         CheckAvailableTimesRequestDto requestDto) {
         if (requestDto.getDate().isBefore(LocalDate.now())) {
-            throw new AvailableTimeNotFound("예약 가능한 시간이 없습니다.");
+            throw new AvailableTimeNotFound(AvailableTimeErrorCode.AVAILABLE_TIME_NOT_FOUND);
         }
 
         return availableTimeRepository.findBySpaceIdAndDateAndDeletedAtIsNull(
             requestDto.getSpaceId(), requestDto.getDate()).orElseThrow(
-            () -> new AvailableTimeNotFound("예약 가능한 시간이 없습니다.")
+            () -> new AvailableTimeNotFound(AvailableTimeErrorCode.AVAILABLE_TIME_NOT_FOUND)
         );
     }
 
