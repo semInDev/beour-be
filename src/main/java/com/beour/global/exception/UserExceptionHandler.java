@@ -30,7 +30,7 @@ public class UserExceptionHandler {
   @ExceptionHandler(DuplicateUserInfoException.class)
   public ResponseEntity<ErrorResponse> handleDuplicateUserInfo(DuplicateUserInfoException ex) {
     return ResponseEntity.status(HttpStatus.CONFLICT)
-        .body(new ErrorResponse(HttpStatus.CONFLICT.value(), "DUPLICATE_USER_INFO", ex.getMessage()));
+        .body(new ErrorResponse(ex.getErrorCode(), "DUPLICATE_USER_INFO", ex.getMessage()));
   }
 
   @ExceptionHandler(InvalidFormatException.class)
