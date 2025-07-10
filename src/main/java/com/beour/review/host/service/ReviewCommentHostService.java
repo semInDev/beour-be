@@ -31,6 +31,7 @@ public class ReviewCommentHostService {
     private final ReviewCommentRepository reviewCommentRepository;
     private final UserRepository userRepository;
 
+    @Transactional(readOnly = true)
     public List<ReviewCommentableResponseDto> getCommentableReviews() {
         User host = findUserFromToken();
 
@@ -39,13 +40,14 @@ public class ReviewCommentHostService {
                 .filter(review -> review.getSpace().getHost().getId().equals(host.getId()))
                 .filter(review -> review.getDeletedAt() == null)
                 .filter(review -> review.getComment() == null)
-                .collect(Collectors.toList());
+                .toList();
 
         return commentableReviews.stream()
                 .map(ReviewCommentableResponseDto::of)
-                .collect(Collectors.toList());
+                .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<ReviewCommentResponseDto> getWrittenReviewComments() {
         User host = findUserFromToken();
 
