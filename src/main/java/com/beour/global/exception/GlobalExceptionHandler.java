@@ -68,9 +68,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MissMatch.class)
     public ResponseEntity<ErrorResponse> handleMissMatch(MissMatch ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .body(new ErrorResponse(
-                HttpStatus.BAD_REQUEST.value(),
-                "MISS_MATCH", ex.getMessage()));
+            .body(new ErrorResponse(ex.getErrorCode(), "MISS_MATCH", ex.getMessage()));
     }
 
     @ExceptionHandler(ReviewCommentNotFoundException.class)

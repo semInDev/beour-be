@@ -44,27 +44,27 @@ public class ReservationGuestService {
     public ReservationResponseDto createReservation(ReservationCreateRequest requestDto) {
         User guest = findUserFromToken();
         User host = userRepository.findById(requestDto.getHostId()).orElseThrow(
-                () -> new UserNotFoundException(UserErrorCode.USER_NOT_FOUND)
+            () -> new UserNotFoundException(UserErrorCode.USER_NOT_FOUND)
         );
         Space space = spaceRepository.findById(requestDto.getSpaceId()).orElseThrow(
-                () -> new SpaceNotFoundException(SpaceErrorCode.SPACE_NOT_FOUND)
+            () -> new SpaceNotFoundException(SpaceErrorCode.SPACE_NOT_FOUND)
         );
 
         checkReservationAvailable(requestDto, space);
 
         Reservation reservation = Reservation.builder()
-                .guest(guest)
-                .host(host)
-                .space(space)
-                .status(ReservationStatus.PENDING)
-                .date(requestDto.getDate())
-                .startTime(requestDto.getStartTime())
-                .endTime(requestDto.getEndTime())
-                .price(requestDto.getPrice())
-                .guestCount(requestDto.getGuestCount())
-                .usagePurpose(requestDto.getUsagePurpose())
-                .requestMessage(requestDto.getRequestMessage())
-                .build();
+            .guest(guest)
+            .host(host)
+            .space(space)
+            .status(ReservationStatus.PENDING)
+            .date(requestDto.getDate())
+            .startTime(requestDto.getStartTime())
+            .endTime(requestDto.getEndTime())
+            .price(requestDto.getPrice())
+            .guestCount(requestDto.getGuestCount())
+            .usagePurpose(requestDto.getUsagePurpose())
+            .requestMessage(requestDto.getRequestMessage())
+            .build();
 
         return ReservationResponseDto.of(reservationRepository.save(reservation));
     }
@@ -78,44 +78,45 @@ public class ReservationGuestService {
 
     private static void checkValidCapacity(ReservationCreateRequest requestDto, Space space) {
         if (requestDto.getGuestCount() > space.getMaxCapacity()) {
-            throw new MissMatch("해당 인원은 예약이 불가합니다.");
+            throw new MissMatch(ReservationErrorCode.INVALID_CAPACITY);
         }
     }
 
     private static void checkPriceCorrect(ReservationCreateRequest requestDto, Space space) {
         int hour = requestDto.getEndTime().getHour() - requestDto.getStartTime().getHour();
         if (requestDto.getPrice() != space.getPricePerHour() * hour) {
-            throw new MissMatch("해당 가격이 맞지 않습니다.");
+            throw new MissMatch(ReservationErrorCode.INVALID_PRICE);
         }
     }
 
     private void checkReservationAvailableDate(ReservationCreateRequest requestDto) {
         AvailableTime availableTime = checkAvailableTimeService.checkReservationAvailableDateAndGetAvailableTime(
-                new CheckAvailableTimesRequestDto(
-                        requestDto.getSpaceId(), requestDto.getDate()));
+            new CheckAvailableTimesRequestDto(
+                requestDto.getSpaceId(), requestDto.getDate()));
 
-        if(requestDto.getDate().equals(LocalDate.now()) && requestDto.getStartTime().isBefore(LocalTime.now())){
+        if (requestDto.getDate().equals(LocalDate.now()) && requestDto.getStartTime()
+            .isBefore(LocalTime.now())) {
             throw new AvailableTimeNotFound("예약 가능한 시간이 존재하지 않습니다.");
         }
 
         if (availableTime.getStartTime().isAfter(requestDto.getStartTime())
-                || availableTime.getEndTime().isBefore(
-                requestDto.getEndTime())) {
+            || availableTime.getEndTime().isBefore(
+            requestDto.getEndTime())) {
             throw new AvailableTimeNotFound("예약이 불가능한 시간입니다.");
         }
     }
 
     private void checkReservationAvailableTime(ReservationCreateRequest requestDto) {
         List<Reservation> reservationList = reservationRepository.findBySpaceIdAndDateAndDeletedAtIsNull(
-                requestDto.getSpaceId(), requestDto.getDate());
+            requestDto.getSpaceId(), requestDto.getDate());
 
         LocalTime startTime = requestDto.getStartTime();
         while (startTime.isBefore(requestDto.getEndTime())) {
             LocalTime currentTime = requestDto.getStartTime();
 
             boolean isReserved = reservationList.stream().anyMatch(reservation ->
-                    reservation.getStartTime().isBefore(currentTime.plusHours(1)) &&
-                            reservation.getEndTime().isAfter(currentTime)
+                reservation.getStartTime().isBefore(currentTime.plusHours(1)) &&
+                    reservation.getEndTime().isAfter(currentTime)
             );
 
             if (isReserved) {
@@ -129,7 +130,7 @@ public class ReservationGuestService {
     public List<ReservationListResponseDto> findReservationList() {
         User guest = findUserFromToken();
         List<Reservation> reservationList = reservationRepository.findUpcomingReservationsByGuest(
-                guest.getId(), LocalDate.now(), LocalTime.now());
+            guest.getId(), LocalDate.now(), LocalTime.now());
 
         checkEmptyReservation(reservationList);
 
@@ -145,7 +146,7 @@ public class ReservationGuestService {
     public List<ReservationListResponseDto> findPastReservationList() {
         User user = findUserFromToken();
         List<Reservation> reservationList = reservationRepository.findPastReservationsByGuest(
-                user.getId(), LocalDate.now(), LocalTime.now());
+            user.getId(), LocalDate.now(), LocalTime.now());
 
         checkEmptyReservation(reservationList);
 
@@ -155,7 +156,7 @@ public class ReservationGuestService {
                 reservation.updateStatus(ReservationStatus.COMPLETED);
             }
             Review review = reviewRepository.findByGuestIdAndSpaceIdAndReservedDateAndDeletedAtIsNull(
-                    user.getId(), reservation.getSpace().getId(), reservation.getDate()).orElse(null);
+                user.getId(), reservation.getSpace().getId(), reservation.getDate()).orElse(null);
             Long reviewId = 0L;
             if (review != null) {
                 reviewId = review.getId();
@@ -175,11 +176,11 @@ public class ReservationGuestService {
     @Transactional
     public void cancelReservation(Long reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(
-                () -> new ReservationNotFound(ReservationErrorCode.RESERVATION_NOT_FOUND)
+            () -> new ReservationNotFound(ReservationErrorCode.RESERVATION_NOT_FOUND)
         );
 
         if (reservation.getStatus() != ReservationStatus.PENDING) {
-            throw new MissMatch("해당 예약은 취소할 수 없습니다.");
+            throw new MissMatch(ReservationErrorCode.CANNOT_CANCEL_RESERVATION);
         }
 
         reservation.cancel();
@@ -189,7 +190,7 @@ public class ReservationGuestService {
         String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
 
         return userRepository.findByLoginIdAndDeletedAtIsNull(loginId).orElseThrow(
-                () -> new UserNotFoundException(UserErrorCode.USER_NOT_FOUND)
+            () -> new UserNotFoundException(UserErrorCode.USER_NOT_FOUND)
         );
     }
 }
