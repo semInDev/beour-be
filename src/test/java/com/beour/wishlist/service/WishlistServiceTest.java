@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.beour.global.exception.exceptionType.DuplicateLikesException;
 import com.beour.global.exception.exceptionType.LikesNotFoundException;
-import com.beour.global.exception.exceptionType.SpaceNotFoundException;
 import com.beour.space.domain.entity.Space;
 import com.beour.space.domain.entity.Tag;
 import com.beour.space.domain.repository.SpaceRepository;
@@ -251,7 +250,7 @@ class WishlistServiceTest {
     @DisplayName("찜삭제 - 없는 공간일 경우")
     void delete_wishlist_with_empty_list() {
         //when  //then
-        assertThrows(SpaceNotFoundException.class,
+        assertThrows(IllegalArgumentException.class,
             () -> wishlistService.deleteSpaceFromWishList(space1.getId()));
     }
 
@@ -268,7 +267,7 @@ class WishlistServiceTest {
         wishlistService.deleteSpaceFromWishList(space1.getId());
 
         //when  //then
-        assertThrows(SpaceNotFoundException.class,
+        assertThrows(IllegalArgumentException.class,
             () -> wishlistService.deleteSpaceFromWishList(space1.getId()));
     }
 }
