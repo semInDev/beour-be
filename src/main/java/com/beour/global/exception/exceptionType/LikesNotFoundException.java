@@ -5,4 +5,5 @@ public class LikesNotFoundException extends UserException {
   public LikesNotFoundException(String message) {
     super(message);
   }
+
 }
