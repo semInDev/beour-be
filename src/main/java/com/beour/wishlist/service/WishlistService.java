@@ -1,6 +1,7 @@
 package com.beour.wishlist.service;
 
 import com.beour.global.exception.error.errorcode.UserErrorCode;
+import com.beour.global.exception.error.errorcode.WishListErrorCode;
 import com.beour.global.exception.exceptionType.DuplicateLikesException;
 import com.beour.global.exception.exceptionType.LikesNotFoundException;
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
@@ -50,7 +51,7 @@ public class WishlistService {
             return like;
         }
 
-        throw new DuplicateLikesException("wishlist에 존재하는 공간입니다.");
+        throw new DuplicateLikesException(WishListErrorCode.ALREADY_IN_WISHLIST);
     }
 
     @Transactional

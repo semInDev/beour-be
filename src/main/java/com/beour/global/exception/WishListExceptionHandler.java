@@ -13,7 +13,7 @@ public class WishListExceptionHandler {
     @ExceptionHandler(DuplicateLikesException.class)
     public ResponseEntity<ErrorResponse> handleDuplicateLikes(DuplicateLikesException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
-            .body(new ErrorResponse(HttpStatus.CONFLICT.value(), "DUPLICATE_LIKES", ex.getMessage()));
+            .body(new ErrorResponse(ex.getErrorCode(), "DUPLICATE_LIKES", ex.getMessage()));
     }
 
 
