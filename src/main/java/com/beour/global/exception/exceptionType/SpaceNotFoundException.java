@@ -1,8 +1,17 @@
 package com.beour.global.exception.exceptionType;
 
-public class SpaceNotFoundException extends UserException {
+import com.beour.global.exception.error.ErrorCode;
 
-  public SpaceNotFoundException(String message) {
-    super(message);
-  }
+public class SpaceNotFoundException extends RuntimeException {
+
+    private final Integer errorCode;
+
+    public SpaceNotFoundException(ErrorCode error) {
+        super(error.getMessage());
+        this.errorCode = error.getCode();
+    }
+
+    public Integer getErrorCode() {
+        return this.errorCode;
+    }
 }

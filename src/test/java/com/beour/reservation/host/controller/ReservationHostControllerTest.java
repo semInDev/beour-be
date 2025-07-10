@@ -4,6 +4,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.beour.global.exception.error.errorcode.ReservationErrorCode;
 import com.beour.global.jwt.JWTUtil;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
@@ -300,7 +301,7 @@ class ReservationHostControllerTest {
                         .header("Authorization", "Bearer " + hostAccessToken)
                 )
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("해당 날짜에 확정된 예약이 없습니다."));
+                .andExpect(jsonPath("$.message").value(ReservationErrorCode.RESERVATION_NOT_FOUND.getMessage()));
     }
 
 /*    @Test
@@ -461,7 +462,7 @@ class ReservationHostControllerTest {
                         .header("Authorization", "Bearer " + hostAccessToken)
                 )
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("해당 날짜와 공간에 확정된 예약이 없습니다."));
+                .andExpect(jsonPath("$.message").value(ReservationErrorCode.RESERVATION_NOT_FOUND.getMessage()));
     }
 
     @Test

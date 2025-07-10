@@ -1,5 +1,6 @@
 package com.beour.user.service;
 
+import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.exception.exceptionType.InvalidFormatException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.user.dto.ChangePasswordRequestDto;
@@ -83,7 +84,7 @@ public class MyInformationService {
         String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
 
         return userRepository.findByLoginIdAndDeletedAtIsNull(loginId).orElseThrow(
-            () -> new UserNotFoundException("해당 유저를 찾을 수 없습니다.")
+            () -> new UserNotFoundException(UserErrorCode.USER_NOT_FOUND)
         );
     }
 

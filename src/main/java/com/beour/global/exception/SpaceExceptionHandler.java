@@ -12,17 +12,17 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 @RestControllerAdvice
 public class SpaceExceptionHandler {
+    @ExceptionHandler(SpaceNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleSpaceNotFound(SpaceNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(new ErrorResponse(ex.getErrorCode(), "SPACE_NOT_FOUND", ex.getMessage()));
+    }
 
-  @ExceptionHandler(SpaceNotFoundException.class)
-  public ResponseEntity<ErrorResponse> handleSpaceNotFound(SpaceNotFoundException ex) {
-    return ResponseEntity.status(HttpStatus.NOT_FOUND)
-        .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), "SPACE_NOT_FOUND", ex.getMessage()));
-  }
-
-  @ExceptionHandler(AvailableTimeNotFound.class)
-  public ResponseEntity<ErrorResponse> availableTimeNotFound(AvailableTimeNotFound ex) {
-    return ResponseEntity.status(HttpStatus.NOT_FOUND)
-        .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), "AVAILABLE_TIME_NOT_FOUND", ex.getMessage()));
-  }
+    @ExceptionHandler(AvailableTimeNotFound.class)
+    public ResponseEntity<ErrorResponse> availableTimeNotFound(AvailableTimeNotFound ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), "AVAILABLE_TIME_NOT_FOUND",
+                ex.getMessage()));
+    }
 
 }

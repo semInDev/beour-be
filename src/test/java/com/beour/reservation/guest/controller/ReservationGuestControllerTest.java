@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.hamcrest.Matchers.contains;
 
+import com.beour.global.exception.error.errorcode.ReservationErrorCode;
 import com.beour.global.jwt.JWTUtil;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
@@ -144,7 +145,6 @@ class ReservationGuestControllerTest {
 
     @AfterEach
     void tearDown() {
-        SecurityContextHolder.clearContext();
         reservationRepository.deleteAll();
         availableTimeRepository.deleteAll();
         spaceRepository.deleteAll();
@@ -597,7 +597,7 @@ class ReservationGuestControllerTest {
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.message").value("예약이 없습니다."));
+            .andExpect(jsonPath("$.message").value(ReservationErrorCode.RESERVATION_NOT_FOUND.getMessage()));
     }
 
     @Test
@@ -608,7 +608,7 @@ class ReservationGuestControllerTest {
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.message").value("예약이 없습니다."));
+            .andExpect(jsonPath("$.message").value(ReservationErrorCode.RESERVATION_NOT_FOUND.getMessage()));
     }
 
     @Test
@@ -647,7 +647,7 @@ class ReservationGuestControllerTest {
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.message").value("해당 예약이 존재하지 않습니다."));
+            .andExpect(jsonPath("$.message").value(ReservationErrorCode.RESERVATION_NOT_FOUND.getMessage()));
     }
 
     @Test

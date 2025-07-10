@@ -1,5 +1,6 @@
 package com.beour.user.service;
 
+import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.exception.exceptionType.TokenExpiredException;
 import com.beour.global.exception.exceptionType.TokenNotFoundException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
@@ -36,7 +37,7 @@ public class LoginService {
     public FindLoginIdResponseDto findLoginId(FindLoginIdRequestDto dto) {
         User user = userRepository.findByNameAndPhoneAndEmailAndDeletedAtIsNull(dto.getName(), dto.getPhone(),
             dto.getEmail()).orElseThrow(
-            () -> new UserNotFoundException("일치하는 회원을 찾을 수 없습니다.")
+            () -> new UserNotFoundException(UserErrorCode.USER_NOT_FOUND)
         );
 
         return new FindLoginIdResponseDto(user.getLoginId());
@@ -46,7 +47,7 @@ public class LoginService {
     public ResetPasswordResponseDto resetPassword(ResetPasswordRequestDto dto) {
         User user = userRepository.findByLoginIdAndNameAndPhoneAndEmailAndDeletedAtIsNull(dto.getLoginId(), dto.getName(),
             dto.getPhone(), dto.getEmail()).orElseThrow(
-            () -> new UserNotFoundException("일치하는 회원을 찾을 수 없습니다.")
+            () -> new UserNotFoundException(UserErrorCode.USER_NOT_FOUND)
         );
 
         String tempPassword = generateTempPassword();
