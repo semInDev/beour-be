@@ -101,23 +101,23 @@ public class LoginService {
 
     private void checkRefreshTokenIsValid(String refresh) {
         if (refresh == null) {
-            throw new TokenNotFoundException("refresh 토큰을 찾을 수 없습니다.");
+            throw new TokenNotFoundException(UserErrorCode.REFRESH_TOKEN_NOT_FOUND);
         }
 
         try {
             jwtUtil.isExpired(refresh);
         } catch (ExpiredJwtException ex) {
-            throw new TokenExpiredException("refresh 토큰 만료");
+            throw new TokenExpiredException(UserErrorCode.REFRESH_TOKEN_EXPIRED);
         }
 
         String category = jwtUtil.getCategory(refresh);
         if (!category.equals("refresh")) {
-            throw new TokenNotFoundException("refresh 토큰을 찾을 수 없습니다.");
+            throw new TokenNotFoundException(UserErrorCode.REFRESH_TOKEN_NOT_FOUND);
         }
 
         Boolean isExistRefresh = refreshTokenRepository.existsByRefresh(refresh);
         if (!isExistRefresh) {
-            throw new TokenNotFoundException("refresh 토큰을 찾을 수 없습니다.");
+            throw new TokenNotFoundException(UserErrorCode.REFRESH_TOKEN_NOT_FOUND);
         }
     }
 

@@ -1,7 +1,17 @@
 package com.beour.global.exception.exceptionType;
 
-public class TokenNotFoundException extends RuntimeException{
-    public TokenNotFoundException(String message) {
-        super(message);
+import com.beour.global.exception.error.ErrorCode;
+
+public class TokenNotFoundException extends RuntimeException {
+
+    private final Integer errorCode;
+
+    public TokenNotFoundException(ErrorCode error) {
+        super(error.getMessage());
+        this.errorCode = error.getCode();
+    }
+
+    public Integer getErrorCode() {
+        return this.errorCode;
     }
 }
