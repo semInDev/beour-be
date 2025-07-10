@@ -18,7 +18,7 @@ public class WishListExceptionHandler {
 
 
     @ExceptionHandler(LikesNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleDuplicateLikes(LikesNotFoundException ex) {
+    public ResponseEntity<ErrorResponse> handleLikesNotFound(LikesNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
             .body(new ErrorResponse(ex.getErrorCode(), "LIKES_NOT_FOUND", ex.getMessage()));
     }
