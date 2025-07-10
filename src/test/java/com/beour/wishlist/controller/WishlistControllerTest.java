@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.beour.global.exception.error.errorcode.SpaceErrorCode;
 import com.beour.global.exception.error.errorcode.WishListErrorCode;
 import com.beour.global.jwt.JWTUtil;
 import com.beour.space.domain.entity.Space;
@@ -181,8 +182,8 @@ class WishlistControllerTest {
                 .param("spaceId", space1.getId().toString())
                 .header("Authorization", "Bearer " + accessToken)
             )
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.message").value("찜 목록에 존재하지 않습니다."));
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.message").value(SpaceErrorCode.SPACE_NOT_FOUND.getMessage()));
     }
 
     @Test
@@ -212,7 +213,7 @@ class WishlistControllerTest {
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.message").value("찜 목록이 비어있습니다."));
+            .andExpect(jsonPath("$.message").value(WishListErrorCode.EMPTY_WISHLIST.getMessage()));
     }
 
     @Test

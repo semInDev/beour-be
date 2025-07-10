@@ -55,14 +55,13 @@ public class WishlistService {
         throw new DuplicateLikesException(WishListErrorCode.ALREADY_IN_WISHLIST);
     }
 
-    //todo: exception 변경
     @Transactional
     public void deleteSpaceFromWishList(Long spaceId) {
         User user = findUserFromToken();
         Space space = getSpace(spaceId);
 
         Like like = likeRepository.findByUserIdAndSpaceIdAndDeletedAtIsNull(user.getId(), space.getId()).orElseThrow(
-            () -> new IllegalArgumentException("찜 목록에 존재하지 않습니다.")
+            () -> new SpaceNotFoundException(SpaceErrorCode.SPACE_NOT_FOUND)
         );
 
         like.softDelete();
