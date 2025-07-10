@@ -182,14 +182,11 @@ class ReservationHostControllerTest {
                 .andExpect(jsonPath("$.message").value("해당 호스트가 등록한 공간이 없습니다."));
     }
 
-/*    @Test
+    @Test
     @DisplayName("특정 날짜 호스트 예약 목록 조회 - 성공")
     void getHostReservationsByDate_success() throws Exception {
         //given
-        LocalDate targetDate = LocalDate.now();
-        LocalTime now = LocalTime.now();
-        LocalTime startTime1 = now.minusMinutes(30);
-        LocalTime endTime1 = now.plusMinutes(30);
+        LocalDate targetDate = LocalDate.now().plusDays(1);
 
         Reservation reservation1 = Reservation.builder()
                 .guest(guest)
@@ -199,8 +196,8 @@ class ReservationHostControllerTest {
                 .usagePurpose(UsagePurpose.COOKING_PRACTICE)
                 .requestMessage("요리 연습 부탁드립니다.")
                 .date(targetDate)
-                .startTime(startTime1)
-                .endTime(endTime1)
+                .startTime(LocalTime.of(10, 0, 0))
+                .endTime(LocalTime.of(12, 0, 0))
                 .price(30000)
                 .guestCount(3)
                 .build();
@@ -214,8 +211,8 @@ class ReservationHostControllerTest {
                 .usagePurpose(UsagePurpose.GROUP_MEETING)
                 .requestMessage("단체 모임 예약입니다.")
                 .date(targetDate)
-                .startTime(LocalTime.of(14, 0))
-                .endTime(LocalTime.of(16, 0))
+                .startTime(LocalTime.of(14, 0, 0))
+                .endTime(LocalTime.of(16, 0, 0))
                 .price(40000)
                 .guestCount(8)
                 .build();
@@ -232,13 +229,12 @@ class ReservationHostControllerTest {
                 .andExpect(jsonPath("$.data[0].guestName").value("게스트"))
                 .andExpect(jsonPath("$.data[0].status").value("ACCEPTED"))
                 .andExpect(jsonPath("$.data[0].spaceName").value("공간1"))
-                .andExpect(jsonPath("$.data[0].startTime").value(startTime1.truncatedTo(ChronoUnit.MILLIS).toString()))
-                .andExpect(jsonPath("$.data[0].endTime").value(endTime1.truncatedTo(ChronoUnit.MILLIS).toString()))
+                .andExpect(jsonPath("$.data[0].startTime").value("10:00:00"))
+                .andExpect(jsonPath("$.data[0].endTime").value("12:00:00"))
                 .andExpect(jsonPath("$.data[0].guestCount").value(3))
-                .andExpect(jsonPath("$.data[?(@.isCurrentlyInUse == true)]").exists()) // 현재 사용 중인 예약이 존재하는지 확인
                 .andExpect(jsonPath("$.data[1].reservationId").value(reservation2.getId()))
                 .andExpect(jsonPath("$.data[1].spaceName").value("공간2"));
-    }*/
+    }
 
     @Test
     @DisplayName("특정 날짜 호스트 예약 목록 조회 - 확정되지 않은 예약 제외")
@@ -304,12 +300,11 @@ class ReservationHostControllerTest {
                 .andExpect(jsonPath("$.message").value(ReservationErrorCode.RESERVATION_NOT_FOUND.getMessage()));
     }
 
-/*    @Test
+    @Test
     @DisplayName("특정 날짜 호스트 예약 목록 조회 - 현재 사용 중인 예약 확인")
     void getHostReservationsByDate_currentlyInUse() throws Exception {
         //given
         LocalDate today = LocalDate.now();
-        LocalTime currentTime = LocalTime.now();
 
         // 현재 시간 기준으로 사용 중인 예약 (시작 시간 < 현재 시간 < 종료 시간)
         Reservation currentReservation = Reservation.builder()
@@ -320,8 +315,8 @@ class ReservationHostControllerTest {
                 .usagePurpose(UsagePurpose.COOKING_PRACTICE)
                 .requestMessage("현재 사용 중")
                 .date(today)
-                .startTime(currentTime.minusHours(1))
-                .endTime(currentTime.plusHours(1))
+                .startTime(LocalTime.of(9, 0, 0))
+                .endTime(LocalTime.of(23, 59, 59))
                 .price(30000)
                 .guestCount(3)
                 .build();
@@ -334,8 +329,9 @@ class ReservationHostControllerTest {
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.length()").value(1))
-                .andExpect(jsonPath("$.data[?(@.isCurrentlyInUse == true)]").exists());
-    }*/
+                .andExpect(jsonPath("$.data[0].reservationId").value(currentReservation.getId()))
+                .andExpect(jsonPath("$.data[0].currentlyInUse").value(true));
+    }
 
     @Test
     @DisplayName("특정 날짜와 공간의 호스트 예약 목록 조회 - 성공")
