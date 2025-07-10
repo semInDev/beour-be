@@ -218,10 +218,6 @@ class WishlistServiceTest {
         assertEquals(result.get(1).getSpaceName(), "공간2");
     }
 
-    /**
-     * 찜 삭제 없는 공간일 경우 이미 삭제된 공간일 경우 68
-     */
-
     @Test
     @Transactional
     @DisplayName("찜삭제 - 성공")
@@ -254,7 +250,7 @@ class WishlistServiceTest {
     @DisplayName("찜삭제 - 없는 공간일 경우")
     void delete_wishlist_with_empty_list() {
         //when  //then
-        assertThrows(LikesNotFoundException.class,
+        assertThrows(IllegalArgumentException.class,
             () -> wishlistService.deleteSpaceFromWishList(space1.getId()));
     }
 
@@ -271,7 +267,7 @@ class WishlistServiceTest {
         wishlistService.deleteSpaceFromWishList(space1.getId());
 
         //when  //then
-        assertThrows(LikesNotFoundException.class,
+        assertThrows(IllegalArgumentException.class,
             () -> wishlistService.deleteSpaceFromWishList(space1.getId()));
     }
 }

@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.beour.global.exception.error.errorcode.WishListErrorCode;
 import com.beour.global.jwt.JWTUtil;
 import com.beour.space.domain.entity.Space;
 import com.beour.space.domain.entity.Tag;
@@ -157,7 +158,7 @@ class WishlistControllerTest {
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isConflict())
-            .andExpect(jsonPath("$.message").value("wishlist에 존재하는 공간입니다."));
+            .andExpect(jsonPath("$.message").value(WishListErrorCode.ALREADY_IN_WISHLIST.getMessage()));
     }
 
     @Test
@@ -180,7 +181,7 @@ class WishlistControllerTest {
                 .param("spaceId", space1.getId().toString())
                 .header("Authorization", "Bearer " + accessToken)
             )
-            .andExpect(status().isNotFound())
+            .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.message").value("찜 목록에 존재하지 않습니다."));
     }
 

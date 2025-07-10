@@ -1,5 +1,8 @@
 package com.beour.reservation.host.service;
 
+import com.beour.global.exception.error.errorcode.ReservationErrorCode;
+import com.beour.global.exception.error.errorcode.SpaceErrorCode;
+import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.reservation.host.dto.CalendarReservationResponseDto;
@@ -63,11 +66,11 @@ public class ReservationCalendarService {
     private Reservation validateReservationAndSpaceOwnership(Long reservationId, Long spaceId, User host) {
         // 예약 존재 확인
         Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new ReservationNotFound("존재하지 않는 예약입니다."));
+                .orElseThrow(() -> new ReservationNotFound(ReservationErrorCode.RESERVATION_NOT_FOUND));
 
         // 공간 존재 확인
         Space space = spaceRepository.findById(spaceId)
-                .orElseThrow(() -> new SpaceNotFoundException("존재하지 않는 공간입니다."));
+                .orElseThrow(() -> new SpaceNotFoundException(SpaceErrorCode.SPACE_NOT_FOUND));
 
         // 공간 소유자 확인
         validateSpaceOwnership(host, spaceId);
@@ -112,7 +115,7 @@ public class ReservationCalendarService {
 
     private void validateSpaceOwnership(User host, Long spaceId) {
         Space space = spaceRepository.findById(spaceId).orElseThrow(
-                () -> new SpaceNotFoundException("존재하지 않는 공간입니다.")
+                () -> new SpaceNotFoundException(SpaceErrorCode.SPACE_NOT_FOUND)
         );
 
         if (!space.getHost().getId().equals(host.getId())) {
@@ -132,7 +135,7 @@ public class ReservationCalendarService {
         String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
 
         return userRepository.findByLoginIdAndDeletedAtIsNull(loginId).orElseThrow(
-                () -> new UserNotFoundException("해당 유저를 찾을 수 없습니다.")
+                () -> new UserNotFoundException(UserErrorCode.USER_NOT_FOUND)
         );
     }
 }

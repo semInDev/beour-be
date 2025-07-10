@@ -1,5 +1,8 @@
 package com.beour.wishlist.service;
 
+import com.beour.global.exception.error.errorcode.SpaceErrorCode;
+import com.beour.global.exception.error.errorcode.UserErrorCode;
+import com.beour.global.exception.error.errorcode.WishListErrorCode;
 import com.beour.global.exception.exceptionType.DuplicateLikesException;
 import com.beour.global.exception.exceptionType.LikesNotFoundException;
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
@@ -49,16 +52,17 @@ public class WishlistService {
             return like;
         }
 
-        throw new DuplicateLikesException("wishlist에 존재하는 공간입니다.");
+        throw new DuplicateLikesException(WishListErrorCode.ALREADY_IN_WISHLIST);
     }
 
+    //todo: exception 변경
     @Transactional
     public void deleteSpaceFromWishList(Long spaceId) {
         User user = findUserFromToken();
         Space space = getSpace(spaceId);
 
         Like like = likeRepository.findByUserIdAndSpaceIdAndDeletedAtIsNull(user.getId(), space.getId()).orElseThrow(
-            () -> new LikesNotFoundException("찜 목록에 존재하지 않습니다.")
+            () -> new IllegalArgumentException("찜 목록에 존재하지 않습니다.")
         );
 
         like.softDelete();
@@ -66,7 +70,7 @@ public class WishlistService {
 
     private Space getSpace(Long spaceId) {
         return spaceRepository.findByIdAndDeletedAtIsNull(spaceId).orElseThrow(
-            () -> new SpaceNotFoundException("해당 공간은 존재하지 않습니다.")
+            () -> new SpaceNotFoundException(SpaceErrorCode.SPACE_NOT_FOUND)
         );
     }
 
@@ -76,7 +80,7 @@ public class WishlistService {
         List<Like> whisList = likeRepository.findByUserIdAndDeletedAtIsNull(user.getId());
 
         if(whisList.isEmpty()){
-            throw new LikesNotFoundException("찜 목록이 비어있습니다.");
+            throw new LikesNotFoundException(WishListErrorCode.EMPTY_WISHLIST);
         }
 
         return whisList.stream()
@@ -92,7 +96,7 @@ public class WishlistService {
         String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
 
         return userRepository.findByLoginIdAndDeletedAtIsNull(loginId).orElseThrow(
-            () -> new UserNotFoundException("해당 유저를 찾을 수 없습니다.")
+            () -> new UserNotFoundException(UserErrorCode.USER_NOT_FOUND)
         );
     }
 

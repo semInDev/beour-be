@@ -33,7 +33,7 @@ public class ReviewGuestController {
 
     // 예약 정보 조회 (리뷰 작성을 위한)
     @GetMapping("/api/guest/reviews/reservation/{reservationId}")
-    public ApiResponse<ReviewForReservationResponseDto> getReservationForReview(@PathVariable Long reservationId) {
+    public ApiResponse<ReviewForReservationResponseDto> getReservationForReview(@PathVariable(value = "reservationId") Long reservationId) {
         return ApiResponse.ok(reviewGuestService.getReservationForReview(reservationId));
     }
 
@@ -45,19 +45,19 @@ public class ReviewGuestController {
 
     // 리뷰 상세 조회
     @GetMapping("/api/guest/reviews/{reviewId}")
-    public ApiResponse<ReviewDetailResponseDto> getReviewDetail(@PathVariable Long reviewId) {
+    public ApiResponse<ReviewDetailResponseDto> getReviewDetail(@PathVariable(value = "reviewId") Long reviewId) {
         return ApiResponse.ok(reviewGuestService.getReviewDetail(reviewId));
     }
 
     @PatchMapping("/api/guest/reviews/{reviewId}")
-    public ApiResponse<String> updateReview(@PathVariable Long reviewId,
+    public ApiResponse<String> updateReview(@PathVariable(value = "reviewId") Long reviewId,
                                             @RequestBody @Valid ReviewUpdateRequestDto requestDto) {
         reviewGuestService.updateReview(reviewId, requestDto);
         return ApiResponse.ok("Review가 수정되었습니다.");
     }
 
     @DeleteMapping("/api/guest/reviews/{reviewId}")
-    public ApiResponse<String> deleteReview(@PathVariable Long reviewId) {
+    public ApiResponse<String> deleteReview(@PathVariable(value = "reviewId") Long reviewId) {
         reviewGuestService.deleteReview(reviewId);
         return ApiResponse.ok("Review가 삭제되었습니다.");
     }
