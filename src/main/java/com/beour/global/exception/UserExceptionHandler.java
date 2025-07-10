@@ -15,28 +15,31 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class UserExceptionHandler {
 
-  @ExceptionHandler(InvalidCredentialsException.class)
-  public ResponseEntity<ErrorResponse> handleInvalidCredentials(InvalidCredentialsException ex) {
-    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-        .body(new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), "INVALID_CREDENTIALS", ex.getMessage()));
-  }
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidCredentials(InvalidCredentialsException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), "INVALID_CREDENTIALS",
+                ex.getMessage()));
+    }
 
-  @ExceptionHandler(UserNotFoundException.class)
-  public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex) {
-    return ResponseEntity.status(HttpStatus.NOT_FOUND)
-        .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), "USER_NOT_FOUND", ex.getMessage()));
-  }
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(
+                new ErrorResponse(ex.getErrorCode(), "USER_NOT_FOUND", ex.getMessage()));
+    }
 
-  @ExceptionHandler(DuplicateUserInfoException.class)
-  public ResponseEntity<ErrorResponse> handleDuplicateUserInfo(DuplicateUserInfoException ex) {
-    return ResponseEntity.status(HttpStatus.CONFLICT)
-        .body(new ErrorResponse(HttpStatus.CONFLICT.value(), "DUPLICATE_USER_INFO", ex.getMessage()));
-  }
+    @ExceptionHandler(DuplicateUserInfoException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateUserInfo(DuplicateUserInfoException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(new ErrorResponse(ex.getErrorCode(), "DUPLICATE_USER_INFO", ex.getMessage()));
+    }
 
-  @ExceptionHandler(InvalidFormatException.class)
-  public ResponseEntity<ErrorResponse> invalidFormat(InvalidFormatException ex) {
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-        .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "VALIDATION_ERROR", ex.getMessage()));
-  }
+    @ExceptionHandler(InvalidFormatException.class)
+    public ResponseEntity<ErrorResponse> invalidFormat(InvalidFormatException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "VALIDATION_ERROR",
+                ex.getMessage()));
+    }
 
 }

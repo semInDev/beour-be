@@ -1,5 +1,6 @@
 package com.beour.review.host.service;
 
+import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.exception.exceptionType.ReviewCommentNotFoundException;
 import com.beour.global.exception.exceptionType.ReviewNotFoundException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
@@ -108,7 +109,7 @@ public class ReviewCommentHostService {
     private User findUserFromToken() {
         String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository.findByLoginIdAndDeletedAtIsNull(loginId)
-                .orElseThrow(() -> new UserNotFoundException("해당 유저를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserNotFoundException(UserErrorCode.USER_NOT_FOUND));
     }
 
     private Review findReviewById(Long reviewId) {

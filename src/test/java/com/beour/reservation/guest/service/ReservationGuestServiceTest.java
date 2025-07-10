@@ -176,8 +176,9 @@ class ReservationGuestServiceTest {
     @DisplayName("공간 예약 - 현 시점 이전의 시간")
     void create_reservation_past_time() {
         //given
+        int currentHour = LocalTime.now().getHour();
         ReservationCreateRequest request = new ReservationCreateRequest(host.getId(), space.getId(),
-            LocalDate.now(), LocalTime.of(17, 0, 0), LocalTime.of(18, 0, 0), 15000, 2,
+            LocalDate.now(), LocalTime.of(currentHour - 1, 0, 0), LocalTime.of(currentHour + 1, 0, 0), 30000, 2,
             UsagePurpose.BARISTA_TRAINING, "테슽뚜");
 
         //when  then
@@ -462,7 +463,7 @@ class ReservationGuestServiceTest {
         reservationRepository.save(reservationFuture);
 
         //when  //then
-        assertThrows(IllegalStateException.class, () -> reservationGuestService.cancelReservation(1L));
+        assertThrows(MissMatch.class, () -> reservationGuestService.cancelReservation(reservationFuture.getId()));
     }
 
     @Test

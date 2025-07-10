@@ -1,5 +1,6 @@
 package com.beour.space.guest.service;
 
+import com.beour.global.exception.error.errorcode.SpaceErrorCode;
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
 import com.beour.space.domain.entity.Space;
 import com.beour.space.domain.entity.Tag;
@@ -53,7 +54,7 @@ public class GuestSpaceService {
         List<Space> spaces = spaceRepository.findTop5ByDeletedAtIsNullOrderByCreatedAtDesc();
 
         if(spaces.isEmpty()){
-            throw new SpaceNotFoundException("최근 등록된 공간이 없습니다.");
+            throw new SpaceNotFoundException(SpaceErrorCode.NO_RECENT_SPACE);
         }
 
         return spaces.stream()

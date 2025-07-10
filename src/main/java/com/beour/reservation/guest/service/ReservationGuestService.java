@@ -1,5 +1,8 @@
 package com.beour.reservation.guest.service;
 
+import com.beour.global.exception.error.errorcode.ReservationErrorCode;
+import com.beour.global.exception.error.errorcode.SpaceErrorCode;
+import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.reservation.commons.entity.Reservation;
@@ -41,10 +44,10 @@ public class ReservationGuestService {
     public ReservationResponseDto createReservation(ReservationCreateRequest requestDto) {
         User guest = findUserFromToken();
         User host = userRepository.findById(requestDto.getHostId()).orElseThrow(
-                () -> new UserNotFoundException("존재하지 않는 유저입니다.")
+                () -> new UserNotFoundException(UserErrorCode.USER_NOT_FOUND)
         );
         Space space = spaceRepository.findById(requestDto.getSpaceId()).orElseThrow(
-                () -> new SpaceNotFoundException("존재하지 않는 공간입니다.")
+                () -> new SpaceNotFoundException(SpaceErrorCode.SPACE_NOT_FOUND)
         );
 
         checkReservationAvailable(requestDto, space);
@@ -165,14 +168,14 @@ public class ReservationGuestService {
 
     private static void checkEmptyReservation(List<Reservation> reservationList) {
         if (reservationList.isEmpty()) {
-            throw new ReservationNotFound("예약이 없습니다.");
+            throw new ReservationNotFound(ReservationErrorCode.RESERVATION_NOT_FOUND);
         }
     }
 
     @Transactional
     public void cancelReservation(Long reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(
-                () -> new ReservationNotFound("해당 예약이 존재하지 않습니다.")
+                () -> new ReservationNotFound(ReservationErrorCode.RESERVATION_NOT_FOUND)
         );
 
         if (reservation.getStatus() != ReservationStatus.PENDING) {
@@ -186,7 +189,7 @@ public class ReservationGuestService {
         String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
 
         return userRepository.findByLoginIdAndDeletedAtIsNull(loginId).orElseThrow(
-                () -> new UserNotFoundException("해당 유저를 찾을 수 없습니다.")
+                () -> new UserNotFoundException(UserErrorCode.USER_NOT_FOUND)
         );
     }
 }

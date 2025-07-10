@@ -1,5 +1,6 @@
 package com.beour.user.service;
 
+import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.exception.exceptionType.DuplicateUserInfoException;
 import com.beour.user.dto.SignupRequestDto;
 import com.beour.user.entity.User;
@@ -31,7 +32,7 @@ public class SignupService {
 
     private static void checkDuplicateWithAdminId(String loginId) {
         if (loginId.equals("admin")) {
-            throw new DuplicateUserInfoException("사용할 수 없는 아이디입니다.");
+            throw new DuplicateUserInfoException(UserErrorCode.LOGIN_ID_DUPLICATE);
         }
     }
 
@@ -39,7 +40,7 @@ public class SignupService {
         Boolean isUserExist = userRepository.existsByLoginIdAndDeletedAtIsNull(loginId);
 
         if (isUserExist) {
-            throw new DuplicateUserInfoException("이미 사용중인 아이디입니다.");
+            throw new DuplicateUserInfoException(UserErrorCode.LOGIN_ID_DUPLICATE);
         }
 
         return false;
@@ -49,7 +50,7 @@ public class SignupService {
         Boolean isUserExist = userRepository.existsByNicknameAndDeletedAtIsNull(nickname);
 
         if (isUserExist) {
-            throw new DuplicateUserInfoException("이미 사용중인 닉네임입니다.");
+            throw new DuplicateUserInfoException(UserErrorCode.NICKNAME_ID_DUPLICATE);
         }
 
         return false;
