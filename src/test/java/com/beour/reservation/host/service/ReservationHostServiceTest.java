@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
-import com.beour.global.exception.exceptionType.UserNotFoundException;
+import com.beour.global.exception.exceptionType.UnauthorityException;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
 import com.beour.reservation.commons.enums.UsagePurpose;
@@ -177,7 +177,7 @@ class ReservationHostServiceTest {
         spaceRepository.deleteAll();
 
         //when & then
-        assertThrows(RuntimeException.class, () -> reservationHostService.getHostSpaces());
+        assertThrows(SpaceNotFoundException.class, () -> reservationHostService.getHostSpaces());
     }
 
     @Test
@@ -335,7 +335,7 @@ class ReservationHostServiceTest {
         LocalDate targetDate = LocalDate.now().plusDays(1);
 
         //when & then
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(UnauthorityException.class,
                 () -> reservationHostService.getHostReservationsByDateAndSpace(targetDate, anotherHostSpace.getId()));
     }
 
