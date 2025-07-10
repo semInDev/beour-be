@@ -1,5 +1,6 @@
 package com.beour.user.service;
 
+import com.beour.global.exception.error.errorcode.GlobalErrorCode;
 import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.exception.exceptionType.InvalidFormatException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
@@ -64,7 +65,7 @@ public class MyInformationService {
         }
 
         if(requestDto.getNewNickname().isEmpty() && requestDto.getNewPhone().isEmpty()){
-            throw new InvalidFormatException("수정할 정보를 입력해주세요.");
+            throw new InvalidFormatException(GlobalErrorCode.NO_INFO_TO_UPDATE);
         }
 
         User updatedUser = findUserFromToken();

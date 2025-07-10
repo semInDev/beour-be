@@ -4,6 +4,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.beour.global.exception.error.errorcode.GlobalErrorCode;
 import com.beour.global.jwt.JWTUtil;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
@@ -83,7 +84,7 @@ public class MyInfomationControllerValidationTest {
                 .content(requestJson)
             )
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.message").value("수정할 정보를 입력해주세요."));
+            .andExpect(jsonPath("$.message").value(GlobalErrorCode.NO_INFO_TO_UPDATE.getMessage()));
     }
 
     @Test

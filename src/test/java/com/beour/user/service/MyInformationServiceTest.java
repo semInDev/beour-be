@@ -100,7 +100,6 @@ class MyInformationServiceTest {
 
     //todo: 중복된 닉네임으로 가입할 경우
 
-
     @Test
     @DisplayName("개인정보 수정 - 닉네임만 변경")
     void success_update_user_info_nickname(){
