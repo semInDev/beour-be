@@ -2,7 +2,7 @@ package com.beour.user.service;
 
 import com.beour.global.exception.error.errorcode.GlobalErrorCode;
 import com.beour.global.exception.error.errorcode.UserErrorCode;
-import com.beour.global.exception.exceptionType.InvalidFormatException;
+import com.beour.global.exception.exceptionType.InputInvalidFormatException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.user.dto.ChangePasswordRequestDto;
 import com.beour.user.dto.UpdateUserInfoRequestDto;
@@ -65,7 +65,7 @@ public class MyInformationService {
         }
 
         if(requestDto.getNewNickname().isEmpty() && requestDto.getNewPhone().isEmpty()){
-            throw new InvalidFormatException(GlobalErrorCode.NO_INFO_TO_UPDATE);
+            throw new InputInvalidFormatException(GlobalErrorCode.NO_INFO_TO_UPDATE);
         }
 
         User updatedUser = findUserFromToken();

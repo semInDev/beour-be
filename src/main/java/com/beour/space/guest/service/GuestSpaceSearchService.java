@@ -30,7 +30,7 @@ public class GuestSpaceSearchService {
 
     private List<Space> searchWithKeyword(String keyword) {
         if (keyword.isEmpty()) {
-            throw new InputInvalidFormatException("키워드를 입력해주세요");
+            throw new InputInvalidFormatException(SpaceErrorCode.KEYWORD_REQUIRED);
         }
 
         List<Space> result = spaceRepository.searchByKeyword("%" + keyword + "%");

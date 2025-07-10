@@ -2,7 +2,6 @@ package com.beour.global.exception;
 
 import com.beour.global.exception.exceptionType.HostSpaceNotFoundException;
 import com.beour.global.exception.exceptionType.InputInvalidFormatException;
-import com.beour.global.exception.exceptionType.InvalidFormatException;
 import com.beour.global.exception.exceptionType.ReviewCommentNotFoundException;
 import com.beour.global.exception.exceptionType.UnauthorityException;
 import com.beour.global.response.ErrorResponse;
@@ -43,9 +42,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InputInvalidFormatException.class)
     public ResponseEntity<ErrorResponse> handleInputFormat(InputInvalidFormatException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .body(new ErrorResponse(
-                HttpStatus.BAD_REQUEST.value(),
-                "INPUT_INVALID_FORMAT", ex.getMessage()));
+            .body(new ErrorResponse(ex.getErrorCode(), "INPUT_INVALID_FORMAT", ex.getMessage()));
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
@@ -92,11 +89,11 @@ public class GlobalExceptionHandler {
                 "HOST_SPACE_NOT_FOUND", ex.getMessage()));
     }
 
-    @ExceptionHandler(InvalidFormatException.class)
-    public ResponseEntity<ErrorResponse> invalidFormat(InvalidFormatException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .body(new ErrorResponse(ex.getErrorCode(), "VALIDATION_ERROR", ex.getMessage()));
-    }
+//    @ExceptionHandler(InvalidFormatException.class)
+//    public ResponseEntity<ErrorResponse> invalidFormat(InvalidFormatException ex) {
+//        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+//            .body(new ErrorResponse(ex.getErrorCode(), "VALIDATION_ERROR", ex.getMessage()));
+//    }
 
     @ExceptionHandler(UnauthorityException.class)
     public ResponseEntity<ErrorResponse> invalidFormat(UnauthorityException ex) {

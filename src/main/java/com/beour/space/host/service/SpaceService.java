@@ -3,6 +3,7 @@ package com.beour.space.host.service;
 import com.beour.global.exception.error.errorcode.SpaceErrorCode;
 import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
+import com.beour.global.exception.exceptionType.UnauthorityException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.review.domain.repository.ReviewRepository;
 import com.beour.space.domain.entity.*;
@@ -285,7 +286,7 @@ public class SpaceService {
                 .orElseThrow(() -> new SpaceNotFoundException(SpaceErrorCode.SPACE_NOT_FOUND));
 
         if (!space.getHost().getId().equals(currentUser.getId())) {
-            throw new IllegalStateException("해당 공간에 대한 권한이 없습니다.");
+            throw new UnauthorityException(SpaceErrorCode.NO_PERMISSION);
         }
 
         return space;
