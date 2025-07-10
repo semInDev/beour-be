@@ -78,7 +78,7 @@ public class WishlistService {
         List<Like> whisList = likeRepository.findByUserIdAndDeletedAtIsNull(user.getId());
 
         if(whisList.isEmpty()){
-            throw new LikesNotFoundException("찜 목록이 비어있습니다.");
+            throw new LikesNotFoundException(WishListErrorCode.EMPTY_WISHLIST);
         }
 
         return whisList.stream()

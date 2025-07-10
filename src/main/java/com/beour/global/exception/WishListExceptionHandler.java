@@ -20,6 +20,6 @@ public class WishListExceptionHandler {
     @ExceptionHandler(LikesNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleDuplicateLikes(LikesNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-            .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), "LIKES_NOT_FOUND", ex.getMessage()));
+            .body(new ErrorResponse(ex.getErrorCode(), "LIKES_NOT_FOUND", ex.getMessage()));
     }
 }

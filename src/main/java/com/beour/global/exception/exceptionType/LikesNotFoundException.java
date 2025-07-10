@@ -1,9 +1,18 @@
 package com.beour.global.exception.exceptionType;
 
-public class LikesNotFoundException extends UserException {
+import com.beour.global.exception.error.ErrorCode;
 
-  public LikesNotFoundException(String message) {
-    super(message);
-  }
+public class LikesNotFoundException extends RuntimeException {
+
+    private final Integer errorCode;
+
+    public LikesNotFoundException(ErrorCode error) {
+        super(error.getMessage());
+        this.errorCode = error.getCode();
+    }
+
+    public Integer getErrorCode() {
+        return errorCode;
+    }
 
 }
