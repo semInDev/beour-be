@@ -5,9 +5,9 @@ import com.beour.global.exception.error.ErrorCode;
 public class DuplicateUserInfoException extends RuntimeException {
     private final Integer errorCode;
 
-    public DuplicateUserInfoException(ErrorCode errorCode) {
-        super(errorCode.getMessage());
-        this.errorCode = errorCode.getCode();
+    public DuplicateUserInfoException(ErrorCode error) {
+        super(error.getMessage());
+        this.errorCode = error.getCode();
     }
 
     public Integer getErrorCode(){

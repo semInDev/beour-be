@@ -1,5 +1,7 @@
 package com.beour.reservation.host.service;
 
+import com.beour.global.exception.error.errorcode.ReservationErrorCode;
+import com.beour.global.exception.error.errorcode.SpaceErrorCode;
 import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.exception.exceptionType.HostSpaceNotFoundException;
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
@@ -61,7 +63,7 @@ public class ReservationHostService {
         User host = findUserFromToken();
 
         Space space = spaceRepository.findById(spaceId).orElseThrow(
-                () -> new SpaceNotFoundException("존재하지 않는 공간입니다.")
+                () -> new SpaceNotFoundException(SpaceErrorCode.SPACE_NOT_FOUND)
         );
 
         // 호스트가 해당 공간의 소유자인지 확인
@@ -81,7 +83,7 @@ public class ReservationHostService {
                 .collect(Collectors.toList());
 
         if (acceptedReservations.isEmpty()) {
-            throw new ReservationNotFound(emptyMessage);
+            throw new ReservationNotFound(ReservationErrorCode.RESERVATION_NOT_FOUND);
         }
 
         return acceptedReservations.stream()

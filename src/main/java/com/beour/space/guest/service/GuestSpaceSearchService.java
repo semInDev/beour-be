@@ -1,5 +1,6 @@
 package com.beour.space.guest.service;
 
+import com.beour.global.exception.error.errorcode.SpaceErrorCode;
 import com.beour.global.exception.exceptionType.InputInvalidFormatException;
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
 import com.beour.review.domain.repository.ReviewRepository;
@@ -34,7 +35,7 @@ public class GuestSpaceSearchService {
 
         List<Space> result = spaceRepository.searchByKeyword("%" + keyword + "%");
         if (result.isEmpty()) {
-            throw new SpaceNotFoundException("키워드에 해당되는 공간이 없습니다.");
+            throw new SpaceNotFoundException(SpaceErrorCode.NO_MATCHING_SPACE);
         }
 
         return result;
@@ -45,7 +46,7 @@ public class GuestSpaceSearchService {
         List<Space> filtering = filterSpaces(spaceListWithKeyword, requestDto);
 
         if (filtering.isEmpty()) {
-            throw new SpaceNotFoundException("해당 조건에 일치하는 공간이 없습니다.");
+            throw new SpaceNotFoundException(SpaceErrorCode.NO_MATCHING_SPACE);
         }
 
         return changeToSearchResponseDtoFrom(filtering);
@@ -87,7 +88,7 @@ public class GuestSpaceSearchService {
         List<Space> space = spaceRepository.findBySpaceCategory(request);
 
         if (space.isEmpty()) {
-            throw new SpaceNotFoundException("해당 유형의 공간은 존재하지 않습니다.");
+            throw new SpaceNotFoundException(SpaceErrorCode.NO_MATCHING_SPACE);
         }
 
         return changeToSearchResponseDtoFrom(space);
@@ -97,7 +98,7 @@ public class GuestSpaceSearchService {
         List<Space> space = spaceRepository.findByUseCategory(request);
 
         if (space.isEmpty()) {
-            throw new SpaceNotFoundException("해당 유형의 공간은 존재하지 않습니다.");
+            throw new SpaceNotFoundException(SpaceErrorCode.NO_MATCHING_SPACE);
         }
 
         return changeToSearchResponseDtoFrom(space);

@@ -1,5 +1,6 @@
 package com.beour.review.guest.service;
 
+import com.beour.global.exception.error.errorcode.ReservationErrorCode;
 import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.exception.exceptionType.ReviewNotFoundException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
@@ -157,7 +158,7 @@ public class ReviewGuestService {
 
     private Reservation findReservationById(Long reservationId) {
         return reservationRepository.findById(reservationId).orElseThrow(
-                () -> new ReservationNotFound("해당 예약을 찾을 수 없습니다.")
+                () -> new ReservationNotFound(ReservationErrorCode.RESERVATION_NOT_FOUND)
         );
     }
 

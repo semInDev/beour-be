@@ -1,5 +1,6 @@
 package com.beour.space.host.service;
 
+import com.beour.global.exception.error.errorcode.SpaceErrorCode;
 import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
@@ -86,7 +87,7 @@ public class SpaceService {
     @Transactional(readOnly = true)
     public SpaceSimpleResponseDto getSimpleSpaceInfo(Long spaceId) {
         Space space = spaceRepository.findByIdAndDeletedAtIsNull(spaceId)
-                .orElseThrow(() -> new SpaceNotFoundException("존재하지 않는 공간입니다."));
+                .orElseThrow(() -> new SpaceNotFoundException(SpaceErrorCode.SPACE_NOT_FOUND));
 
         List<String> tagContents = space.getTags().stream()
                 .map(Tag::getContents)
@@ -104,7 +105,7 @@ public class SpaceService {
     @Transactional(readOnly = true)
     public SpaceDetailResponseDto getDetailedSpaceInfo(Long spaceId) {
         Space space = spaceRepository.findByIdAndDeletedAtIsNull(spaceId)
-                .orElseThrow(() -> new SpaceNotFoundException("존재하지 않는 공간입니다."));
+                .orElseThrow(() -> new SpaceNotFoundException(SpaceErrorCode.SPACE_NOT_FOUND));
 
         Description desc = space.getDescription();
 
@@ -281,7 +282,7 @@ public class SpaceService {
     private Space findSpaceByIdAndCheckOwnership(Long spaceId) {
         User currentUser = findUserFromToken();
         Space space = spaceRepository.findByIdAndDeletedAtIsNull(spaceId)
-                .orElseThrow(() -> new SpaceNotFoundException("존재하지 않는 공간입니다."));
+                .orElseThrow(() -> new SpaceNotFoundException(SpaceErrorCode.SPACE_NOT_FOUND));
 
         if (!space.getHost().getId().equals(currentUser.getId())) {
             throw new IllegalStateException("해당 공간에 대한 권한이 없습니다.");

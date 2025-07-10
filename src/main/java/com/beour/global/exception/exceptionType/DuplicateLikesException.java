@@ -1,9 +1,16 @@
 package com.beour.global.exception.exceptionType;
 
-public class DuplicateLikesException extends RuntimeException{
+import com.beour.global.exception.error.ErrorCode;
 
-    public DuplicateLikesException(String message) {
-        super(message);
+public class DuplicateLikesException extends RuntimeException{
+    private final Integer errorCode;
+
+    public DuplicateLikesException(ErrorCode errorCode) {
+        super(errorCode.getMessage());
+        this.errorCode = errorCode.getCode();
     }
 
+    public Integer getErrorCode(){
+        return this.errorCode;
+    }
 }

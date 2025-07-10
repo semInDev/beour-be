@@ -81,10 +81,11 @@ public class SecurityConfig {
                     .requestMatchers("/api/spaces/reserve/available-times", "/api/spaces/search/**",
                         "/api/spaces/new", "/api/reviews/new", "/api/banners").permitAll()
                     .requestMatchers("/admin").hasRole("ADMIN")
+                    .requestMatchers("/api/spaces/reserve", "/api/reservation/**", "/api/guest/**")
+                    .hasRole("GUEST")
                     .requestMatchers("/api/spaces", "/api/spaces/my-spaces", "/api/spaces/*", "/api/spaces/*/*",
                             "/api/host/available-times/spaces",  "/api/host/available-times/space/*").hasRole("HOST")
-                    .requestMatchers("/api/spaces/reserve", "/api/reservation/**")
-                    .hasRole("GUEST")
+
                     .requestMatchers("/api/mypage/**").hasAnyRole("HOST", "GUEST")
                     .requestMatchers("/logout").hasAnyRole("HOST", "GUEST", "ADMIN")
                     .anyRequest().authenticated()
