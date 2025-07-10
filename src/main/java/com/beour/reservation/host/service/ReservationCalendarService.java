@@ -31,18 +31,21 @@ public class ReservationCalendarService {
     private final UserRepository userRepository;
     private final SpaceRepository spaceRepository;
 
+    @Transactional(readOnly = true)
     public List<CalendarReservationResponseDto> getHostCalendarReservations(LocalDate date, Long spaceId) {
         User host = findUserFromToken();
         List<Reservation> reservationList = getReservationListDependingOnSpaceId(host, date, spaceId, null);
         return convertToCalendarResponseDto(reservationList);
     }
 
+    @Transactional(readOnly = true)
     public List<CalendarReservationResponseDto> getHostPendingReservations(LocalDate date, Long spaceId) {
         User host = findUserFromToken();
         List<Reservation> reservationList = getReservationListDependingOnSpaceId(host, date, spaceId, ReservationStatus.PENDING);
         return convertToCalendarResponseDto(reservationList);
     }
 
+    @Transactional(readOnly = true)
     public List<CalendarReservationResponseDto> getHostAcceptedReservations(LocalDate date, Long spaceId) {
         User host = findUserFromToken();
         List<Reservation> reservationList = getReservationListDependingOnSpaceId(host, date, spaceId, ReservationStatus.ACCEPTED);

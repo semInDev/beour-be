@@ -196,6 +196,7 @@ class ReservationCalendarServiceTest {
                 .build();
         reservationRepository.save(deletedReservation);
         deletedReservation.softDelete();
+        reservationRepository.save(deletedReservation);
     }
 
     @AfterEach
@@ -481,6 +482,9 @@ class ReservationCalendarServiceTest {
         pendingReservation.softDelete();
         acceptedReservation.softDelete();
         rejectedReservation.softDelete();
+        reservationRepository.save(pendingReservation);
+        reservationRepository.save(acceptedReservation);
+        reservationRepository.save(rejectedReservation);
 
         // when
         List<CalendarReservationResponseDto> result = reservationCalendarService.getHostCalendarReservations(today, null);
