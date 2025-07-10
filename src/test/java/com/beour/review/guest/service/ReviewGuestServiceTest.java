@@ -3,7 +3,9 @@ package com.beour.review.guest.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.beour.global.exception.exceptionType.DuplicateException;
 import com.beour.global.exception.exceptionType.ReviewNotFoundException;
+import com.beour.global.exception.exceptionType.UnauthorityException;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
 import com.beour.reservation.commons.enums.UsagePurpose;
@@ -11,7 +13,6 @@ import com.beour.reservation.commons.exceptionType.MissMatch;
 import com.beour.reservation.commons.exceptionType.ReservationNotFound;
 import com.beour.reservation.commons.repository.ReservationRepository;
 import com.beour.review.domain.entity.Review;
-import com.beour.review.domain.entity.ReviewComment;
 import com.beour.review.domain.entity.ReviewImage;
 import com.beour.review.domain.repository.ReviewCommentRepository;
 import com.beour.review.domain.repository.ReviewImageRepository;
@@ -253,7 +254,7 @@ class ReviewGuestServiceTest {
         reservationRepository.save(otherReservation);
 
         //when then
-        assertThrows(MissMatch.class,
+        assertThrows(UnauthorityException.class,
                 () -> reviewGuestService.getReservationForReview(otherReservation.getId()));
     }
 
@@ -304,7 +305,7 @@ class ReviewGuestServiceTest {
                 completedReservation.getId(), 5, "좋은 공간이었습니다.", null);
 
         //when then
-        assertThrows(MissMatch.class,
+        assertThrows(DuplicateException.class,
                 () -> reviewGuestService.createReview(requestDto));
     }
 
@@ -366,7 +367,7 @@ class ReviewGuestServiceTest {
         reviewRepository.save(otherReview);
 
         //when then
-        assertThrows(MissMatch.class,
+        assertThrows(UnauthorityException.class,
                 () -> reviewGuestService.getReviewDetail(otherReview.getId()));
     }
 
