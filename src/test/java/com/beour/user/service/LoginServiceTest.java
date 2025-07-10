@@ -2,6 +2,7 @@ package com.beour.user.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.user.dto.FindLoginIdRequestDto;
 import com.beour.user.dto.FindLoginIdResponseDto;
@@ -68,7 +69,7 @@ class LoginServiceTest {
         //when    then
         UserNotFoundException exception = assertThrows(UserNotFoundException.class,
             () -> loginService.findLoginId(requestDto));
-        assertEquals("일치하는 회원을 찾을 수 없습니다.", exception.getMessage());
+        assertEquals(UserErrorCode.MEMBER_NOT_FOUND.getMessage(), exception.getMessage());
     }
 
     @Test
@@ -84,12 +85,12 @@ class LoginServiceTest {
         //when    then
         UserNotFoundException exception = assertThrows(UserNotFoundException.class,
             () -> loginService.findLoginId(requestDto));
-        assertEquals("일치하는 회원을 찾을 수 없습니다.", exception.getMessage());
+        assertEquals(UserErrorCode.MEMBER_NOT_FOUND.getMessage(), exception.getMessage());
     }
 
     @Test
     @DisplayName("로그인아이디찾기-성공")
-    void success_findLoginId(){
+    void success_findLoginId() {
         //given
         FindLoginIdRequestDto requestDto = FindLoginIdRequestDto.builder()
             .name("유저1")
@@ -118,7 +119,7 @@ class LoginServiceTest {
         //when    then
         UserNotFoundException exception = assertThrows(UserNotFoundException.class,
             () -> loginService.resetPassword(requestDto));
-        assertEquals("일치하는 회원을 찾을 수 없습니다.", exception.getMessage());
+        assertEquals(UserErrorCode.MEMBER_NOT_FOUND.getMessage(), exception.getMessage());
     }
 
     @Test
