@@ -1,6 +1,7 @@
 package com.beour.review.host.service;
 
 import com.beour.global.exception.error.errorcode.CommentErrorCode;
+import com.beour.global.exception.error.errorcode.ReviewErrorCode;
 import com.beour.global.exception.error.errorcode.SpaceErrorCode;
 import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.exception.exceptionType.DuplicateException;
@@ -118,7 +119,7 @@ public class ReviewCommentHostService {
 
     private Review findReviewById(Long reviewId) {
         return reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new ReviewNotFoundException("존재하지 않는 리뷰입니다."));
+                .orElseThrow(() -> new ReviewNotFoundException(ReviewErrorCode.REVIEW_NOT_FOUND));
     }
 
     private ReviewComment findReviewCommentById(Long commentId) {

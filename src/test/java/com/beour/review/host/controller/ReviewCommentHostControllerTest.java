@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.beour.global.exception.error.errorcode.CommentErrorCode;
+import com.beour.global.exception.error.errorcode.ReviewErrorCode;
 import com.beour.global.exception.error.errorcode.SpaceErrorCode;
 import com.beour.global.jwt.JWTUtil;
 import com.beour.reservation.commons.entity.Reservation;
@@ -288,7 +289,7 @@ class ReviewCommentHostControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("존재하지 않는 리뷰입니다."));
+                .andExpect(jsonPath("$.message").value(ReviewErrorCode.REVIEW_NOT_FOUND.getMessage()));
     }
 
     @Test

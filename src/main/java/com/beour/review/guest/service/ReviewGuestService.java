@@ -1,6 +1,7 @@
 package com.beour.review.guest.service;
 
 import com.beour.global.exception.error.errorcode.ReservationErrorCode;
+import com.beour.global.exception.error.errorcode.ReviewErrorCode;
 import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.exception.exceptionType.ReviewNotFoundException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
@@ -127,7 +128,7 @@ public class ReviewGuestService {
         List<Review> reviews = reviewRepository.findTop5ByDeletedAtIsNullOrderByCreatedAtDesc();
 
         if(reviews.isEmpty()){
-            throw new ReviewNotFoundException("최근 등록된 리뷰가 없습니다.");
+            throw new ReviewNotFoundException(ReviewErrorCode.REVIEW_NOT_FOUND);
         }
 
         return reviews.stream()
@@ -164,7 +165,7 @@ public class ReviewGuestService {
 
     private Review findReviewById(Long reviewId) {
         return reviewRepository.findById(reviewId).orElseThrow(
-                () -> new ReviewNotFoundException("해당 리뷰를 찾을 수 없습니다.")
+                () -> new ReviewNotFoundException(ReviewErrorCode.REVIEW_NOT_FOUND)
         );
     }
 
