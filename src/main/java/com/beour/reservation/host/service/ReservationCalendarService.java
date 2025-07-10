@@ -4,6 +4,7 @@ import com.beour.global.exception.error.errorcode.ReservationErrorCode;
 import com.beour.global.exception.error.errorcode.SpaceErrorCode;
 import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
+import com.beour.global.exception.exceptionType.UnauthorityException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.reservation.host.dto.CalendarReservationResponseDto;
 import com.beour.reservation.commons.entity.Reservation;
@@ -85,7 +86,7 @@ public class ReservationCalendarService {
 
         // 예약의 호스트와 현재 사용자가 일치하는지 확인
         if (!reservation.getHost().getId().equals(host.getId())) {
-            throw new IllegalArgumentException("해당 예약의 호스트가 아닙니다.");
+            throw new UnauthorityException(ReservationErrorCode.NO_PERMISSION);
         }
 
         return reservation;
@@ -122,7 +123,7 @@ public class ReservationCalendarService {
         );
 
         if (!space.getHost().getId().equals(host.getId())) {
-            throw new IllegalArgumentException("해당 공간의 소유자가 아닙니다.");
+            throw new UnauthorityException(SpaceErrorCode.NO_PERMISSION);
         }
     }
 

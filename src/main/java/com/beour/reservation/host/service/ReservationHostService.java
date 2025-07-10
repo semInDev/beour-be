@@ -5,6 +5,7 @@ import com.beour.global.exception.error.errorcode.SpaceErrorCode;
 import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.exception.exceptionType.HostSpaceNotFoundException;
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
+import com.beour.global.exception.exceptionType.UnauthorityException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
@@ -68,7 +69,7 @@ public class ReservationHostService {
 
         // 호스트가 해당 공간의 소유자인지 확인
         if (!space.getHost().getId().equals(host.getId())) {
-            throw new IllegalArgumentException("해당 공간의 소유자가 아닙니다.");
+            throw new UnauthorityException(SpaceErrorCode.NO_PERMISSION);
         }
 
         List<Reservation> reservationList = reservationRepository.findByHostIdAndDateAndSpaceIdAndDeletedAtIsNull(
