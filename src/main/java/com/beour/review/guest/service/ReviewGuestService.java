@@ -128,7 +128,7 @@ public class ReviewGuestService {
         List<Review> reviews = reviewRepository.findTop5ByDeletedAtIsNullOrderByCreatedAtDesc();
 
         if(reviews.isEmpty()){
-            throw new ReviewNotFoundException(ReviewErrorCode.REVIEW_NOT_FOUND);
+            throw new ReviewNotFoundException(ReviewErrorCode.NO_RECENT_REVIEW);
         }
 
         return reviews.stream()
