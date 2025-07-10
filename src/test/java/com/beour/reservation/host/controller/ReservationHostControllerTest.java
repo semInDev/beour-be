@@ -5,12 +5,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.beour.global.exception.error.errorcode.ReservationErrorCode;
+import com.beour.global.exception.error.errorcode.SpaceErrorCode;
 import com.beour.global.jwt.JWTUtil;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
 import com.beour.reservation.commons.enums.UsagePurpose;
 import com.beour.reservation.commons.repository.ReservationRepository;
-import com.beour.space.domain.entity.AvailableTime;
 import com.beour.space.domain.entity.Space;
 import com.beour.space.domain.enums.SpaceCategory;
 import com.beour.space.domain.enums.UseCategory;
@@ -20,7 +20,6 @@ import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,7 +28,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -168,7 +166,7 @@ class ReservationHostControllerTest {
                         .header("Authorization", "Bearer " + hostAccessToken)
                 )
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("해당 호스트가 등록한 공간이 없습니다."));
+                .andExpect(jsonPath("$.message").value(SpaceErrorCode.NO_HOST_SPACE.getMessage()));
     }
 
     @Test
@@ -179,7 +177,7 @@ class ReservationHostControllerTest {
                         .header("Authorization", "Bearer " + guestAccessToken)
                 )
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("해당 호스트가 등록한 공간이 없습니다."));
+                .andExpect(jsonPath("$.message").value(SpaceErrorCode.NO_HOST_SPACE.getMessage()));
     }
 
     @Test
@@ -396,7 +394,7 @@ class ReservationHostControllerTest {
                         .header("Authorization", "Bearer " + hostAccessToken)
                 )
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("존재하지 않는 공간입니다."));
+                .andExpect(jsonPath("$.message").value(SpaceErrorCode.SPACE_NOT_FOUND.getMessage()));
     }
 
     @Test
@@ -441,8 +439,8 @@ class ReservationHostControllerTest {
                         .param("spaceId", otherSpace.getId().toString())
                         .header("Authorization", "Bearer " + hostAccessToken)
                 )
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("해당 공간의 소유자가 아닙니다."));
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value(SpaceErrorCode.NO_PERMISSION.getMessage()));
     }
 
     @Test
