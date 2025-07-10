@@ -2,8 +2,10 @@ package com.beour.review.host.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.beour.global.exception.exceptionType.DuplicateException;
 import com.beour.global.exception.exceptionType.ReviewCommentNotFoundException;
 import com.beour.global.exception.exceptionType.ReviewNotFoundException;
+import com.beour.global.exception.exceptionType.UnauthorityException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
@@ -333,7 +335,7 @@ class ReviewCommentHostServiceTest {
                 review.getId(), "감사합니다!");
 
         // when & then
-        assertThrows(MissMatch.class,
+        assertThrows(UnauthorityException.class,
                 () -> reviewCommentHostService.createReviewComment(requestDto));
     }
 
@@ -349,7 +351,7 @@ class ReviewCommentHostServiceTest {
                 reviewWithComment.getId(), "감사합니다!");
 
         // when & then
-        assertThrows(MissMatch.class,
+        assertThrows(DuplicateException.class,
                 () -> reviewCommentHostService.createReviewComment(requestDto));
     }
 
@@ -402,7 +404,7 @@ class ReviewCommentHostServiceTest {
                 "수정된 답글입니다!");
 
         // when & then
-        assertThrows(MissMatch.class,
+        assertThrows(UnauthorityException.class,
                 () -> reviewCommentHostService.updateReviewComment(reviewComment.getId(), requestDto));
     }
 
@@ -446,7 +448,7 @@ class ReviewCommentHostServiceTest {
         SecurityContextHolder.getContext().setAuthentication(auth);
 
         // when & then
-        assertThrows(MissMatch.class,
+        assertThrows(UnauthorityException.class,
                 () -> reviewCommentHostService.deleteReviewComment(reviewComment.getId()));
     }
 

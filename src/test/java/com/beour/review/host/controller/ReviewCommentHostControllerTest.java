@@ -7,6 +7,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.beour.global.exception.error.errorcode.CommentErrorCode;
+import com.beour.global.exception.error.errorcode.SpaceErrorCode;
 import com.beour.global.jwt.JWTUtil;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
@@ -303,8 +305,8 @@ class ReviewCommentHostControllerTest {
                         .header("Authorization", "Bearer " + otherHostAccessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("해당 리뷰의 공간 소유자가 아닙니다."));
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value(SpaceErrorCode.NO_PERMISSION.getMessage()));
     }
 
     @Test
@@ -321,8 +323,8 @@ class ReviewCommentHostControllerTest {
                         .header("Authorization", "Bearer " + hostAccessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("이미 댓글이 작성된 리뷰입니다."));
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value(CommentErrorCode.COMMENT_ALREADY_EXISTS.getMessage()));
     }
 
     @Test
@@ -412,8 +414,8 @@ class ReviewCommentHostControllerTest {
                         .header("Authorization", "Bearer " + otherHostAccessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("댓글 수정 권한이 없습니다."));
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value(CommentErrorCode.UNAUTHORIZED_COMMENT.getMessage()));
     }
 
     @Test
@@ -460,7 +462,7 @@ class ReviewCommentHostControllerTest {
     void delete_review_comment_not_owner() throws Exception {
         mockMvc.perform(delete("/api/host/review-comments/" + reviewComment.getId())
                         .header("Authorization", "Bearer " + otherHostAccessToken))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("댓글 삭제 권한이 없습니다."));
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value(CommentErrorCode.UNAUTHORIZED_COMMENT.getMessage()));
     }
 }

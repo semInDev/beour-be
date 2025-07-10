@@ -1,8 +1,12 @@
 package com.beour.review.host.service;
 
+import com.beour.global.exception.error.errorcode.CommentErrorCode;
+import com.beour.global.exception.error.errorcode.SpaceErrorCode;
 import com.beour.global.exception.error.errorcode.UserErrorCode;
+import com.beour.global.exception.exceptionType.DuplicateException;
 import com.beour.global.exception.exceptionType.ReviewCommentNotFoundException;
 import com.beour.global.exception.exceptionType.ReviewNotFoundException;
+import com.beour.global.exception.exceptionType.UnauthorityException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.reservation.commons.exceptionType.MissMatch;
 import com.beour.review.domain.entity.Review;
@@ -70,7 +74,7 @@ public class ReviewCommentHostService {
         validateHostOwnership(host, review);
 
         if (review.getComment() != null) {
-            throw new MissMatch("이미 댓글이 작성된 리뷰입니다.");
+            throw new DuplicateException(CommentErrorCode.COMMENT_ALREADY_EXISTS);
         }
 
         ReviewComment reviewComment = ReviewComment.builder()
@@ -88,7 +92,7 @@ public class ReviewCommentHostService {
         ReviewComment reviewComment = findReviewCommentById(commentId);
 
         if (!reviewComment.getUser().getId().equals(host.getId())) {
-            throw new MissMatch("댓글 수정 권한이 없습니다.");
+            throw new UnauthorityException(CommentErrorCode.UNAUTHORIZED_COMMENT);
         }
 
         reviewComment.updateContent(requestDto.getContent());
@@ -100,7 +104,7 @@ public class ReviewCommentHostService {
         ReviewComment reviewComment = findReviewCommentById(commentId);
 
         if (!reviewComment.getUser().getId().equals(host.getId())) {
-            throw new MissMatch("댓글 삭제 권한이 없습니다.");
+            throw new UnauthorityException(CommentErrorCode.UNAUTHORIZED_COMMENT);
         }
 
         reviewComment.softDelete();
@@ -124,7 +128,7 @@ public class ReviewCommentHostService {
 
     private void validateHostOwnership(User host, Review review) {
         if (!review.getSpace().getHost().getId().equals(host.getId())) {
-            throw new MissMatch("해당 리뷰의 공간 소유자가 아닙니다.");
+            throw new UnauthorityException(SpaceErrorCode.NO_PERMISSION);
         }
     }
 }
