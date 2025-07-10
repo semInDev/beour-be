@@ -1,5 +1,6 @@
 package com.beour.reservation.guest.service;
 
+import com.beour.global.exception.error.errorcode.SpaceErrorCode;
 import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
@@ -45,7 +46,7 @@ public class ReservationGuestService {
                 () -> new UserNotFoundException(UserErrorCode.USER_NOT_FOUND)
         );
         Space space = spaceRepository.findById(requestDto.getSpaceId()).orElseThrow(
-                () -> new SpaceNotFoundException("존재하지 않는 공간입니다.")
+                () -> new SpaceNotFoundException(SpaceErrorCode.SPACE_NOT_FOUND)
         );
 
         checkReservationAvailable(requestDto, space);

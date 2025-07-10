@@ -1,5 +1,6 @@
 package com.beour.wishlist.service;
 
+import com.beour.global.exception.error.errorcode.SpaceErrorCode;
 import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.exception.error.errorcode.WishListErrorCode;
 import com.beour.global.exception.exceptionType.DuplicateLikesException;
@@ -54,13 +55,14 @@ public class WishlistService {
         throw new DuplicateLikesException(WishListErrorCode.ALREADY_IN_WISHLIST);
     }
 
+    //todo: exception 변경
     @Transactional
     public void deleteSpaceFromWishList(Long spaceId) {
         User user = findUserFromToken();
         Space space = getSpace(spaceId);
 
         Like like = likeRepository.findByUserIdAndSpaceIdAndDeletedAtIsNull(user.getId(), space.getId()).orElseThrow(
-            () -> new SpaceNotFoundException("찜 목록에 존재하지 않습니다.")
+            () -> new IllegalArgumentException("찜 목록에 존재하지 않습니다.")
         );
 
         like.softDelete();
@@ -68,7 +70,7 @@ public class WishlistService {
 
     private Space getSpace(Long spaceId) {
         return spaceRepository.findByIdAndDeletedAtIsNull(spaceId).orElseThrow(
-            () -> new SpaceNotFoundException("해당 공간은 존재하지 않습니다.")
+            () -> new SpaceNotFoundException(SpaceErrorCode.SPACE_NOT_FOUND)
         );
     }
 
