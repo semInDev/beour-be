@@ -19,6 +19,7 @@ import com.beour.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -50,6 +51,7 @@ public class ReservationHostService {
         return responseDtoList;
     }
 
+    @Transactional(readOnly = true)
     public List<HostReservationListResponseDto> getHostReservationsByDate(LocalDate date) {
         User host = findUserFromToken();
 
