@@ -1,5 +1,6 @@
 package com.beour.global.exception;
 
+import com.beour.global.exception.exceptionType.DuplicateException;
 import com.beour.global.exception.exceptionType.HostSpaceNotFoundException;
 import com.beour.global.exception.exceptionType.InputInvalidFormatException;
 import com.beour.global.exception.exceptionType.ReviewCommentNotFoundException;
@@ -99,5 +100,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> invalidFormat(UnauthorityException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
             .body(new ErrorResponse(ex.getErrorCode(), "UNAUTHORIZED_ERROR", ex.getMessage()));
+    }
+
+    @ExceptionHandler(DuplicateException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicate(DuplicateException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(new ErrorResponse(ex.getErrorCode(), "DUPLICATE_ERROR", ex.getMessage()));
     }
 }
