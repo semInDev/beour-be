@@ -79,20 +79,6 @@ public class GlobalExceptionHandler {
                 "REVIEW_COMMENT_NOT_FOUND", ex.getMessage()));
     }
 
-//    @ExceptionHandler(HostSpaceNotFoundException.class)
-//    public ResponseEntity<ErrorResponse> handleHostSpaceNotFound(HostSpaceNotFoundException ex) {
-//        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-//            .body(new ErrorResponse(
-//                HttpStatus.NOT_FOUND.value(),
-//                "HOST_SPACE_NOT_FOUND", ex.getMessage()));
-//    }
-
-//    @ExceptionHandler(InvalidFormatException.class)
-//    public ResponseEntity<ErrorResponse> invalidFormat(InvalidFormatException ex) {
-//        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-//            .body(new ErrorResponse(ex.getErrorCode(), "VALIDATION_ERROR", ex.getMessage()));
-//    }
-
     @ExceptionHandler(UnauthorityException.class)
     public ResponseEntity<ErrorResponse> invalidFormat(UnauthorityException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
