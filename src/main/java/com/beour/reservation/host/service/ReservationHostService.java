@@ -57,7 +57,7 @@ public class ReservationHostService {
         List<Reservation> reservationList = reservationRepository.findByHostIdAndDateAndDeletedAtIsNull(
                 host.getId(), date);
 
-        return filterAcceptedReservationsAndConvert(reservationList, "해당 날짜에 확정된 예약이 없습니다.");
+        return filterAcceptedReservationsAndConvert(reservationList);
     }
 
     public List<HostReservationListResponseDto> getHostReservationsByDateAndSpace(LocalDate date, Long spaceId) {
@@ -75,10 +75,10 @@ public class ReservationHostService {
         List<Reservation> reservationList = reservationRepository.findByHostIdAndDateAndSpaceIdAndDeletedAtIsNull(
                 host.getId(), date, spaceId);
 
-        return filterAcceptedReservationsAndConvert(reservationList, "해당 날짜와 공간에 확정된 예약이 없습니다.");
+        return filterAcceptedReservationsAndConvert(reservationList);
     }
 
-    private List<HostReservationListResponseDto> filterAcceptedReservationsAndConvert(List<Reservation> reservationList, String emptyMessage) {
+    private List<HostReservationListResponseDto> filterAcceptedReservationsAndConvert(List<Reservation> reservationList) {
         List<Reservation> acceptedReservations = reservationList.stream()
                 .filter(reservation -> reservation.getStatus() == ReservationStatus.ACCEPTED)
                 .collect(Collectors.toList());
