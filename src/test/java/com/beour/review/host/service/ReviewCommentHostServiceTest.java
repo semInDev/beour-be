@@ -69,6 +69,7 @@ class ReviewCommentHostServiceTest {
     private Review reviewWithComment;
     private ReviewComment reviewComment;
     private Reservation reservation;
+    private Reservation reservationWithComment;
 
     @BeforeEach
     void setUp() {
@@ -146,7 +147,7 @@ class ReviewCommentHostServiceTest {
                 .status(ReservationStatus.ACCEPTED)
                 .usagePurpose(UsagePurpose.BARISTA_TRAINING)
                 .requestMessage("테스트")
-                .date(LocalDate.now().minusDays(1))
+                .date(LocalDate.now().minusDays(3))
                 .startTime(LocalTime.of(12, 0, 0))
                 .endTime(LocalTime.of(16, 0, 0))
                 .price(60000)
@@ -154,25 +155,38 @@ class ReviewCommentHostServiceTest {
                 .build();
         reservationRepository.save(reservation);
 
+        reservationWithComment = Reservation.builder()
+                .guest(guest)
+                .host(host)
+                .space(space)
+                .status(ReservationStatus.ACCEPTED)
+                .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+                .requestMessage("테스트")
+                .date(LocalDate.now().minusDays(3))
+                .startTime(LocalTime.of(12, 0, 0))
+                .endTime(LocalTime.of(16, 0, 0))
+                .price(60000)
+                .guestCount(2)
+                .build();
+        reservationRepository.save(reservationWithComment);
+
         review = Review.builder()
                 .guest(guest)
                 .space(space)
                 .reservation(reservation)
                 .rating(5)
                 .content("좋은 공간이었습니다.")
-                .reservedDate(LocalDate.now().minusDays(1))
-                .images(new ArrayList<>())
+                .reservedDate(LocalDate.now().minusDays(2))
                 .build();
         reviewRepository.save(review);
 
         reviewWithComment = Review.builder()
                 .guest(guest)
                 .space(space)
-                .reservation(reservation)
+                .reservation(reservationWithComment)
                 .rating(4)
                 .content("괜찮은 공간이었습니다.")
-                .reservedDate(LocalDate.now().minusDays(2))
-                .images(new ArrayList<>())
+                .reservedDate(LocalDate.now().minusDays(1))
                 .build();
         reviewRepository.save(reviewWithComment);
 
