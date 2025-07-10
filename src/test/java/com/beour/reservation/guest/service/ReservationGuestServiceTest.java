@@ -178,7 +178,8 @@ class ReservationGuestServiceTest {
         //given
         int currentHour = LocalTime.now().getHour();
         ReservationCreateRequest request = new ReservationCreateRequest(host.getId(), space.getId(),
-            LocalDate.now(), LocalTime.of(currentHour - 1, 0, 0), LocalTime.of(currentHour + 1, 0, 0), 30000, 2,
+            LocalDate.now(), LocalTime.of(currentHour - 1, 0, 0),
+            LocalTime.of(currentHour + 1, 0, 0), 30000, 2,
             UsagePurpose.BARISTA_TRAINING, "테슽뚜");
 
         //when  then
@@ -222,7 +223,7 @@ class ReservationGuestServiceTest {
             UsagePurpose.BARISTA_TRAINING, "테슽뚜");
 
         //when  then
-        assertThrows(AvailableTimeNotFound.class,
+        assertThrows(MissMatch.class,
             () -> reservationGuestService.createReservation(request));
     }
 
@@ -274,14 +275,15 @@ class ReservationGuestServiceTest {
 
     @Test
     @DisplayName("예약 현황 조회 - 없음")
-    void get_reservation_list(){
+    void get_reservation_list() {
         //when   //then
-        assertThrows(ReservationNotFound.class, ()-> reservationGuestService.findReservationList());
+        assertThrows(ReservationNotFound.class,
+            () -> reservationGuestService.findReservationList());
     }
 
     @Test
     @DisplayName("예약 현황 조회 - 과거 예약 잘 걸러지는지")
-    void get_reservation_list_filtering_past_reservation(){
+    void get_reservation_list_filtering_past_reservation() {
         //given
         Reservation reservationPast = Reservation.builder()
             .guest(guest)
@@ -325,7 +327,7 @@ class ReservationGuestServiceTest {
 
     @Test
     @DisplayName("예약 현황 조회 - 현 시점의 시간 이전의 시간 잘 걸러지는지")
-    void get_reservation_list_filtering_past_time_reservation(){
+    void get_reservation_list_filtering_past_time_reservation() {
         //given
         int currentTime = LocalTime.now().getHour();
         Reservation reservationPast = Reservation.builder()
@@ -370,7 +372,7 @@ class ReservationGuestServiceTest {
 
     @Test
     @DisplayName("지난 예약 조회 - 시간 지나면 예약 사용 완료 상태로 변경")
-    void get_past_reservation_list_change_status(){
+    void get_past_reservation_list_change_status() {
         //given
         Reservation reservationPast = Reservation.builder()
             .guest(guest)
@@ -415,7 +417,7 @@ class ReservationGuestServiceTest {
 
     @Test
     @DisplayName("지난 예약 조회 - 과거 예약 없을 경우")
-    void get_past_reservation_list_non_existent_past_reservation(){
+    void get_past_reservation_list_non_existent_past_reservation() {
         //given
         Reservation reservationFuture = Reservation.builder()
             .guest(guest)
@@ -433,19 +435,21 @@ class ReservationGuestServiceTest {
         reservationRepository.save(reservationFuture);
 
         //when  //then
-        assertThrows(ReservationNotFound.class, () -> reservationGuestService.findPastReservationList());
+        assertThrows(ReservationNotFound.class,
+            () -> reservationGuestService.findPastReservationList());
     }
 
     @Test
     @DisplayName("예약 취소 - 해당 예약이 존재하지 않을 경우")
-    void cancel_reservation_with_not_found_reservation(){
+    void cancel_reservation_with_not_found_reservation() {
         //when  //then
-        assertThrows(ReservationNotFound.class, () -> reservationGuestService.cancelReservation(1L));
+        assertThrows(ReservationNotFound.class,
+            () -> reservationGuestService.cancelReservation(1L));
     }
 
     @Test
     @DisplayName("예약 취소 - 예약이 확정되었을 경우")
-    void cancel_reservation_with_reservation_status_accepted(){
+    void cancel_reservation_with_reservation_status_accepted() {
         //given
         Reservation reservationFuture = Reservation.builder()
             .guest(guest)
@@ -463,13 +467,14 @@ class ReservationGuestServiceTest {
         reservationRepository.save(reservationFuture);
 
         //when  //then
-        assertThrows(MissMatch.class, () -> reservationGuestService.cancelReservation(reservationFuture.getId()));
+        assertThrows(MissMatch.class,
+            () -> reservationGuestService.cancelReservation(reservationFuture.getId()));
     }
 
     @Test
     @Transactional
     @DisplayName("예약 취소 - 성공")
-    void success_cancel_reservation(){
+    void success_cancel_reservation() {
         //given
         Reservation reservationFuture = Reservation.builder()
             .guest(guest)
