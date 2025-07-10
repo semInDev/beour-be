@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 public enum UserErrorCode implements ErrorCode {
 
     USER_NOT_FOUND(404, "존재하지 않는 유저입니다."),
+    MEMBER_NOT_FOUND(404, "일치하는 회원을 찾을 수 없습니다."),
     LOGIN_ID_DUPLICATE(409, "이미 사용중인 아이디입니다."),
     NICKNAME_ID_DUPLICATE(409, "이미 사용중인 닉네임입니다."),
     REFRESH_TOKEN_EXPIRED(401, "refresh 토큰이 만료되었습니다."),

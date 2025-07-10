@@ -37,7 +37,7 @@ public class LoginService {
     public FindLoginIdResponseDto findLoginId(FindLoginIdRequestDto dto) {
         User user = userRepository.findByNameAndPhoneAndEmailAndDeletedAtIsNull(dto.getName(), dto.getPhone(),
             dto.getEmail()).orElseThrow(
-            () -> new UserNotFoundException(UserErrorCode.USER_NOT_FOUND)
+            () -> new UserNotFoundException(UserErrorCode.MEMBER_NOT_FOUND)
         );
 
         return new FindLoginIdResponseDto(user.getLoginId());
@@ -47,7 +47,7 @@ public class LoginService {
     public ResetPasswordResponseDto resetPassword(ResetPasswordRequestDto dto) {
         User user = userRepository.findByLoginIdAndNameAndPhoneAndEmailAndDeletedAtIsNull(dto.getLoginId(), dto.getName(),
             dto.getPhone(), dto.getEmail()).orElseThrow(
-            () -> new UserNotFoundException(UserErrorCode.USER_NOT_FOUND)
+            () -> new UserNotFoundException(UserErrorCode.MEMBER_NOT_FOUND)
         );
 
         String tempPassword = generateTempPassword();
