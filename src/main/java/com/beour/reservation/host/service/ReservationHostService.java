@@ -1,5 +1,6 @@
 package com.beour.reservation.host.service;
 
+import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.exception.exceptionType.HostSpaceNotFoundException;
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
@@ -92,7 +93,7 @@ public class ReservationHostService {
         String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
 
         return userRepository.findByLoginIdAndDeletedAtIsNull(loginId).orElseThrow(
-                () -> new UserNotFoundException("해당 유저를 찾을 수 없습니다.")
+                () -> new UserNotFoundException(UserErrorCode.USER_NOT_FOUND)
         );
     }
 }

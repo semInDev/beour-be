@@ -41,7 +41,7 @@ public class BannerService {
         List<Banner> banners = bannerRepository.findAll();
 
         if(banners.isEmpty()){
-            throw new UserNotFoundException("조회된 배너가 없습니다.");
+            throw new IllegalStateException("조회된 배너가 없습니다.");
         }
 
         return banners.stream()
@@ -54,7 +54,7 @@ public class BannerService {
         List<Banner> banners = bannerRepository.findValidBanners(LocalDate.now());
 
         if(banners.isEmpty()){
-            throw new UserNotFoundException("조회된 배너가 없습니다.");
+            throw new IllegalStateException("조회된 배너가 없습니다.");
         }
 
         return banners.stream()

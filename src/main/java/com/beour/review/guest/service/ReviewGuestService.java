@@ -1,5 +1,6 @@
 package com.beour.review.guest.service;
 
+import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.exception.exceptionType.ReviewNotFoundException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.reservation.commons.entity.Reservation;
@@ -150,7 +151,7 @@ public class ReviewGuestService {
     private User findUserFromToken() {
         String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository.findByLoginIdAndDeletedAtIsNull(loginId).orElseThrow(
-                () -> new UserNotFoundException("해당 유저를 찾을 수 없습니다.")
+                () -> new UserNotFoundException(UserErrorCode.USER_NOT_FOUND)
         );
     }
 
