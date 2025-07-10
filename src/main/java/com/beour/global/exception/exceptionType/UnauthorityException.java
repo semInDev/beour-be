@@ -2,7 +2,8 @@ package com.beour.global.exception.exceptionType;
 
 import com.beour.global.exception.error.ErrorCode;
 
-public class UnauthorityException extends RuntimeException{
+public class UnauthorityException extends RuntimeException {
+
     private final Integer errorCode;
 
     public UnauthorityException(ErrorCode errorCode) {
@@ -10,7 +11,7 @@ public class UnauthorityException extends RuntimeException{
         this.errorCode = errorCode.getCode();
     }
 
-    public Integer getErrorCode(){
+    public Integer getErrorCode() {
         return this.errorCode;
     }
 }

@@ -3,7 +3,6 @@ package com.beour.reservation.host.service;
 import com.beour.global.exception.error.errorcode.ReservationErrorCode;
 import com.beour.global.exception.error.errorcode.SpaceErrorCode;
 import com.beour.global.exception.error.errorcode.UserErrorCode;
-import com.beour.global.exception.exceptionType.HostSpaceNotFoundException;
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
 import com.beour.global.exception.exceptionType.UnauthorityException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
@@ -40,7 +39,7 @@ public class ReservationHostService {
         List<Space> spaceList = spaceRepository.findByHostAndDeletedAtIsNull(host);
 
         if (spaceList.isEmpty()) {
-            throw new HostSpaceNotFoundException();
+            throw new SpaceNotFoundException(SpaceErrorCode.NO_HOST_SPACE);
         }
 
         List<HostSpaceListResponseDto> responseDtoList = new ArrayList<>();
