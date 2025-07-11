@@ -20,7 +20,7 @@ public class BannerController {
 
     private final BannerService bannerService;
 
-    @PostMapping("/admin/banner/create")
+    @PostMapping("/api/banners")
     public ApiResponse<CreateBannerResponseDto> createBanner(@Valid @RequestBody
     CreateBannerRequestDto requestDto) {
         return ApiResponse.ok(bannerService.createBanner(requestDto));

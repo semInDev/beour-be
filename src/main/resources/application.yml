@@ -22,5 +22,9 @@ spring:
     secret: ${JWT_SECRET}
 
 kakao:
-    api:
-      key: ${KAKAO_REST_API_KEY}
+  api:
+    key: ${KAKAO_REST_API_KEY}
+
+file:
+  path: ./uploads/
+  url: http://localhost:8080/uploads/
