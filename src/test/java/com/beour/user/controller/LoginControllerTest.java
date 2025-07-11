@@ -4,6 +4,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -71,7 +72,7 @@ class LoginControllerTest {
                 .content(requestJson)
             )
             .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.message").value("일치하는 회원을 찾을 수 없습니다."));
+            .andExpect(jsonPath("$.message").value(UserErrorCode.MEMBER_NOT_FOUND.getMessage()));
 
     }
 
@@ -93,7 +94,7 @@ class LoginControllerTest {
                 .content(requestJson)
             )
             .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.message").value("일치하는 회원을 찾을 수 없습니다."));
+            .andExpect(jsonPath("$.message").value(UserErrorCode.MEMBER_NOT_FOUND.getMessage()));
 
     }
 
@@ -138,7 +139,7 @@ class LoginControllerTest {
                 .content(requestJson)
             )
             .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.message").value("일치하는 회원을 찾을 수 없습니다."));
+            .andExpect(jsonPath("$.message").value(UserErrorCode.MEMBER_NOT_FOUND.getMessage()));
 
     }
 
@@ -161,7 +162,7 @@ class LoginControllerTest {
                 .content(requestJson)
             )
             .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.message").value("일치하는 회원을 찾을 수 없습니다."));
+            .andExpect(jsonPath("$.message").value(UserErrorCode.MEMBER_NOT_FOUND.getMessage()));
 
     }
 

@@ -206,7 +206,7 @@ public class LoginControllerValidationTest {
             {
                 "loginId": "user1",
                 "name": "유저1",
-                "email": "",
+                "email": "test@gmail.com",
                 "phone": "0101234567="
             }
         """;

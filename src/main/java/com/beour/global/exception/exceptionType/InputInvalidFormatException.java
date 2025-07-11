@@ -1,8 +1,17 @@
 package com.beour.global.exception.exceptionType;
 
+import com.beour.global.exception.error.ErrorCode;
+
 public class InputInvalidFormatException extends RuntimeException {
-    public InputInvalidFormatException(String message) {
-        super(message);
+    private final Integer errorCode;
+
+    public InputInvalidFormatException(ErrorCode error) {
+        super(error.getMessage());
+        this.errorCode = error.getCode();
+    }
+
+    public Integer getErrorCode(){
+        return this.errorCode;
     }
 
 }

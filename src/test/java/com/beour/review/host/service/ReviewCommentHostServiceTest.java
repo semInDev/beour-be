@@ -2,13 +2,14 @@ package com.beour.review.host.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.beour.global.exception.exceptionType.DuplicateException;
 import com.beour.global.exception.exceptionType.ReviewCommentNotFoundException;
 import com.beour.global.exception.exceptionType.ReviewNotFoundException;
+import com.beour.global.exception.exceptionType.UnauthorityException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
 import com.beour.reservation.commons.enums.UsagePurpose;
-import com.beour.reservation.commons.exceptionType.MissMatch;
 import com.beour.reservation.commons.repository.ReservationRepository;
 import com.beour.review.domain.entity.Review;
 import com.beour.review.domain.entity.ReviewComment;
@@ -25,7 +26,6 @@ import com.beour.space.domain.repository.SpaceRepository;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Collections;
@@ -333,7 +333,7 @@ class ReviewCommentHostServiceTest {
                 review.getId(), "감사합니다!");
 
         // when & then
-        assertThrows(MissMatch.class,
+        assertThrows(UnauthorityException.class,
                 () -> reviewCommentHostService.createReviewComment(requestDto));
     }
 
@@ -349,7 +349,7 @@ class ReviewCommentHostServiceTest {
                 reviewWithComment.getId(), "감사합니다!");
 
         // when & then
-        assertThrows(MissMatch.class,
+        assertThrows(DuplicateException.class,
                 () -> reviewCommentHostService.createReviewComment(requestDto));
     }
 
@@ -402,7 +402,7 @@ class ReviewCommentHostServiceTest {
                 "수정된 답글입니다!");
 
         // when & then
-        assertThrows(MissMatch.class,
+        assertThrows(UnauthorityException.class,
                 () -> reviewCommentHostService.updateReviewComment(reviewComment.getId(), requestDto));
     }
 
@@ -446,7 +446,7 @@ class ReviewCommentHostServiceTest {
         SecurityContextHolder.getContext().setAuthentication(auth);
 
         // when & then
-        assertThrows(MissMatch.class,
+        assertThrows(UnauthorityException.class,
                 () -> reviewCommentHostService.deleteReviewComment(reviewComment.getId()));
     }
 

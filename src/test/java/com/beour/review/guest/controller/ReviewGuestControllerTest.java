@@ -1,18 +1,17 @@
 package com.beour.review.guest.controller;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.beour.global.exception.error.errorcode.ReservationErrorCode;
+import com.beour.global.exception.error.errorcode.ReviewErrorCode;
 import com.beour.global.jwt.JWTUtil;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
 import com.beour.reservation.commons.enums.UsagePurpose;
 import com.beour.reservation.commons.repository.ReservationRepository;
 import com.beour.review.domain.entity.Review;
-import com.beour.review.domain.entity.ReviewComment;
-import com.beour.review.domain.entity.ReviewImage;
 import com.beour.review.domain.repository.ReviewCommentRepository;
 import com.beour.review.domain.repository.ReviewImageRepository;
 import com.beour.review.domain.repository.ReviewRepository;
@@ -23,10 +22,8 @@ import com.beour.space.domain.repository.SpaceRepository;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -35,7 +32,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -164,7 +160,6 @@ class ReviewGuestControllerTest {
 
     @AfterEach
     void tearDown() {
-        SecurityContextHolder.clearContext();
         reviewImageRepository.deleteAll();
         reviewCommentRepository.deleteAll();
         reviewRepository.deleteAll();
@@ -217,7 +212,7 @@ class ReviewGuestControllerTest {
         mockMvc.perform(get("/api/guest/reviews/reservation/999")
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("해당 예약을 찾을 수 없습니다."));
+                .andExpect(jsonPath("$.message").value(ReservationErrorCode.RESERVATION_NOT_FOUND.getMessage()));
     }
 
     @Test
@@ -273,7 +268,7 @@ class ReviewGuestControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("완료된 예약에 대해서만 리뷰를 작성할 수 있습니다."));
+                .andExpect(jsonPath("$.message").value(ReviewErrorCode.ONLY_COMPLETED_CAN_REVIEW.getMessage()));
     }
 
     @Test
@@ -292,8 +287,8 @@ class ReviewGuestControllerTest {
                         .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("이미 해당 예약에 대한 리뷰가 작성되었습니다."));
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value(ReviewErrorCode.REVIEW_ALREADY_EXISTS.getMessage()));
     }
 
     @Test
@@ -352,7 +347,7 @@ class ReviewGuestControllerTest {
         mockMvc.perform(get("/api/guest/reviews/999")
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("해당 리뷰를 찾을 수 없습니다."));
+                .andExpect(jsonPath("$.message").value(ReviewErrorCode.REVIEW_NOT_FOUND.getMessage()));
     }
 
     @Test
@@ -390,7 +385,7 @@ class ReviewGuestControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("해당 리뷰를 찾을 수 없습니다."));
+                .andExpect(jsonPath("$.message").value(ReviewErrorCode.REVIEW_NOT_FOUND.getMessage()));
     }
 
     @Test
@@ -445,7 +440,7 @@ class ReviewGuestControllerTest {
         mockMvc.perform(delete("/api/guest/reviews/999")
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("해당 리뷰를 찾을 수 없습니다."));
+                .andExpect(jsonPath("$.message").value(ReviewErrorCode.REVIEW_NOT_FOUND.getMessage()));
     }
 
     @Test
@@ -469,7 +464,7 @@ class ReviewGuestControllerTest {
         mockMvc.perform(get("/api/reviews/new")
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("최근 등록된 리뷰가 없습니다."));
+                .andExpect(jsonPath("$.message").value(ReviewErrorCode.NO_RECENT_REVIEW.getMessage()));
     }
 
     @Test
@@ -496,8 +491,8 @@ class ReviewGuestControllerTest {
 
         mockMvc.perform(get("/api/guest/reviews/" + review.getId())
                         .header("Authorization", "Bearer " + otherAccessToken))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("해당 리뷰에 대한 권한이 없습니다."));
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value(ReviewErrorCode.NO_PERMISSION.getMessage()));
     }
 
     @Test
@@ -544,7 +539,7 @@ class ReviewGuestControllerTest {
                         .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("해당 예약에 대한 권한이 없습니다."));
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value(ReservationErrorCode.NO_PERMISSION.getMessage()));
     }
 }

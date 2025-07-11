@@ -2,7 +2,6 @@ package com.beour.global.exception;
 
 import com.beour.global.exception.exceptionType.DuplicateUserInfoException;
 import com.beour.global.exception.exceptionType.InvalidCredentialsException;
-import com.beour.global.exception.exceptionType.InvalidFormatException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.global.response.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -34,12 +33,4 @@ public class UserExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT)
             .body(new ErrorResponse(ex.getErrorCode(), "DUPLICATE_USER_INFO", ex.getMessage()));
     }
-
-    @ExceptionHandler(InvalidFormatException.class)
-    public ResponseEntity<ErrorResponse> invalidFormat(InvalidFormatException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "VALIDATION_ERROR",
-                ex.getMessage()));
-    }
-
 }

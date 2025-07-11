@@ -6,12 +6,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.beour.global.exception.error.errorcode.ReservationErrorCode;
+import com.beour.global.exception.error.errorcode.SpaceErrorCode;
 import com.beour.global.jwt.JWTUtil;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
 import com.beour.reservation.commons.enums.UsagePurpose;
 import com.beour.reservation.commons.repository.ReservationRepository;
-import com.beour.space.domain.entity.AvailableTime;
 import com.beour.space.domain.entity.Space;
 import com.beour.space.domain.enums.SpaceCategory;
 import com.beour.space.domain.enums.UseCategory;
@@ -29,7 +29,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -197,7 +196,6 @@ class ReservationCalendarControllerTest {
 
     @AfterEach
     void tearDown() {
-        SecurityContextHolder.clearContext();
         reservationRepository.deleteAll();
         availableTimeRepository.deleteAll();
         spaceRepository.deleteAll();
@@ -240,8 +238,8 @@ class ReservationCalendarControllerTest {
                         .param("spaceId", anotherSpace.getId().toString())
                         .header("Authorization", "Bearer " + hostAccessToken)
                 )
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("해당 공간의 소유자가 아닙니다."));
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value(SpaceErrorCode.NO_PERMISSION.getMessage()));
     }
 
     @Test
@@ -346,8 +344,8 @@ class ReservationCalendarControllerTest {
                         .param("spaceId", anotherSpace.getId().toString())
                         .header("Authorization", "Bearer " + hostAccessToken)
                 )
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("해당 공간의 소유자가 아닙니다."));
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value(SpaceErrorCode.NO_PERMISSION.getMessage()));
     }
 
     @Test
@@ -401,8 +399,8 @@ class ReservationCalendarControllerTest {
                         .param("spaceId", anotherSpace.getId().toString())
                         .header("Authorization", "Bearer " + hostAccessToken)
                 )
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("해당 공간의 소유자가 아닙니다."));
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value(SpaceErrorCode.NO_PERMISSION.getMessage()));
     }
 
     @Test
@@ -453,7 +451,7 @@ class ReservationCalendarControllerTest {
                         .param("spaceId", anotherSpace.getId().toString())
                         .header("Authorization", "Bearer " + hostAccessToken)
                 )
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("해당 공간의 소유자가 아닙니다."));
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value(SpaceErrorCode.NO_PERMISSION.getMessage()));
     }
 }

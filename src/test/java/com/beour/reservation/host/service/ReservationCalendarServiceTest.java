@@ -3,10 +3,12 @@ package com.beour.reservation.host.service;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
+import com.beour.global.exception.exceptionType.UnauthorityException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
 import com.beour.reservation.commons.enums.UsagePurpose;
+import com.beour.reservation.commons.exceptionType.MissMatch;
 import com.beour.reservation.commons.exceptionType.ReservationNotFound;
 import com.beour.reservation.commons.repository.ReservationRepository;
 import com.beour.reservation.host.dto.CalendarReservationResponseDto;
@@ -245,7 +247,7 @@ class ReservationCalendarServiceTest {
         LocalDate today = LocalDate.now();
 
         // when & then
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(UnauthorityException.class, () ->
                 reservationCalendarService.getHostCalendarReservations(today, otherSpace.getId()));
     }
 
@@ -356,7 +358,7 @@ class ReservationCalendarServiceTest {
         Long otherSpaceId = otherSpace.getId();
 
         // when & then
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(UnauthorityException.class, () ->
                 reservationCalendarService.acceptReservation(reservationId, otherSpaceId));
     }
 
@@ -386,7 +388,7 @@ class ReservationCalendarServiceTest {
         Long differentSpaceId = anotherSpace.getId();
 
         // when & then
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(MissMatch.class, () ->
                 reservationCalendarService.acceptReservation(reservationId, differentSpaceId));
     }
 
@@ -403,7 +405,7 @@ class ReservationCalendarServiceTest {
         Long spaceId = space.getId();
 
         // when & then
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(UnauthorityException.class, () ->
                 reservationCalendarService.acceptReservation(reservationId, spaceId));
     }
 

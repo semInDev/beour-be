@@ -4,7 +4,9 @@ import com.beour.global.exception.error.errorcode.ReservationErrorCode;
 import com.beour.global.exception.error.errorcode.SpaceErrorCode;
 import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
+import com.beour.global.exception.exceptionType.UnauthorityException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
+import com.beour.reservation.commons.exceptionType.MissMatch;
 import com.beour.reservation.host.dto.CalendarReservationResponseDto;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
@@ -14,6 +16,7 @@ import com.beour.space.domain.entity.Space;
 import com.beour.space.domain.repository.SpaceRepository;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
+import java.util.MissingFormatArgumentException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -80,12 +83,12 @@ public class ReservationCalendarService {
 
         // 예약의 공간과 입력받은 공간이 일치하는지 확인
         if (!reservation.getSpace().getId().equals(spaceId)) {
-            throw new IllegalArgumentException("예약과 공간 정보가 일치하지 않습니다.");
+            throw new MissMatch( ReservationErrorCode.SPACE_MISMATCH);
         }
 
         // 예약의 호스트와 현재 사용자가 일치하는지 확인
         if (!reservation.getHost().getId().equals(host.getId())) {
-            throw new IllegalArgumentException("해당 예약의 호스트가 아닙니다.");
+            throw new UnauthorityException(ReservationErrorCode.NO_PERMISSION);
         }
 
         return reservation;
@@ -122,7 +125,7 @@ public class ReservationCalendarService {
         );
 
         if (!space.getHost().getId().equals(host.getId())) {
-            throw new IllegalArgumentException("해당 공간의 소유자가 아닙니다.");
+            throw new UnauthorityException(SpaceErrorCode.NO_PERMISSION);
         }
     }
 

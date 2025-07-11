@@ -26,14 +26,14 @@ public class JWTExceptionHandler {
 
     @ExceptionHandler(TokenNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleTokenNotFound(TokenNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "TOKEN_MISMATCH", ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(new ErrorResponse(ex.getErrorCode(), "TOKEN_NOT_FOUND", ex.getMessage()));
     }
 
     @ExceptionHandler(TokenExpiredException.class)
     public ResponseEntity<ErrorResponse> handleTokenExpired(TokenExpiredException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-            .body(new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), "TOKEN_EXPIRED", ex.getMessage()));
+            .body(new ErrorResponse(ex.getErrorCode(), "TOKEN_EXPIRED", ex.getMessage()));
     }
 
 }

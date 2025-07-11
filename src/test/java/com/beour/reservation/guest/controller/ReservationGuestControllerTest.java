@@ -6,7 +6,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.hamcrest.Matchers.contains;
 
+import com.beour.global.exception.error.errorcode.AvailableTimeErrorCode;
 import com.beour.global.exception.error.errorcode.ReservationErrorCode;
+import com.beour.global.exception.error.errorcode.SpaceErrorCode;
+import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.jwt.JWTUtil;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
@@ -32,7 +35,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -176,7 +178,7 @@ class ReservationGuestControllerTest {
                 .content(requestJson)
             )
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.message").value("해당 인원은 예약이 불가합니다."));
+            .andExpect(jsonPath("$.message").value(ReservationErrorCode.INVALID_CAPACITY.getMessage()));
     }
 
     @Test
@@ -204,7 +206,7 @@ class ReservationGuestControllerTest {
                 .content(requestJson)
             )
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.message").value("해당 가격이 맞지 않습니다."));
+            .andExpect(jsonPath("$.message").value(ReservationErrorCode.INVALID_PRICE.getMessage()));
     }
 
     @Test
@@ -232,7 +234,7 @@ class ReservationGuestControllerTest {
                 .content(requestJson)
             )
             .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.message").value("예약 가능한 시간이 없습니다."));
+            .andExpect(jsonPath("$.message").value(AvailableTimeErrorCode.AVAILABLE_TIME_NOT_FOUND.getMessage()));
     }
 
     @Test
@@ -261,7 +263,7 @@ class ReservationGuestControllerTest {
                 .content(requestJson)
             )
             .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.message").value("예약 가능한 시간이 존재하지 않습니다."));
+            .andExpect(jsonPath("$.message").value(AvailableTimeErrorCode.AVAILABLE_TIME_NOT_FOUND.getMessage()));
     }
 
     @Test
@@ -303,8 +305,8 @@ class ReservationGuestControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
-            .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.message").value("예약이 불가능한 시간입니다."));
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value(AvailableTimeErrorCode.TIME_UNAVAILABLE.getMessage()));
     }
 
     @Test
@@ -332,7 +334,7 @@ class ReservationGuestControllerTest {
                 .content(requestJson)
             )
             .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.message").value("존재하지 않는 유저입니다."));
+            .andExpect(jsonPath("$.message").value(UserErrorCode.USER_NOT_FOUND.getMessage()));
     }
 
     @Test
@@ -360,7 +362,7 @@ class ReservationGuestControllerTest {
                 .content(requestJson)
             )
             .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.message").value("존재하지 않는 공간입니다."));
+            .andExpect(jsonPath("$.message").value(SpaceErrorCode.SPACE_NOT_FOUND.getMessage()));
     }
 
     @Test
@@ -408,7 +410,7 @@ class ReservationGuestControllerTest {
                 .content(requestJson)
             )
             .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.message").value("예약 가능한 시간이 없습니다."));
+            .andExpect(jsonPath("$.message").value(AvailableTimeErrorCode.AVAILABLE_TIME_NOT_FOUND.getMessage()));
     }
 
     @Test
@@ -456,7 +458,7 @@ class ReservationGuestControllerTest {
                 .content(requestJson)
             )
             .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.message").value("예약 가능한 시간이 없습니다."));
+            .andExpect(jsonPath("$.message").value(AvailableTimeErrorCode.AVAILABLE_TIME_NOT_FOUND.getMessage()));
     }
 
     @Test
@@ -675,7 +677,7 @@ class ReservationGuestControllerTest {
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.message").value("해당 예약은 취소할 수 없습니다."));
+            .andExpect(jsonPath("$.message").value(ReservationErrorCode.CANNOT_CANCEL_RESERVATION.getMessage()));
     }
 
     @Test

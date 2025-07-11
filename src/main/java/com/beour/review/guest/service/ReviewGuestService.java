@@ -1,8 +1,11 @@
 package com.beour.review.guest.service;
 
 import com.beour.global.exception.error.errorcode.ReservationErrorCode;
+import com.beour.global.exception.error.errorcode.ReviewErrorCode;
 import com.beour.global.exception.error.errorcode.UserErrorCode;
+import com.beour.global.exception.exceptionType.DuplicateException;
 import com.beour.global.exception.exceptionType.ReviewNotFoundException;
+import com.beour.global.exception.exceptionType.UnauthorityException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
@@ -12,7 +15,6 @@ import com.beour.reservation.commons.repository.ReservationRepository;
 import com.beour.review.domain.entity.Review;
 import com.beour.review.domain.entity.ReviewComment;
 import com.beour.review.domain.entity.ReviewImage;
-import com.beour.review.domain.repository.ReviewImageRepository;
 import com.beour.review.domain.repository.ReviewRepository;
 import com.beour.review.guest.dto.RecentWrittenReviewResponseDto;
 import com.beour.review.guest.dto.ReviewDetailResponseDto;
@@ -39,7 +41,6 @@ public class ReviewGuestService {
 
     private final ReservationRepository reservationRepository;
     private final ReviewRepository reviewRepository;
-    private final ReviewImageRepository reviewImageRepository;
     private final UserRepository userRepository;
 
     public List<ReviewableReservationResponseDto> getReviewableReservations() {
@@ -127,7 +128,7 @@ public class ReviewGuestService {
         List<Review> reviews = reviewRepository.findTop5ByDeletedAtIsNullOrderByCreatedAtDesc();
 
         if(reviews.isEmpty()){
-            throw new ReviewNotFoundException("최근 등록된 리뷰가 없습니다.");
+            throw new ReviewNotFoundException(ReviewErrorCode.NO_RECENT_REVIEW);
         }
 
         return reviews.stream()
@@ -164,32 +165,32 @@ public class ReviewGuestService {
 
     private Review findReviewById(Long reviewId) {
         return reviewRepository.findById(reviewId).orElseThrow(
-                () -> new ReviewNotFoundException("해당 리뷰를 찾을 수 없습니다.")
+                () -> new ReviewNotFoundException(ReviewErrorCode.REVIEW_NOT_FOUND)
         );
     }
 
     private void validateReservationOwner(Reservation reservation, User guest) {
         if (!reservation.getGuest().getId().equals(guest.getId())) {
-            throw new MissMatch("해당 예약에 대한 권한이 없습니다.");
+            throw new UnauthorityException(ReservationErrorCode.NO_PERMISSION);
         }
     }
 
     private void validateReservationStatus(Reservation reservation) {
         if (reservation.getStatus() != ReservationStatus.COMPLETED) {
-            throw new MissMatch("완료된 예약에 대해서만 리뷰를 작성할 수 있습니다.");
+            throw new MissMatch(ReviewErrorCode.ONLY_COMPLETED_CAN_REVIEW);
         }
     }
 
     private void checkDuplicateReview(Long guestId, Long spaceId, java.time.LocalDate reservedDate) {
         if (reviewRepository.findByGuestIdAndSpaceIdAndReservedDateAndDeletedAtIsNull(
                 guestId, spaceId, reservedDate).isPresent()) {
-            throw new MissMatch("이미 해당 예약에 대한 리뷰가 작성되었습니다.");
+            throw new DuplicateException(ReviewErrorCode.REVIEW_ALREADY_EXISTS);
         }
     }
 
     private void validateReviewOwner(Review review, User guest) {
         if (!review.getGuest().getId().equals(guest.getId())) {
-            throw new MissMatch("해당 리뷰에 대한 권한이 없습니다.");
+            throw new UnauthorityException(ReviewErrorCode.NO_PERMISSION);
         }
     }
 

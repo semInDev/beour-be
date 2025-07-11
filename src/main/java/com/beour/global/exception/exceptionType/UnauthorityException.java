@@ -2,13 +2,13 @@ package com.beour.global.exception.exceptionType;
 
 import com.beour.global.exception.error.ErrorCode;
 
-public class TokenExpiredException extends RuntimeException {
+public class UnauthorityException extends RuntimeException {
 
     private final Integer errorCode;
 
-    public TokenExpiredException(ErrorCode error) {
-        super(error.getMessage());
-        this.errorCode = error.getCode();
+    public UnauthorityException(ErrorCode errorCode) {
+        super(errorCode.getMessage());
+        this.errorCode = errorCode.getCode();
     }
 
     public Integer getErrorCode() {

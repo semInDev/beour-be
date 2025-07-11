@@ -2,7 +2,7 @@ package com.beour.user.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.beour.global.exception.exceptionType.InvalidFormatException;
+import com.beour.global.exception.exceptionType.InputInvalidFormatException;
 import com.beour.user.dto.ChangePasswordRequestDto;
 import com.beour.user.dto.UpdateUserInfoRequestDto;
 import com.beour.user.dto.UpdateUserInfoResponseDto;
@@ -95,11 +95,10 @@ class MyInformationServiceTest {
             .build();
 
         //when //then
-        assertThrows(InvalidFormatException.class, () -> myInformationService.updateUserInfo(requestDto));
+        assertThrows(InputInvalidFormatException.class, () -> myInformationService.updateUserInfo(requestDto));
     }
 
     //todo: 중복된 닉네임으로 가입할 경우
-
 
     @Test
     @DisplayName("개인정보 수정 - 닉네임만 변경")

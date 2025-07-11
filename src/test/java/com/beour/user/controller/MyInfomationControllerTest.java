@@ -4,6 +4,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.jwt.JWTUtil;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
@@ -109,7 +110,7 @@ class MyInfomationControllerTest {
                 .content(requestJson)
             )
             .andExpect(status().isConflict())
-            .andExpect(jsonPath("$.message").value("이미 사용중인 닉네임입니다."));
+            .andExpect(jsonPath("$.message").value(UserErrorCode.NICKNAME_ID_DUPLICATE.getMessage()));
     }
 
     @Test

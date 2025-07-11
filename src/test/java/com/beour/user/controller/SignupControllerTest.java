@@ -4,6 +4,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -89,7 +90,7 @@ class SignupControllerTest {
                 .content(requestJson)
             )
             .andExpect(status().isConflict())
-            .andExpect(jsonPath("$.message").value("이미 사용중인 아이디입니다."));
+            .andExpect(jsonPath("$.message").value(UserErrorCode.LOGIN_ID_DUPLICATE.getMessage()));
     }
 
     @Test
@@ -114,7 +115,7 @@ class SignupControllerTest {
                 .content(requestJson)
             )
             .andExpect(status().isConflict())
-            .andExpect(jsonPath("$.message").value("이미 사용중인 닉네임입니다."));
+            .andExpect(jsonPath("$.message").value(UserErrorCode.NICKNAME_ID_DUPLICATE.getMessage()));
     }
 
     @Test
@@ -123,7 +124,7 @@ class SignupControllerTest {
         //when then
         mockMvc.perform(get("/api/users/signup/check/loginId/duptest"))
             .andExpect(status().isConflict())
-            .andExpect(jsonPath("$.message").value("이미 사용중인 아이디입니다."));
+            .andExpect(jsonPath("$.message").value(UserErrorCode.LOGIN_ID_DUPLICATE.getMessage()));
     }
 
     @Test
@@ -141,7 +142,7 @@ class SignupControllerTest {
         //when then
         mockMvc.perform(get("/api/users/signup/check/nickname/duptest"))
             .andExpect(status().isConflict())
-            .andExpect(jsonPath("$.message").value("이미 사용중인 닉네임입니다."));
+            .andExpect(jsonPath("$.message").value(UserErrorCode.NICKNAME_ID_DUPLICATE.getMessage()));
     }
 
     @Test

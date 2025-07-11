@@ -3,6 +3,7 @@ package com.beour.space.host.service;
 import com.beour.global.exception.error.errorcode.SpaceErrorCode;
 import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
+import com.beour.global.exception.exceptionType.UnauthorityException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
@@ -40,7 +41,7 @@ public class AvailableTimeService {
         List<Space> spaceList = spaceRepository.findByHostAndDeletedAtIsNull(host);
 
         if (spaceList.isEmpty()) {
-            throw new RuntimeException("해당 호스트가 등록한 공간이 없습니다.");
+            throw new SpaceNotFoundException(SpaceErrorCode.NO_HOST_SPACE);
         }
 
         return spaceList.stream()
@@ -127,7 +128,7 @@ public class AvailableTimeService {
 
         // 호스트가 해당 공간의 소유자인지 확인
         if (!space.getHost().getId().equals(host.getId())) {
-            throw new IllegalArgumentException("해당 공간의 소유자가 아닙니다.");
+            throw new UnauthorityException(SpaceErrorCode.NO_PERMISSION);
         }
 
         return space;
