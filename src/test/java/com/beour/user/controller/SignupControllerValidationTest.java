@@ -319,7 +319,7 @@ class SignupControllerValidationTest {
                 .content(requestJson)
             )
             .andExpect(status().isConflict())
-            .andExpect(jsonPath("$.message").value("사용할 수 없는 아이디입니다."));
+            .andExpect(jsonPath("$.message").value("이미 사용중인 아이디입니다."));
     }
 
     @Test
