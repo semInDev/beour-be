@@ -26,5 +26,5 @@ kakao:
     key: ${KAKAO_REST_API_KEY}
 
 file:
-  path: ./uploads/
+  path: C:/Users/82108/Desktop/beour/uploads/
   url: http://localhost:8080/uploads/

@@ -7,12 +7,15 @@ import com.beour.banner.dto.CreateBannerResponseDto;
 import com.beour.banner.service.BannerService;
 import com.beour.global.response.ApiResponse;
 import jakarta.validation.Valid;
+import java.io.IOException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RequiredArgsConstructor
 @RestController
@@ -20,10 +23,10 @@ public class BannerController {
 
     private final BannerService bannerService;
 
-    @PostMapping("/api/banners")
-    public ApiResponse<CreateBannerResponseDto> createBanner(@Valid @RequestBody
-    CreateBannerRequestDto requestDto) {
-        return ApiResponse.ok(bannerService.createBanner(requestDto));
+    @PostMapping(value = "/api/banners", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<CreateBannerResponseDto> createBanner(@Valid @RequestPart("banner")
+    CreateBannerRequestDto requestDto, @RequestPart("file") MultipartFile file) throws IOException {
+        return ApiResponse.ok(bannerService.createBanner(requestDto, file));
     }
 
     @GetMapping("/admin/banner/list")
