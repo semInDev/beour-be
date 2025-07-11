@@ -37,7 +37,7 @@ jobs:
         run: echo "${{ secrets.APPLICATION_PROPERTIES }}" > ./src/main/resources/application.yml
 
       - name: application-test.yml 파일 만들기
-        run: echo "${{ secrets.APPLICATION_TEST_PROPERTIES }}" > ./src/main/resources/application-test.yml
+        run: echo "${{ secrets.APPLICATION_TEST_PROPERTIES }}" > ./src/test/resources/application-test.yml
 
       - name: 테스트하기
         run: |
