@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,5 +34,20 @@ public class ImageUploader {
 
         return fileUrl + fileName;
     }
+
+    // 다중 파일 업로드
+//    public List<String> upload(List<MultipartFile> files) throws IOException {
+//        if (files == null || files.isEmpty()) {
+//            throw new IllegalArgumentException("파일 리스트가 비어있습니다.");
+//        }
+//
+//        List<String> uploadedUrls = new ArrayList<>();
+//        for (MultipartFile file : files) {
+//            String uploadedUrl = upload(file);  // 기존 단일 업로드 재사용
+//            uploadedUrls.add(uploadedUrl);
+//        }
+//
+//        return uploadedUrls;
+//    }
 
 }
