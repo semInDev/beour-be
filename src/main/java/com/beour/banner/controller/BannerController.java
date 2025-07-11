@@ -24,23 +24,25 @@ public class BannerController {
     private final BannerService bannerService;
 
     @PostMapping(value = "/api/banners", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ApiResponse<CreateBannerResponseDto> createBanner(@Valid @RequestPart("banner")
-    CreateBannerRequestDto requestDto, @RequestPart("file") MultipartFile file) throws IOException {
+    public ApiResponse<CreateBannerResponseDto> createBanner(
+        @Valid @RequestPart("banner") CreateBannerRequestDto requestDto,
+        @RequestPart("file") MultipartFile file) throws IOException {
+
         return ApiResponse.ok(bannerService.createBanner(requestDto, file));
     }
 
     @GetMapping("/admin/banner/list")
-    public ApiResponse<List<BannerListResponseDto>> getBannerList(){
+    public ApiResponse<List<BannerListResponseDto>> getBannerList() {
         return ApiResponse.ok(bannerService.getBannerList());
     }
 
     @GetMapping("/api/banners")
-    public ApiResponse<List<BannerListForUserResponseDto>> userGetBannerList(){
+    public ApiResponse<List<BannerListForUserResponseDto>> userGetBannerList() {
         return ApiResponse.ok(bannerService.getBannerListForUser());
     }
 
     @GetMapping("/api/banners?isActive=true")
-    public ApiResponse<List<BannerListForUserResponseDto>> userGetBannerList2(){
+    public ApiResponse<List<BannerListForUserResponseDto>> userGetBannerList2() {
         return ApiResponse.ok(bannerService.getBannerListForUser());
     }
 
