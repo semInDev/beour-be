@@ -47,24 +47,25 @@ public class ReviewGuestService {
         User guest = findUserFromToken();
 
         List<Reservation> completedReservations = reservationRepository
-                .findCompletedReservationsWithSpaceByGuestId(guest.getId());
+            .findCompletedReservationsWithSpaceByGuestId(guest.getId());
 
         return completedReservations.stream()
-                .map(ReviewableReservationResponseDto::of)
-                .toList();
+            .map(ReviewableReservationResponseDto::of)
+            .toList();
     }
 
     public List<WrittenReviewResponseDto> getWrittenReviews() {
         User guest = findUserFromToken();
 
-        List<Review> writtenReviews = reviewRepository.findAllWithCommentAndImagesByGuestId(guest.getId());
+        List<Review> writtenReviews = reviewRepository.findAllWithCommentAndImagesByGuestId(
+            guest.getId());
 
         return writtenReviews.stream()
-                .map(review -> {
-                    ReviewComment comment = review.getComment();
-                    return WrittenReviewResponseDto.of(review, comment);
-                })
-                .toList();
+            .map(review -> {
+                ReviewComment comment = review.getComment();
+                return WrittenReviewResponseDto.of(review, comment);
+            })
+            .toList();
     }
 
     // 예약 정보 조회 (리뷰 작성을 위한)
@@ -86,7 +87,8 @@ public class ReviewGuestService {
         validateReservationStatus(reservation);
         checkDuplicateReview(guest.getId(), reservation.getSpace().getId(), reservation.getDate());
 
-        Review review = buildReview(guest, reservation, requestDto.getRating(), requestDto.getContent());
+        Review review = buildReview(guest, reservation, requestDto.getRating(),
+            requestDto.getContent());
         Review savedReview = reviewRepository.save(review);
 
         saveReviewImages(savedReview, requestDto.getImageUrls());
@@ -124,48 +126,49 @@ public class ReviewGuestService {
         review.softDelete();
     }
 
-    public List<RecentWrittenReviewResponseDto> getRecentWrittenReviews(){
+    public List<RecentWrittenReviewResponseDto> getRecentWrittenReviews() {
         List<Review> reviews = reviewRepository.findTop5ByDeletedAtIsNullOrderByCreatedAtDesc();
 
-        if(reviews.isEmpty()){
+        if (reviews.isEmpty()) {
             throw new ReviewNotFoundException(ReviewErrorCode.NO_RECENT_REVIEW);
         }
 
         return reviews.stream()
-                .map(review -> {
-                    List<String> imageUrls = Optional.ofNullable(review.getImages())
-                            .orElse(Collections.emptyList())
-                            .stream()
-                            .map(ReviewImage::getImageUrl)
-                            .toList();
+            .map(review -> {
+                List<String> imageUrls = Optional.ofNullable(review.getImages())
+                    .orElse(Collections.emptyList())
+                    .stream()
+                    .map(ReviewImage::getImageUrl)
+                    .toList();
 
-                    return RecentWrittenReviewResponseDto.builder()
-                            .spaceName(review.getSpace().getName())
-                            .reviewerNickName(review.getGuest().getNickname())
-                            .reviewCreatedAt(review.getCreatedAt())
-                            .rating(review.getRating())
-                            .images(imageUrls)
-                            .reviewContent(review.getContent())
-                            .build();
-                }).collect(Collectors.toList());
+                return RecentWrittenReviewResponseDto.builder()
+                    .reviewId(review.getId())
+                    .spaceName(review.getSpace().getName())
+                    .reviewerNickName(review.getGuest().getNickname())
+                    .reviewCreatedAt(review.getCreatedAt())
+                    .rating(review.getRating())
+                    .images(imageUrls)
+                    .reviewContent(review.getContent())
+                    .build();
+            }).collect(Collectors.toList());
     }
 
     private User findUserFromToken() {
         String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository.findByLoginIdAndDeletedAtIsNull(loginId).orElseThrow(
-                () -> new UserNotFoundException(UserErrorCode.USER_NOT_FOUND)
+            () -> new UserNotFoundException(UserErrorCode.USER_NOT_FOUND)
         );
     }
 
     private Reservation findReservationById(Long reservationId) {
         return reservationRepository.findById(reservationId).orElseThrow(
-                () -> new ReservationNotFound(ReservationErrorCode.RESERVATION_NOT_FOUND)
+            () -> new ReservationNotFound(ReservationErrorCode.RESERVATION_NOT_FOUND)
         );
     }
 
     private Review findReviewById(Long reviewId) {
         return reviewRepository.findById(reviewId).orElseThrow(
-                () -> new ReviewNotFoundException(ReviewErrorCode.REVIEW_NOT_FOUND)
+            () -> new ReviewNotFoundException(ReviewErrorCode.REVIEW_NOT_FOUND)
         );
     }
 
@@ -181,9 +184,10 @@ public class ReviewGuestService {
         }
     }
 
-    private void checkDuplicateReview(Long guestId, Long spaceId, java.time.LocalDate reservedDate) {
+    private void checkDuplicateReview(Long guestId, Long spaceId,
+        java.time.LocalDate reservedDate) {
         if (reviewRepository.findByGuestIdAndSpaceIdAndReservedDateAndDeletedAtIsNull(
-                guestId, spaceId, reservedDate).isPresent()) {
+            guestId, spaceId, reservedDate).isPresent()) {
             throw new DuplicateException(ReviewErrorCode.REVIEW_ALREADY_EXISTS);
         }
     }
@@ -196,23 +200,23 @@ public class ReviewGuestService {
 
     private Review buildReview(User guest, Reservation reservation, int rating, String content) {
         return Review.builder()
-                .guest(guest)
-                .space(reservation.getSpace())
-                .reservation(reservation)
-                .rating(rating)
-                .content(content)
-                .reservedDate(reservation.getDate())
-                .build();
+            .guest(guest)
+            .space(reservation.getSpace())
+            .reservation(reservation)
+            .rating(rating)
+            .content(content)
+            .reservedDate(reservation.getDate())
+            .build();
     }
 
     private void saveReviewImages(Review review, List<String> imageUrls) {
         if (imageUrls != null && !imageUrls.isEmpty()) {
             List<ReviewImage> images = imageUrls.stream()
-                    .map(url -> ReviewImage.builder()
-                            .imageUrl(url)
-                            .build())
-                    .toList();
-            for(ReviewImage image : images) {
+                .map(url -> ReviewImage.builder()
+                    .imageUrl(url)
+                    .build())
+                .toList();
+            for (ReviewImage image : images) {
                 review.addImage(image);
             }
             reviewRepository.save(review);
