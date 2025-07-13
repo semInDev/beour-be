@@ -8,6 +8,7 @@ import com.beour.token.repository.RefreshTokenRepository;
 import com.beour.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Collections;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -60,9 +61,10 @@ public class SecurityConfig {
                     CorsConfiguration configuration = new CorsConfiguration();
 
                     configuration.setAllowedOrigins(
-                        Collections.singletonList("http://localhost:3000")
+                        List.of("http://localhost:3000",
+                            "http://beour-bucket.s3-website.ap-northeast-2.amazonaws.com")
                     );
-                    configuration.setAllowedMethods(Collections.singletonList("*"));
+                    configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
                     configuration.setAllowCredentials(true);
                     configuration.setAllowedHeaders(Collections.singletonList("*"));
                     configuration.setMaxAge(3600L);
@@ -83,8 +85,10 @@ public class SecurityConfig {
                     .requestMatchers("/admin").hasRole("ADMIN")
                     .requestMatchers("/api/spaces/reserve", "/api/reservation/**", "/api/guest/**")
                     .hasRole("GUEST")
-                    .requestMatchers("/api/spaces", "/api/spaces/my-spaces", "/api/spaces/*", "/api/spaces/*/*",
-                            "/api/host/available-times/spaces",  "/api/host/available-times/space/*").hasRole("HOST")
+                    .requestMatchers("/api/spaces", "/api/spaces/my-spaces", "/api/spaces/*",
+                        "/api/spaces/*/*",
+                        "/api/host/available-times/spaces", "/api/host/available-times/space/*")
+                    .hasRole("HOST")
 
                     .requestMatchers("/api/mypage/**").hasAnyRole("HOST", "GUEST")
                     .requestMatchers("/logout").hasAnyRole("HOST", "GUEST", "ADMIN")
