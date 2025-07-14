@@ -503,7 +503,8 @@ class ReviewGuestServiceTest {
                 .reservedDate(completedReservation.getDate())
                 .build();
         reviewRepository.save(review1);
-
+        reviewRepository.flush();
+        
         ReviewImage image = ReviewImage.builder()
                 .imageUrl("https://example.com/image.jpg")
                 .build();
