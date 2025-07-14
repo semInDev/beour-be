@@ -19,7 +19,7 @@ public class FileExceptionHandler {
     }
 
     @ExceptionHandler(ImageFileInvalidException.class)
-    public ResponseEntity<ErrorResponse> fileNotFound(
+    public ResponseEntity<ErrorResponse> fileInvalid(
         ImageFileInvalidException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
             .body(new ErrorResponse(ex.getErrorCode(), "IMAGE_FILE_INVALID", ex.getMessage()));

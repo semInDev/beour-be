@@ -34,26 +34,26 @@ class ImageUploaderTest {
             .forEach(File::delete);
     }
 
-//    @Test
-//    @DisplayName("이미지 업로드 성공")
-//    void success_upload() throws IOException {
-//        // given
-//        MockMultipartFile mockFile = new MockMultipartFile(
-//            "image",
-//            "sample.png",
-//            "image/png",
-//            "mock image content".getBytes()
-//        );
-//
-//        // when
-//        String url = imageUploader.upload(mockFile);
-//
-//        // then
-//        assertThat(url).startsWith(fileUrl);
-//
-//        String savedFileName = url.replace(fileUrl, "");
-//        File savedFile = new File(filePath + savedFileName);
-//        assertThat(savedFile.exists()).isTrue();
-//    }
+    @Test
+    @DisplayName("이미지 업로드 성공")
+    void success_upload() throws IOException {
+        // given
+        MockMultipartFile mockFile = new MockMultipartFile(
+            "image",
+            "sample.png",
+            "image/png",
+            "mock image content".getBytes()
+        );
+
+        // when
+        String url = imageUploader.upload(mockFile);
+
+        // then
+        assertThat(url).startsWith(fileUrl);
+
+        String savedFileName = url.replace(fileUrl, "");
+        File savedFile = new File(filePath + savedFileName);
+        assertThat(savedFile.exists()).isTrue();
+    }
 
 }
