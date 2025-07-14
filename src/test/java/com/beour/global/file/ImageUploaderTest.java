@@ -1,5 +1,6 @@
 package com.beour.global.file;
 
+import com.beour.global.exception.exceptionType.ImageFileInvalidException;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.nio.file.*;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -35,7 +37,7 @@ class ImageUploaderTest {
     }
 
     @Test
-    @DisplayName("이미지 업로드 성공")
+    @DisplayName("이미지 업로드 - 성공")
     void success_upload() throws IOException {
         // given
         MockMultipartFile mockFile = new MockMultipartFile(
@@ -54,6 +56,20 @@ class ImageUploaderTest {
         String savedFileName = url.replace(fileUrl, "");
         File savedFile = new File(filePath + savedFileName);
         assertThat(savedFile.exists()).isTrue();
+    }
+
+    @Test
+    @DisplayName("이미지 업로드 - 빈 파일")
+    void upload_emptyFile() {
+        // given
+        MockMultipartFile emptyFile = new MockMultipartFile(
+            "image",
+            "empty.png",
+            "image/png",
+            new byte[0]
+        );
+
+        assertThrows(ImageFileInvalidException.class, () -> imageUploader.upload(emptyFile));
     }
 
 }
