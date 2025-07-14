@@ -303,6 +303,7 @@ class ReservationHostControllerTest {
     void getHostReservationsByDate_currentlyInUse() throws Exception {
         //given
         LocalDate today = LocalDate.now();
+        int nowHour = LocalTime.now().getHour();
 
         // 현재 시간 기준으로 사용 중인 예약 (시작 시간 < 현재 시간 < 종료 시간)
         Reservation currentReservation = Reservation.builder()
@@ -313,8 +314,8 @@ class ReservationHostControllerTest {
                 .usagePurpose(UsagePurpose.COOKING_PRACTICE)
                 .requestMessage("현재 사용 중")
                 .date(today)
-                .startTime(LocalTime.of(9, 0, 0))
-                .endTime(LocalTime.of(23, 59, 59))
+                .startTime(LocalTime.of(nowHour - 1, 0, 0))
+                .endTime(LocalTime.of(nowHour + 1, 59, 59))
                 .price(30000)
                 .guestCount(3)
                 .build();

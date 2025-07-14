@@ -22,5 +22,10 @@ spring:
     secret: ${JWT_SECRET}
 
 kakao:
-    api:
-      key: ${KAKAO_REST_API_KEY}
+  api:
+    key: ${KAKAO_REST_API_KEY}
+
+#todo: 배포 시 수정
+file:
+  path: C:/Users/82108/Desktop/beour/uploads/
+  url: http://localhost:8080/uploads/

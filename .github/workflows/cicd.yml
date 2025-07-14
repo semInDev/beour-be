@@ -1,0 +1,71 @@
+name: Deploy To EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
+          MYSQL_DATABASE: ${{ secrets.TEST_DB_NAME }}
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+    
+    steps:
+      - name: Github Repository 파일 불러오기
+        uses: actions/checkout@v4
+
+      - name: JDK 17버전 설치
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: application.yml 파일 만들기
+        run: echo "${{ secrets.APPLICATION_PROPERTIES }}" > ./src/main/resources/application.yml
+
+      - name: Create test resources directory
+        run: mkdir -p src/test/resources
+
+      - name: application-test.yml 파일 만들기
+        run: echo "${{ secrets.APPLICATION_TEST_PROPERTIES }}" > ./src/test/resources/application-test.yml
+
+      - name: 테스트하기
+        run: |
+          chmod +x ./gradlew
+          ./gradlew test -Dspring.profiles.active=test
+
+      - name: 빌드하기
+        run: ./gradlew clean build -x test
+
+      - name: Docker build & push to Docker hub
+        run: |
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/beour-repo .
+          docker push ${{ secrets.DOCKER_USERNAME }}/beour-repo
+
+      # EC2 배포
+      - name: Docker image pull & Deploy to EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }} # EC2 인스턴스 퍼블릭 DNS
+          username: ubuntu
+          key: ${{ secrets.EC2_PRIVATE_KEY }} # pem 키
+          script_stop: true
+          script: |
+            docker stop beour-repo || true
+            docker rm beour-repo || true
+            docker pull ${{ secrets.DOCKER_USERNAME }}/beour-repo:latest
+            docker run -d --name beour-repo -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/beour-repo:latest

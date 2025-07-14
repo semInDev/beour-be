@@ -6,22 +6,27 @@ import com.beour.banner.dto.CreateBannerRequestDto;
 import com.beour.banner.dto.CreateBannerResponseDto;
 import com.beour.banner.entity.Banner;
 import com.beour.banner.repository.BannerRepository;
-import com.beour.global.exception.exceptionType.UserNotFoundException;
+import com.beour.global.file.ImageUploader;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @RequiredArgsConstructor
 @Service
 public class BannerService {
 
     private final BannerRepository bannerRepository;
+    private final ImageUploader imageUploader;
 
-    public CreateBannerResponseDto createBanner(CreateBannerRequestDto requestDto){
+    public CreateBannerResponseDto createBanner(CreateBannerRequestDto requestDto, MultipartFile file) throws IOException {
+        String imgUrl = imageUploader.upload(file);
+
         Banner banner = Banner.builder()
-            .imgUrl(requestDto.getImgUrl())
+            .imgUrl(imgUrl)
             .linkUrl(requestDto.getLinkUrl())
             .title(requestDto.getTitle())
             .isActive(requestDto.getIsActive())
@@ -31,10 +36,9 @@ public class BannerService {
             .build();
 
         Banner savedBanner = bannerRepository.save(banner);
-        CreateBannerResponseDto responseDto = new CreateBannerResponseDto();
-        responseDto.setBannerId(savedBanner.getId());
-
-        return responseDto;
+        return CreateBannerResponseDto.builder()
+            .bannerId(savedBanner.getId())
+            .build();
     }
 
     public List<BannerListResponseDto> getBannerList(){
