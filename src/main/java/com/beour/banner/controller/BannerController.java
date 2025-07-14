@@ -41,9 +41,4 @@ public class BannerController {
         return ApiResponse.ok(bannerService.getBannerListForUser());
     }
 
-    @GetMapping("/api/banners?isActive=true")
-    public ApiResponse<List<BannerListForUserResponseDto>> userGetBannerList2() {
-        return ApiResponse.ok(bannerService.getBannerListForUser());
-    }
-
 }
