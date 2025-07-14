@@ -1,5 +1,7 @@
 package com.beour.global.file;
 
+import com.beour.global.exception.error.errorcode.ImageFileErrorCode;
+import com.beour.global.exception.exceptionType.ImageFileInvalidException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,7 +26,7 @@ public class ImageUploader {
 
     public String upload(MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) {
-            throw new IllegalArgumentException("파일이 비어있습니다.");
+            throw new ImageFileInvalidException(ImageFileErrorCode.NO_IMAGE_FILE);
         }
 
         String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
