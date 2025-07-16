@@ -1,12 +1,17 @@
 package com.beour.user.controller;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.beour.global.exception.error.errorcode.UserErrorCode;
+import com.beour.token.repository.RefreshTokenRepository;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
+import jakarta.validation.constraints.AssertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -26,16 +32,20 @@ class LoginControllerTest {
     private MockMvc mockMvc;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private RefreshTokenRepository refreshTokenRepository;
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
 
     @BeforeEach
-    void setUp(){
+    void setUp() {
         userRepository.deleteAll();
         User user = User.builder()
             .name("유저1")
             .nickname("user1")
             .email("user1@gmail.com")
             .loginId("user1")
-            .password("user1")
+            .password(passwordEncoder.encode("user1"))
             .phone("01012345678")
             .role("GUEST")
             .build();
@@ -59,12 +69,12 @@ class LoginControllerTest {
     void findLogId_user_not_found() throws Exception {
         //given
         String requestJson = """
-            {
-                "name": "user1",
-                "email": "test@gmail.com",
-                "phone": "01012345678"
-            }
-        """;
+                {
+                    "name": "user1",
+                    "email": "test@gmail.com",
+                    "phone": "01012345678"
+                }
+            """;
 
         //when then
         mockMvc.perform(post("/api/users/find/loginId")
@@ -81,12 +91,12 @@ class LoginControllerTest {
     void findLogId_user_deleted() throws Exception {
         //given
         String requestJson = """
-            {
-                "name": "탈퇴유저",
-                "email": "delete1@gmail.com",
-                "phone": "01012345678"
-            }
-        """;
+                {
+                    "name": "탈퇴유저",
+                    "email": "delete1@gmail.com",
+                    "phone": "01012345678"
+                }
+            """;
 
         //when then
         mockMvc.perform(post("/api/users/find/loginId")
@@ -103,12 +113,12 @@ class LoginControllerTest {
     void success_findLogId() throws Exception {
         //given
         String requestJson = """
-            {
-                "name": "유저1",
-                "email": "user1@gmail.com",
-                "phone": "01012345678"
-            }
-        """;
+                {
+                    "name": "유저1",
+                    "email": "user1@gmail.com",
+                    "phone": "01012345678"
+                }
+            """;
 
         //when then
         mockMvc.perform(post("/api/users/find/loginId")
@@ -125,13 +135,13 @@ class LoginControllerTest {
     void resetPassword_user_not_found() throws Exception {
         //given
         String requestJson = """
-            {
-                "loginId": "user1",
-                "name": "user1",
-                "email": "test@gmail.com",
-                "phone": "01012345678"
-            }
-        """;
+                {
+                    "loginId": "user1",
+                    "name": "user1",
+                    "email": "test@gmail.com",
+                    "phone": "01012345678"
+                }
+            """;
 
         //when then
         mockMvc.perform(post("/api/users/reset/password")
@@ -148,13 +158,13 @@ class LoginControllerTest {
     void resetPassword_user_deleted() throws Exception {
         //given
         String requestJson = """
-            {
-                "loginId": "delete1",
-                "name": "탈퇴유저",
-                "email": "delete1@gmail.com",
-                "phone": "01012345678"
-            }
-        """;
+                {
+                    "loginId": "delete1",
+                    "name": "탈퇴유저",
+                    "email": "delete1@gmail.com",
+                    "phone": "01012345678"
+                }
+            """;
 
         //when then
         mockMvc.perform(post("/api/users/reset/password")
@@ -171,13 +181,13 @@ class LoginControllerTest {
     void success_resetPassword() throws Exception {
         //given
         String requestJson = """
-            {
-                "loginId": "user1",
-                "name": "유저1",
-                "email": "user1@gmail.com",
-                "phone": "01012345678"
-            }
-        """;
+                {
+                    "loginId": "user1",
+                    "name": "유저1",
+                    "email": "user1@gmail.com",
+                    "phone": "01012345678"
+                }
+            """;
 
         //when then
         mockMvc.perform(post("/api/users/reset/password")
@@ -185,6 +195,32 @@ class LoginControllerTest {
                 .content(requestJson)
             )
             .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("로그인 - 성공")
+    void success_login() throws Exception {
+        //given
+        String requestJson = """
+            {
+                "loginId": "user1",
+                "password": "user1",
+                "role": "GUEST"
+            }
+            """;
+
+        //when  then
+        mockMvc.perform(post("/api/login")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson)
+        )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.message").value("로그인 성공"))
+            .andExpect(jsonPath("$.accessToken").exists())
+            .andExpect(cookie().exists("refresh"))
+            .andExpect(header().exists("Authorization"));
+
+        assertTrue(refreshTokenRepository.existsByLoginId("user1"));
     }
 
 
