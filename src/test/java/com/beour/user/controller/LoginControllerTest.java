@@ -67,7 +67,7 @@ class LoginControllerTest {
         """;
 
         //when then
-        mockMvc.perform(post("/api/users/find-login-id")
+        mockMvc.perform(post("/api/users/find/loginId")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -89,7 +89,7 @@ class LoginControllerTest {
         """;
 
         //when then
-        mockMvc.perform(post("/api/users/find-login-id")
+        mockMvc.perform(post("/api/users/find/loginId")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -111,7 +111,7 @@ class LoginControllerTest {
         """;
 
         //when then
-        mockMvc.perform(post("/api/users/find-login-id")
+        mockMvc.perform(post("/api/users/find/loginId")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -134,7 +134,7 @@ class LoginControllerTest {
         """;
 
         //when then
-        mockMvc.perform(post("/api/users/reset-pw")
+        mockMvc.perform(post("/api/users/reset/password")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -157,7 +157,7 @@ class LoginControllerTest {
         """;
 
         //when then
-        mockMvc.perform(post("/api/users/reset-pw")
+        mockMvc.perform(post("/api/users/reset/password")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -180,7 +180,7 @@ class LoginControllerTest {
         """;
 
         //when then
-        mockMvc.perform(post("/api/users/reset-pw")
+        mockMvc.perform(post("/api/users/reset/password")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
