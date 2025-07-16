@@ -57,7 +57,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         }
 
         if (!user.getRole().equals(loginDto.getRole())) {
-            throw new LoginUserMismatchRole("역할이 일치하지 않습니다.");
+            throw new LoginUserMismatchRole(UserErrorCode.USER_ROLE_MISMATCH);
         }
 
         return authenticationManager.authenticate(authToken);
@@ -92,17 +92,15 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.setHeader("Authorization", access);
         response.addCookie(ManageCookie.createCookie("refresh", refresh));
 
-        Long userId = customUserDetails.getUserId();
         String jsonResponse = String.format("""
             {
                 "code": 200,
                 "message": "로그인 성공",
-                "userId": %d,
                 "loginId": "%s",
                 "role": "%s",
                 "accessToken": "%s"
             }
-            """, userId, loginId, role, access);
+            """, loginId, role, access);
 
         response.getWriter().write(jsonResponse);
         addRefreshEntity(loginId, refresh, TokenExpireTime.REFRESH_TOKEN_EXPIRATION_MILLIS.getValue());
@@ -129,18 +127,24 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
-        Integer code = 100;
-        String codeName = "null";
+        Integer code;
+        String codeName;
         String message;
         if (failed instanceof LoginUserNotFoundException) {
             code = ((LoginUserNotFoundException) failed).getErrorCode();
             codeName = "USER_NOT_FOUND";
             message = failed.getMessage();
         } else if (failed instanceof LoginUserMismatchRole) {
-            message = "역할이 일치하지 않습니다.";
+            code = ((LoginUserMismatchRole) failed).getErrorCode();
+            codeName = "ROLE_MISMATCH";
+            message = failed.getMessage();
         } else if (failed instanceof BadCredentialsException) {
+            code = 400;
+            codeName = "INVALID_INFORMATION";
             message = "아이디 또는 비밀번호가 올바르지 않습니다.";
         } else {
+            code = 401;
+            codeName = "LOGIN_FAILED";
             message = "로그인에 실패했습니다.";
         }
 
