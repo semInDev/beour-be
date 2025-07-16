@@ -1,5 +1,6 @@
 package com.beour.global.jwt;
 
+import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.exception.exceptionType.LoginUserMismatchRole;
 import com.beour.global.exception.exceptionType.LoginUserNotFoundException;
 import com.beour.token.entity.RefreshToken;
@@ -52,7 +53,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         User user = userRepository.findByLoginId(loginDto.getLoginId()).orElse(null);
         if (user == null || user.isDeleted()) {
-            throw new LoginUserNotFoundException("존재하지 않는 사용자입니다.");
+            throw new LoginUserNotFoundException(UserErrorCode.USER_NOT_FOUND);
         }
 
         if (!user.getRole().equals(loginDto.getRole())) {
@@ -128,9 +129,13 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
+        Integer code = 100;
+        String codeName = "null";
         String message;
         if (failed instanceof LoginUserNotFoundException) {
-            message = "존재하지 않는 사용자입니다.";
+            code = ((LoginUserNotFoundException) failed).getErrorCode();
+            codeName = "USER_NOT_FOUND";
+            message = failed.getMessage();
         } else if (failed instanceof LoginUserMismatchRole) {
             message = "역할이 일치하지 않습니다.";
         } else if (failed instanceof BadCredentialsException) {
@@ -141,10 +146,11 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         String jsonResponse = String.format("""
             {
-                "code": 401,
+                "code": %d,
+                "codeName" : "%s"
                 "message": "%s"
             }
-            """, message);
+            """, code, codeName, message);
 
         response.getWriter().write(jsonResponse);
     }
