@@ -211,9 +211,9 @@ class LoginControllerTest {
 
         //when  then
         mockMvc.perform(post("/api/login")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(requestJson)
-        )
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson)
+            )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.message").value("로그인 성공"))
             .andExpect(jsonPath("$.accessToken").exists())
@@ -223,5 +223,70 @@ class LoginControllerTest {
         assertTrue(refreshTokenRepository.existsByLoginId("user1"));
     }
 
+    @Test
+    @DisplayName("로그인 - 탈퇴한 회원")
+    void login_deleted_user() throws Exception {
+        //given
+        String requestJson = """
+            {
+                "loginId": "delete1",
+                "password": "delete1",
+                "role": "GUEST"
+            }
+            """;
+
+        //when  then
+        mockMvc.perform(post("/api/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson)
+            )
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.codeName").value("USER_NOT_FOUND"))
+            .andExpect(jsonPath("$.message").value(UserErrorCode.USER_NOT_FOUND.getMessage()));
+    }
+
+    @Test
+    @DisplayName("로그인 - 아이디 비밀번호 불일치")
+    void login_incorrect_loginId_password() throws Exception {
+        //given
+        String requestJson = """
+            {
+                "loginId": "user1",
+                "password": "delete1",
+                "role": "GUEST"
+            }
+            """;
+
+        //when  then
+        mockMvc.perform(post("/api/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson)
+            )
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.codeName").value("INVALID_INFORMATION"))
+            .andExpect(jsonPath("$.message").value("아이디 또는 비밀번호가 올바르지 않습니다."));
+    }
+
+    @Test
+    @DisplayName("로그인 - 역할 불일치")
+    void login_incorrect_role() throws Exception {
+        //given
+        String requestJson = """
+            {
+                "loginId": "user1",
+                "password": "user1",
+                "role": "HOST"
+            }
+            """;
+
+        //when  then
+        mockMvc.perform(post("/api/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson)
+            )
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.codeName").value("ROLE_MISMATCH"))
+            .andExpect(jsonPath("$.message").value(UserErrorCode.USER_ROLE_MISMATCH.getMessage()));
+    }
 
 }
