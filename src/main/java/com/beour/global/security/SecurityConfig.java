@@ -81,7 +81,8 @@ public class SecurityConfig {
             .authorizeHttpRequests((auth) -> auth
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                     .requestMatchers("/api/users/**", "/api/signup/**", "/api/login",
-                        "/api/users/find/loginId", "/api/users/reset/password").permitAll()
+                        "/api/users/find/loginId", "/api/users/reset/password", "/api/token/reissue")
+                    .permitAll()
                     .requestMatchers("/api/spaces/reserve/available-times", "/api/spaces/search/**",
                         "/api/spaces/new", "/api/reviews/new", "/api/banners").permitAll()
 //                    .requestMatchers("/admin").hasRole("ADMIN")
@@ -93,7 +94,7 @@ public class SecurityConfig {
                     .hasRole("HOST")
 
                     .requestMatchers("/api/mypage/**").hasAnyRole("HOST", "GUEST")
-                    .requestMatchers("/api/logout", "/api/token/reissue").hasAnyRole("HOST", "GUEST", "ADMIN")
+                    .requestMatchers("/api/logout").hasAnyRole("HOST", "GUEST", "ADMIN")
 //                    .anyRequest().authenticated()
                     .anyRequest().permitAll()
             );
