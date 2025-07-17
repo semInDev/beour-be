@@ -35,7 +35,8 @@ public class LoginService {
     private final RefreshTokenRepository refreshTokenRepository;
 
     public FindLoginIdResponseDto findLoginId(FindLoginIdRequestDto dto) {
-        User user = userRepository.findByNameAndPhoneAndEmailAndDeletedAtIsNull(dto.getName(), dto.getPhone(),
+        User user = userRepository.findByNameAndPhoneAndEmailAndDeletedAtIsNull(dto.getName(),
+            dto.getPhone(),
             dto.getEmail()).orElseThrow(
             () -> new UserNotFoundException(UserErrorCode.MEMBER_NOT_FOUND)
         );
@@ -45,14 +46,14 @@ public class LoginService {
 
     @Transactional
     public ResetPasswordResponseDto resetPassword(ResetPasswordRequestDto dto) {
-        User user = userRepository.findByLoginIdAndNameAndPhoneAndEmailAndDeletedAtIsNull(dto.getLoginId(), dto.getName(),
+        User user = userRepository.findByLoginIdAndNameAndPhoneAndEmailAndDeletedAtIsNull(
+            dto.getLoginId(), dto.getName(),
             dto.getPhone(), dto.getEmail()).orElseThrow(
             () -> new UserNotFoundException(UserErrorCode.MEMBER_NOT_FOUND)
         );
 
         String tempPassword = generateTempPassword();
-        String encode = bCryptPasswordEncoder.encode(tempPassword);
-        user.updatePassword(encode);
+        user.updatePassword(bCryptPasswordEncoder.encode(tempPassword));
 
         return new ResetPasswordResponseDto(tempPassword);
     }
@@ -72,7 +73,6 @@ public class LoginService {
 
     public String[] reissueRefreshToken(HttpServletRequest request) {
         String refresh = extractRefreshFromCookie(request);
-
         checkRefreshTokenIsValid(refresh);
 
         String loginId = jwtUtil.getLoginId(refresh);
@@ -80,23 +80,27 @@ public class LoginService {
 
         String newAccessToken = "Bearer " + jwtUtil.createJwt("access", loginId, role,
             TokenExpireTime.ACCESS_TOKEN_EXPIRATION_MILLIS.getValue());
+
         String newRefreshToken = jwtUtil.createJwt("refresh", loginId, role,
             TokenExpireTime.REFRESH_TOKEN_EXPIRATION_MILLIS.getValue());
 
         refreshTokenRotation(refresh, loginId, newRefreshToken);
 
-        return new String[] {newAccessToken, newRefreshToken};
+        return new String[]{newAccessToken, newRefreshToken};
     }
 
     private static String extractRefreshFromCookie(HttpServletRequest request) {
-        String refresh = null;
         Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            return null;
+        }
+
         for (Cookie cookie : cookies) {
             if (cookie.getName().equals("refresh")) {
-                refresh = cookie.getValue();
+                return cookie.getValue();
             }
         }
-        return refresh;
+        return null;
     }
 
     private void checkRefreshTokenIsValid(String refresh) {
@@ -110,13 +114,8 @@ public class LoginService {
             throw new TokenExpiredException(UserErrorCode.REFRESH_TOKEN_EXPIRED);
         }
 
-        String category = jwtUtil.getCategory(refresh);
-        if (!category.equals("refresh")) {
-            throw new TokenNotFoundException(UserErrorCode.REFRESH_TOKEN_NOT_FOUND);
-        }
-
-        Boolean isExistRefresh = refreshTokenRepository.existsByRefresh(refresh);
-        if (!isExistRefresh) {
+        if (!"refresh".equals(jwtUtil.getCategory(refresh))
+            || !refreshTokenRepository.existsByRefresh(refresh)) {
             throw new TokenNotFoundException(UserErrorCode.REFRESH_TOKEN_NOT_FOUND);
         }
     }
@@ -133,6 +132,7 @@ public class LoginService {
             .expiration(new Date(System.currentTimeMillis()
                 + TokenExpireTime.REFRESH_TOKEN_EXPIRATION_MILLIS.getValue()).toString())
             .build();
+
         refreshTokenRepository.save(refreshToken);
     }
 }

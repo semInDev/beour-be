@@ -8,10 +8,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.beour.global.exception.error.errorcode.UserErrorCode;
+import com.beour.global.jwt.JWTUtil;
+import com.beour.token.entity.RefreshToken;
 import com.beour.token.repository.RefreshTokenRepository;
 import com.beour.user.entity.User;
+import com.beour.user.enums.TokenExpireTime;
 import com.beour.user.repository.UserRepository;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.AssertTrue;
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -36,6 +42,8 @@ class LoginControllerTest {
     private RefreshTokenRepository refreshTokenRepository;
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
+    @Autowired
+    private JWTUtil jwtUtil;
 
     @BeforeEach
     void setUp() {
@@ -289,4 +297,87 @@ class LoginControllerTest {
             .andExpect(jsonPath("$.message").value(UserErrorCode.USER_ROLE_MISMATCH.getMessage()));
     }
 
+    @Test
+    @DisplayName("토큰 재발급 - 성공")
+    void success_reissue() throws Exception {
+        //given
+        String loginId = "user1";
+        String role = "GUEST";
+
+        String refreshToken = jwtUtil.createJwt("refresh", loginId, role,
+            TokenExpireTime.REFRESH_TOKEN_EXPIRATION_MILLIS.getValue());
+        refreshTokenRepository.save(RefreshToken.builder()
+            .loginId(loginId)
+            .refresh(refreshToken)
+            .expiration(String.valueOf(LocalDateTime.now().plusDays(1)))
+            .build());
+
+        Cookie cookie = new Cookie("refresh", refreshToken);
+
+        //when  then
+        mockMvc.perform(post("/api/token/reissue").cookie(cookie))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.accessToken").exists())
+            .andExpect(cookie().exists("refresh"))
+            .andExpect(header().exists("Authorization"));
+    }
+
+    @Test
+    @DisplayName("토큰 재발급 - refresh 토큰 없음")
+    void reissue_refresh_token_not_found() throws Exception {
+        //when  then
+        mockMvc.perform(post("/api/token/reissue"))
+            .andExpect(status().isNotFound())
+            .andExpect(
+                jsonPath("$.message").value(UserErrorCode.REFRESH_TOKEN_NOT_FOUND.getMessage()));
+    }
+
+    @Test
+    @DisplayName("토큰 재발급 - 카테고리 불일치")
+    void reissue_token_category_mismatch() throws Exception {
+        //given
+        String loginId = "user1";
+        String role = "GUEST";
+
+        String refreshToken = jwtUtil.createJwt("access", loginId, role,
+            TokenExpireTime.REFRESH_TOKEN_EXPIRATION_MILLIS.getValue());
+        refreshTokenRepository.save(RefreshToken.builder()
+            .loginId(loginId)
+            .refresh(refreshToken)
+            .expiration(String.valueOf(LocalDateTime.now().plusDays(1)))
+            .build());
+
+        Cookie cookie = new Cookie("refresh", refreshToken);
+
+        //when  then
+        mockMvc.perform(post("/api/token/reissue").cookie(cookie))
+            .andExpect(status().isNotFound())
+            .andExpect(
+                jsonPath("$.message").value(UserErrorCode.REFRESH_TOKEN_NOT_FOUND.getMessage()));
+    }
+
+    @Test
+    @DisplayName("토큰 재발급 - refresh 토큰 만료")
+    void reissue_token_expired() throws Exception {
+        //given
+        String loginId = "user1";
+        String role = "GUEST";
+
+        String refreshToken = jwtUtil.createJwt("refresh", loginId, role, 1L);
+        Thread.sleep(10);
+
+        refreshTokenRepository.save(RefreshToken.builder()
+            .loginId(loginId)
+            .refresh(refreshToken)
+            .expiration(String.valueOf(LocalDateTime.now().plusDays(1)))
+            .build());
+
+        Cookie cookie = new Cookie("refresh", refreshToken);
+
+        //when  then
+        mockMvc.perform(post("/api/token/reissue").cookie(cookie))
+            .andExpect(status().isUnauthorized())
+            .andExpect(
+                jsonPath("$.message").value(UserErrorCode.REFRESH_TOKEN_EXPIRED.getMessage()));
+    }
 }

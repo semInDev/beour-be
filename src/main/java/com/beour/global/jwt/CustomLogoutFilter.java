@@ -22,9 +22,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
         throws IOException, ServletException {
-
         doFilter((HttpServletRequest) request, (HttpServletResponse) response, chain);
-
     }
 
     private void doFilter(HttpServletRequest request, HttpServletResponse response,
@@ -32,7 +30,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
 
         //api 요청 올바른지 체크하는 로직
         String requestUri = request.getRequestURI();
-        if (!requestUri.matches("^\\/logout$")) {
+        if (!requestUri.matches("^\\/api\\/logout$")) {
 
             filterChain.doFilter(request, response);
             return;
@@ -58,6 +56,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
+
         try {
             jwtUtil.isExpired(refresh);
         } catch (ExpiredJwtException e) {
