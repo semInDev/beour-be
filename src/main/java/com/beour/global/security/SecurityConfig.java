@@ -93,7 +93,7 @@ public class SecurityConfig {
                     .hasRole("HOST")
 
                     .requestMatchers("/api/mypage/**").hasAnyRole("HOST", "GUEST")
-                    .requestMatchers("/logout", "/api/token/reissue").hasAnyRole("HOST", "GUEST", "ADMIN")
+                    .requestMatchers("/api/logout", "/api/token/reissue").hasAnyRole("HOST", "GUEST", "ADMIN")
 //                    .anyRequest().authenticated()
                     .anyRequest().permitAll()
             );
