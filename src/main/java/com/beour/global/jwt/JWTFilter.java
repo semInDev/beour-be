@@ -38,21 +38,21 @@ public class JWTFilter extends OncePerRequestFilter {
 
         //access토큰 없을 시 다음 필터로 넘김
         String accessToken = extractAccessToken(authorization);
-        if(accessToken == null || accessToken.isBlank()){
+        if (accessToken == null || accessToken.isBlank()) {
             filterChain.doFilter(request, response);
             return;
         }
 
         //토큰 만료 여부 확인, 토큰 만료시 다음 필터로 넘기지 않고 만료 여부 프론트로 전달
-        try{
+        try {
             jwtUtil.isExpired(accessToken);
-        } catch (ExpiredJwtException ex){
+        } catch (ExpiredJwtException ex) {
             writeErrorResponse(response, UserErrorCode.ACCESS_TOKEN_EXPIRED);
             return;
         }
 
         //token이 access token인지 확인, 아니면 프론트한테 알려줌
-        if(!"access".equals(jwtUtil.getCategory(accessToken))){
+        if (!"access".equals(jwtUtil.getCategory(accessToken))) {
             writeErrorResponse(response, UserErrorCode.NOT_ACCESS_TOKEN);
             return;
         }
@@ -76,7 +76,8 @@ public class JWTFilter extends OncePerRequestFilter {
     }
 
     //프론트한테 가독성 좋게 에러 코드와 메세지 보내는 response body 만드는 함수
-    private void writeErrorResponse(HttpServletResponse response, ErrorCode errorCode) throws IOException {
+    private void writeErrorResponse(HttpServletResponse response, ErrorCode errorCode)
+        throws IOException {
         response.setStatus(errorCode.getCode());
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
