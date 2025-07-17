@@ -1,5 +1,7 @@
 package com.beour.global.jwt;
 
+import com.beour.global.exception.error.ErrorCode;
+import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.user.dto.CustomUserDetails;
 import com.beour.user.entity.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,7 +49,7 @@ public class JWTFilter extends OncePerRequestFilter {
         try{
             jwtUtil.isExpired(accessToken);
         } catch (ExpiredJwtException ex){
-            Result result = getErrorResult(response, HttpServletResponse.SC_UNAUTHORIZED, "Access Token이 만료되었습니다.");
+            Result result = getErrorResult(response, UserErrorCode.ACCESS_TOKEN_EXPIRED);
 
             PrintWriter writer = response.getWriter();
             writer.print(result.objectMapper().writeValueAsString(result.errorBody()));
@@ -58,7 +60,7 @@ public class JWTFilter extends OncePerRequestFilter {
         //token이 access token인지 확인, 아니면 프론트한테 알려줌
         String category = jwtUtil.getCategory(accessToken);
         if(!category.equals("access")){
-            Result result = getErrorResult(response, HttpServletResponse.SC_BAD_REQUEST, "Access Token이 아닙니다.");
+            Result result = getErrorResult(response, UserErrorCode.NOT_ACCESS_TOKEN);
 
             PrintWriter writer = response.getWriter();
             writer.print(result.objectMapper.writeValueAsString(result.errorBody()));
@@ -80,15 +82,16 @@ public class JWTFilter extends OncePerRequestFilter {
     }
 
     //프론트한테 가독성 좋게 에러 코드와 메세지 보내는 response body 만드는 함수
-    private static Result getErrorResult(HttpServletResponse response, int status, String message) {
-        response.setStatus(status);
+    private static Result getErrorResult(HttpServletResponse response, ErrorCode errorCode) {
+        response.setStatus(errorCode.getCode());
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
         ObjectMapper objectMapper = new ObjectMapper();
         Map<String, Object> errorBody = new HashMap<>();
-        errorBody.put("code", status);
-        errorBody.put("message", message);
+        errorBody.put("code", errorCode.getCode());
+        errorBody.put("codeName", errorCode);
+        errorBody.put("message", errorCode.getMessage());
         return new Result(objectMapper, errorBody);
     }
 
