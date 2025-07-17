@@ -11,7 +11,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -37,10 +36,9 @@ public class JWTFilter extends OncePerRequestFilter {
             return;
         }
 
-        String accessToken = authorization.split(" ")[1];
-
         //access토큰 없을 시 다음 필터로 넘김
-        if(accessToken == null){
+        String accessToken = extractAccessToken(authorization);
+        if(accessToken == null || accessToken.isBlank()){
             filterChain.doFilter(request, response);
             return;
         }
@@ -49,22 +47,13 @@ public class JWTFilter extends OncePerRequestFilter {
         try{
             jwtUtil.isExpired(accessToken);
         } catch (ExpiredJwtException ex){
-            Result result = getErrorResult(response, UserErrorCode.ACCESS_TOKEN_EXPIRED);
-
-            PrintWriter writer = response.getWriter();
-            writer.print(result.objectMapper().writeValueAsString(result.errorBody()));
-            writer.flush();
+            writeErrorResponse(response, UserErrorCode.ACCESS_TOKEN_EXPIRED);
             return;
         }
 
         //token이 access token인지 확인, 아니면 프론트한테 알려줌
-        String category = jwtUtil.getCategory(accessToken);
-        if(!category.equals("access")){
-            Result result = getErrorResult(response, UserErrorCode.NOT_ACCESS_TOKEN);
-
-            PrintWriter writer = response.getWriter();
-            writer.print(result.objectMapper.writeValueAsString(result.errorBody()));
-            writer.flush();
+        if(!"access".equals(jwtUtil.getCategory(accessToken))){
+            writeErrorResponse(response, UserErrorCode.NOT_ACCESS_TOKEN);
             return;
         }
 
@@ -81,8 +70,13 @@ public class JWTFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    private static String extractAccessToken(String authorization) {
+        String[] parts = authorization.split(" ");
+        return (parts.length == 2) ? parts[1] : null;
+    }
+
     //프론트한테 가독성 좋게 에러 코드와 메세지 보내는 response body 만드는 함수
-    private static Result getErrorResult(HttpServletResponse response, ErrorCode errorCode) {
+    private void writeErrorResponse(HttpServletResponse response, ErrorCode errorCode) throws IOException {
         response.setStatus(errorCode.getCode());
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
@@ -92,10 +86,7 @@ public class JWTFilter extends OncePerRequestFilter {
         errorBody.put("code", errorCode.getCode());
         errorBody.put("codeName", errorCode);
         errorBody.put("message", errorCode.getMessage());
-        return new Result(objectMapper, errorBody);
-    }
 
-    private record Result(ObjectMapper objectMapper, Map<String, Object> errorBody) {
-
+        objectMapper.writeValue(response.getWriter(), errorBody);
     }
 }
