@@ -71,9 +71,10 @@ class LoginServiceTest {
     }
 
     @AfterEach
-    void cleanUp(){
+    void cleanUp() {
         refreshTokenRepository.deleteAll();
     }
+
     @Test
     @DisplayName("로그인아이디찾기-일치하는 회원 없음")
     void findLoginId_user_not_found() {
@@ -197,9 +198,9 @@ class LoginServiceTest {
         //given
         MockHttpServletRequest request = new MockHttpServletRequest();
 
-
         // when  then
-        TokenNotFoundException exception = assertThrows(TokenNotFoundException.class, () -> loginService.reissueRefreshToken(request));
+        TokenNotFoundException exception = assertThrows(TokenNotFoundException.class,
+            () -> loginService.reissueRefreshToken(request));
         assertEquals(UserErrorCode.REFRESH_TOKEN_NOT_FOUND.getMessage(), exception.getMessage());
     }
 
@@ -222,7 +223,8 @@ class LoginServiceTest {
         request.setCookies(new Cookie("refresh", refreshToken));
 
         // when  then
-        TokenNotFoundException exception = assertThrows(TokenNotFoundException.class, () -> loginService.reissueRefreshToken(request));
+        TokenNotFoundException exception = assertThrows(TokenNotFoundException.class,
+            () -> loginService.reissueRefreshToken(request));
         assertEquals(UserErrorCode.REFRESH_TOKEN_NOT_FOUND.getMessage(), exception.getMessage());
     }
 
@@ -247,7 +249,8 @@ class LoginServiceTest {
         Thread.sleep(10);
 
         // when  then
-        TokenExpiredException exception = assertThrows(TokenExpiredException.class, () -> loginService.reissueRefreshToken(request));
+        TokenExpiredException exception = assertThrows(TokenExpiredException.class,
+            () -> loginService.reissueRefreshToken(request));
         assertEquals(UserErrorCode.REFRESH_TOKEN_EXPIRED.getMessage(), exception.getMessage());
     }
 

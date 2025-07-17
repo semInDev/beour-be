@@ -165,7 +165,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         writeJsonResponse(response, errorBody);
     }
 
-    private void writeJsonResponse(HttpServletResponse response, Map<String, Object> body) throws IOException {
+    private void writeJsonResponse(HttpServletResponse response, Map<String, Object> body)
+        throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         response.getWriter().write(objectMapper.writeValueAsString(body));
     }

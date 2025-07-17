@@ -328,7 +328,8 @@ class LoginControllerTest {
         //when  then
         mockMvc.perform(post("/api/token/reissue"))
             .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.message").value(UserErrorCode.REFRESH_TOKEN_NOT_FOUND.getMessage()));
+            .andExpect(
+                jsonPath("$.message").value(UserErrorCode.REFRESH_TOKEN_NOT_FOUND.getMessage()));
     }
 
     @Test
@@ -351,7 +352,8 @@ class LoginControllerTest {
         //when  then
         mockMvc.perform(post("/api/token/reissue").cookie(cookie))
             .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.message").value(UserErrorCode.REFRESH_TOKEN_NOT_FOUND.getMessage()));
+            .andExpect(
+                jsonPath("$.message").value(UserErrorCode.REFRESH_TOKEN_NOT_FOUND.getMessage()));
     }
 
     @Test
@@ -375,6 +377,7 @@ class LoginControllerTest {
         //when  then
         mockMvc.perform(post("/api/token/reissue").cookie(cookie))
             .andExpect(status().isUnauthorized())
-            .andExpect(jsonPath("$.message").value(UserErrorCode.REFRESH_TOKEN_EXPIRED.getMessage()));
+            .andExpect(
+                jsonPath("$.message").value(UserErrorCode.REFRESH_TOKEN_EXPIRED.getMessage()));
     }
 }
