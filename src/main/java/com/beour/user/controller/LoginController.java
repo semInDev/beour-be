@@ -14,30 +14,27 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/users")
 public class LoginController {
 
     private final LoginService loginService;
 
-    @PostMapping("/find-login-id")
+    @PostMapping("/api/users/find/loginId")
     public ApiResponse<FindLoginIdResponseDto> findLoginId(
         @Valid @RequestBody FindLoginIdRequestDto dto) {
         return ApiResponse.ok(loginService.findLoginId(dto));
     }
 
-    @PostMapping("/reset-pw")
+    @PostMapping("/api/users/reset/password")
     public ApiResponse<ResetPasswordResponseDto> resetPassword(
         @Valid @RequestBody ResetPasswordRequestDto dto) {
-
         return ApiResponse.ok(loginService.resetPassword(dto));
     }
 
-    @PostMapping("/reissue")
+    @PostMapping("/api/token/reissue")
     public ApiResponse<ReissueAccesstokenResponseDto> reissue(HttpServletRequest request,
         HttpServletResponse response) {
         String[] tokens = loginService.reissueRefreshToken(request);
