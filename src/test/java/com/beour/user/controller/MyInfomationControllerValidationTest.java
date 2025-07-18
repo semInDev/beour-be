@@ -161,7 +161,7 @@ public class MyInfomationControllerValidationTest {
             """;
 
         //when //then
-        mockMvc.perform(patch("/api/mypage/password")
+        mockMvc.perform(patch("/api/users/me/password")
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
@@ -181,7 +181,7 @@ public class MyInfomationControllerValidationTest {
             """;
 
         //when //then
-        mockMvc.perform(patch("/api/mypage/password")
+        mockMvc.perform(patch("/api/users/me/password")
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
@@ -201,7 +201,7 @@ public class MyInfomationControllerValidationTest {
             """;
 
         //when //then
-        mockMvc.perform(patch("/api/mypage/password")
+        mockMvc.perform(patch("/api/users/me/password")
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
@@ -221,7 +221,7 @@ public class MyInfomationControllerValidationTest {
             """;
 
         //when //then
-        mockMvc.perform(patch("/api/mypage/password")
+        mockMvc.perform(patch("/api/users/me/password")
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
