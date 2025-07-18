@@ -25,7 +25,6 @@ public class SignupService {
     }
 
     private void checkValidUser(SignupRequestDto dto) {
-        checkDuplicateWithAdminId(dto.getLoginId());
         checkLoginIdDuplicate(dto.getLoginId());
         checkNicknameDuplicate(dto.getNickname());
     }
