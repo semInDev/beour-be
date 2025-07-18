@@ -27,12 +27,12 @@ public class MyInfomationController {
         return ApiResponse.ok(myInformationService.getUserInformationSimple());
     }
 
-    @GetMapping("/api/mypage/detail")
+    @GetMapping("/api/users/me/detail")
     public ApiResponse<UserInformationDetailResponseDto> readDetailInformation(){
         return ApiResponse.ok(myInformationService.getUserInformationDetail());
     }
 
-    @PatchMapping("/api/mypage/detail")
+    @PatchMapping("/api/users/me/detail")
     public ApiResponse<UpdateUserInfoResponseDto> updateUserInformation(@Valid @RequestBody UpdateUserInfoRequestDto requestDto){
         return ApiResponse.ok(myInformationService.updateUserInfo(requestDto));
     }
