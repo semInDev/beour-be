@@ -37,6 +37,8 @@ public class SignupService {
     }
 
     public boolean checkLoginIdDuplicate(String loginId) {
+        checkDuplicateWithAdminId(loginId);
+
         Boolean isUserExist = userRepository.existsByLoginIdAndDeletedAtIsNull(loginId);
 
         if (isUserExist) {
