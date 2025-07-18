@@ -27,11 +27,13 @@ public class CustomLogoutFilter extends GenericFilterBean {
     private final RefreshTokenRepository refreshTokenRepository;
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+        throws IOException, ServletException {
         doFilter((HttpServletRequest) request, (HttpServletResponse) response, chain);
     }
 
-    private void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
+    private void doFilter(HttpServletRequest request, HttpServletResponse response,
+        FilterChain filterChain) throws IOException, ServletException {
 
         //api 요청 올바른지 체크하는 로직
         if (!request.getRequestURI().equals("/api/logout") || !request.getMethod().equals("POST")) {
@@ -51,7 +53,6 @@ public class CustomLogoutFilter extends GenericFilterBean {
             }
 
             //DB에 저장되어 있는지 확인
-            Boolean isExist = refreshTokenRepository.existsByRefresh(refresh);
             if (!refreshTokenRepository.existsByRefresh(refresh)) {
                 throw new TokenNotFoundException(UserErrorCode.REFRESH_TOKEN_NOT_FOUND);
             }
@@ -63,11 +64,17 @@ public class CustomLogoutFilter extends GenericFilterBean {
 
             response.setStatus(HttpServletResponse.SC_OK);
 
-        } catch (TokenNotFoundException | TokenExpiredException e) {
+        } catch (TokenNotFoundException | ExpiredJwtException e) {
             int code = e instanceof TokenNotFoundException ? 404 : 401;
-            Enum codeName = e instanceof TokenNotFoundException ? UserErrorCode.REFRESH_TOKEN_NOT_FOUND : UserErrorCode.REFRESH_TOKEN_EXPIRED;
+            Enum codeName =
+                e instanceof TokenNotFoundException ? UserErrorCode.REFRESH_TOKEN_NOT_FOUND
+                    : UserErrorCode.REFRESH_TOKEN_EXPIRED;
+            String message =
+                e instanceof TokenNotFoundException
+                    ? UserErrorCode.REFRESH_TOKEN_NOT_FOUND.getMessage()
+                    : UserErrorCode.REFRESH_TOKEN_EXPIRED.getMessage();
 
-            writeJsonErrorResponse(response, code, codeName, e.getMessage());
+            writeJsonErrorResponse(response, code, codeName, message);
         }
 
     }
@@ -95,12 +102,14 @@ public class CustomLogoutFilter extends GenericFilterBean {
         throw new TokenNotFoundException(UserErrorCode.REFRESH_TOKEN_NOT_FOUND);
     }
 
-    private void writeJsonErrorResponse(HttpServletResponse response, int code, Enum codeName, String message) throws IOException {
+    private void writeJsonErrorResponse(HttpServletResponse response, int code, Enum codeName,
+        String message) throws IOException {
         response.setStatus(code);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
-        Map<String, Object> errorBody = Map.of("code", code, "codeName", codeName, "message", message);
+        Map<String, Object> errorBody = Map.of("code", code, "codeName", codeName, "message",
+            message);
 
         ObjectMapper objectMapper = new ObjectMapper();
         response.getWriter().write(objectMapper.writeValueAsString(errorBody));
