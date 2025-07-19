@@ -14,7 +14,6 @@ import com.beour.space.domain.repository.AvailableTimeRepository;
 import com.beour.space.domain.repository.SpaceRepository;
 import com.beour.space.host.dto.AvailableTimeDetailResponseDto;
 import com.beour.space.host.dto.AvailableTimeUpdateRequestDto;
-import com.beour.space.host.dto.HostSpaceListResponseDto;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
