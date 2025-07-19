@@ -35,27 +35,6 @@ public class AvailableTimeService {
     private final ReservationRepository reservationRepository;
 
     @Transactional(readOnly = true)
-    public List<HostSpaceListResponseDto> getHostSpaces() {
-        User host = findUserFromToken();
-
-        List<Space> spaceList = spaceRepository.findByHostAndDeletedAtIsNull(host);
-
-        if (spaceList.isEmpty()) {
-            throw new SpaceNotFoundException(SpaceErrorCode.NO_HOST_SPACE);
-        }
-
-        return spaceList.stream()
-                .map(space -> HostSpaceListResponseDto.builder()
-                        .spaceId(space.getId())
-                        .name(space.getName())
-                        .address(space.getAddress())
-                        .maxCapacity(space.getMaxCapacity())
-                        .avgRating(space.getAvgRating())
-                        .build())
-                .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
     public AvailableTimeDetailResponseDto getAvailableTimeDetail(Long spaceId) {
         User host = findUserFromToken();
         Space space = findSpaceByIdAndValidateOwner(spaceId, host);
