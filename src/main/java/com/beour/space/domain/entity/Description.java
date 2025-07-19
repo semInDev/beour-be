@@ -27,18 +27,16 @@ public class Description {
     private String notice;
     private String locationDescription;
     private String refundPolicy;
-    private String websiteUrl;
 
     // 전체 수정(PUT)
     public void update(String description, String priceGuide, String facilityNotice,
-                       String notice, String locationDescription, String refundPolicy, String websiteUrl) {
+                       String notice, String locationDescription, String refundPolicy) {
         this.description = description;
         this.priceGuide = priceGuide;
         this.facilityNotice = facilityNotice;
         this.notice = notice;
         this.locationDescription = locationDescription;
         this.refundPolicy = refundPolicy;
-        this.websiteUrl = websiteUrl;
     }
 
     // 부분 수정(PATCH)
@@ -65,9 +63,4 @@ public class Description {
     public void updateRefundPolicy(String refundPolicy) {
         this.refundPolicy = refundPolicy;
     }
-
-    public void updateWebsiteUrl(String websiteUrl) {
-        this.websiteUrl = websiteUrl;
-    }
-
 }
