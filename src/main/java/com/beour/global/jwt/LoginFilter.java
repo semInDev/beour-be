@@ -89,7 +89,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         response.setHeader("Authorization", access);
-        response.addCookie(ManageCookie.createCookie("refresh", refresh));
+//      response.addCookie(ManageCookie.createCookie("refresh", refresh));
+
+        boolean isSecure = request.isSecure();
+        ManageCookie.addRefreshCookie(response, "refresh", refresh, isSecure);
 
         Long userId = customUserDetails.getUserId();
         String jsonResponse = String.format("""
@@ -104,7 +107,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             """, userId, loginId, role, access);
 
         response.getWriter().write(jsonResponse);
-        addRefreshEntity(loginId, refresh, TokenExpireTime.REFRESH_TOKEN_EXPIRATION_MILLIS.getValue());
+        addRefreshEntity(loginId, refresh,
+            TokenExpireTime.REFRESH_TOKEN_EXPIRATION_MILLIS.getValue());
     }
 
     private void addRefreshEntity(String loginId, String refresh, Long expiredMs) {

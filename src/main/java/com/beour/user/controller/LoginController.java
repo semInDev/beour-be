@@ -44,7 +44,9 @@ public class LoginController {
         String newAccessToken = tokens[0];
         String newRefreshToken = tokens[1];
         response.setHeader("Authorization", newAccessToken);
-        response.addCookie(ManageCookie.createCookie("refresh", newRefreshToken));
+//      response.addCookie(ManageCookie.createCookie("refresh", newRefreshToken));
+        boolean isSecure = request.isSecure();
+        ManageCookie.addRefreshCookie(response, "refresh", newRefreshToken, isSecure);
 
         ReissueAccesstokenResponseDto responseDto = new ReissueAccesstokenResponseDto(
             newAccessToken);
