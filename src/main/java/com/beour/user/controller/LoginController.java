@@ -22,7 +22,7 @@ public class LoginController {
 
     private final LoginService loginService;
 
-    @PostMapping("/api/users/find/loginId")
+    @PostMapping("/api/users/find/login-id")
     public ApiResponse<FindLoginIdResponseDto> findLoginId(
         @Valid @RequestBody FindLoginIdRequestDto dto) {
         return ApiResponse.ok(loginService.findLoginId(dto));
