@@ -14,7 +14,6 @@ import com.beour.space.domain.repository.AvailableTimeRepository;
 import com.beour.space.domain.repository.SpaceRepository;
 import com.beour.space.host.dto.AvailableTimeDetailResponseDto;
 import com.beour.space.host.dto.AvailableTimeUpdateRequestDto;
-import com.beour.space.host.dto.HostSpaceListResponseDto;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -33,27 +32,6 @@ public class AvailableTimeService {
     private final UserRepository userRepository;
     private final AvailableTimeRepository availableTimeRepository;
     private final ReservationRepository reservationRepository;
-
-    @Transactional(readOnly = true)
-    public List<HostSpaceListResponseDto> getHostSpaces() {
-        User host = findUserFromToken();
-
-        List<Space> spaceList = spaceRepository.findByHostAndDeletedAtIsNull(host);
-
-        if (spaceList.isEmpty()) {
-            throw new SpaceNotFoundException(SpaceErrorCode.NO_HOST_SPACE);
-        }
-
-        return spaceList.stream()
-                .map(space -> HostSpaceListResponseDto.builder()
-                        .spaceId(space.getId())
-                        .name(space.getName())
-                        .address(space.getAddress())
-                        .maxCapacity(space.getMaxCapacity())
-                        .avgRating(space.getAvgRating())
-                        .build())
-                .collect(Collectors.toList());
-    }
 
     @Transactional(readOnly = true)
     public AvailableTimeDetailResponseDto getAvailableTimeDetail(Long spaceId) {
