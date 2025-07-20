@@ -30,7 +30,6 @@ public class SpaceDetailResponseDto {
     private String notice;
     private String locationDescription;
     private String refundPolicy;
-    private String websiteUrl;
 
     private List<String> tags;
     private List<AvailableTimeDto> availableTimes;
