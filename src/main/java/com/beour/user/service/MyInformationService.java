@@ -34,7 +34,7 @@ public class MyInformationService {
     public UserInformationSimpleResponseDto getUserInformationSimple(){
         User user = findUserFromToken();
 
-        return new UserInformationSimpleResponseDto(user.getName(), user.getEmail());
+        return new UserInformationSimpleResponseDto(user.getName(), user.getLoginId());
     }
 
     public UserInformationDetailResponseDto getUserInformationDetail(){
