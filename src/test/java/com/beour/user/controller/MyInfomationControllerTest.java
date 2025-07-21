@@ -75,7 +75,7 @@ class MyInfomationControllerTest {
             )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.userName").value(savedUser.getName()))
-            .andExpect(jsonPath("$.data.userEmail").value(savedUser.getEmail()));
+            .andExpect(jsonPath("$.data.userLoginId").value(savedUser.getLoginId()));
     }
 
     @Test
