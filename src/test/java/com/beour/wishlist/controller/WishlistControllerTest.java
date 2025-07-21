@@ -154,20 +154,19 @@ class WishlistControllerTest {
         likeRepository.save(like);
 
         //when  then
-        mockMvc.perform(get("/api/wishlist")
-                .param("spaceId", space1.getId().toString())
+        mockMvc.perform(get("/api/spaces/" + space1.getId() + "/likes")
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isConflict())
-            .andExpect(jsonPath("$.message").value(WishListErrorCode.ALREADY_IN_WISHLIST.getMessage()));
+            .andExpect(
+                jsonPath("$.message").value(WishListErrorCode.ALREADY_IN_WISHLIST.getMessage()));
     }
 
     @Test
     @DisplayName("찜 등록 - 성공")
     void success_add_wishlist() throws Exception {
         //when  then
-        mockMvc.perform(get("/api/wishlist")
-                .param("spaceId", space1.getId().toString())
+        mockMvc.perform(get("/api/spaces/" + space1.getId() + "/likes")
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isOk())
@@ -176,10 +175,9 @@ class WishlistControllerTest {
 
     @Test
     @DisplayName("찜 삭제 - 목록에 없는 공간일 경우")
-    void delete_wish_not_exist_space() throws Exception{
+    void delete_wish_not_exist_space() throws Exception {
         //when  then
-        mockMvc.perform(delete("/api/wishlist")
-                .param("spaceId", space1.getId().toString())
+        mockMvc.perform(delete("/api/spaces/" + space1.getId() + "/likes")
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isNotFound())
@@ -188,7 +186,7 @@ class WishlistControllerTest {
 
     @Test
     @DisplayName("찜 삭제 - 성공")
-    void success_delete_wish() throws Exception{
+    void success_delete_wish() throws Exception {
         //given
         Like like = Like.builder()
             .user(guest)
@@ -197,8 +195,7 @@ class WishlistControllerTest {
         likeRepository.save(like);
 
         //when  then
-        mockMvc.perform(delete("/api/wishlist")
-                .param("spaceId", space1.getId().toString())
+        mockMvc.perform(delete("/api/spaces/" + space1.getId() + "/likes")
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isOk())
@@ -207,9 +204,9 @@ class WishlistControllerTest {
 
     @Test
     @DisplayName("찜 목록 조회 - 아무것도 없을 경우")
-    void get_wishlist_empty() throws Exception{
+    void get_wishlist_empty() throws Exception {
         //when  then
-        mockMvc.perform(get("/api/wishlist/all")
+        mockMvc.perform(get("/api/likes")
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isNotFound())
@@ -218,7 +215,7 @@ class WishlistControllerTest {
 
     @Test
     @DisplayName("찜 목록 조회 - 성공")
-    void success_get_wishlist() throws Exception{
+    void success_get_wishlist() throws Exception {
         //given
         Like like1 = Like.builder()
             .user(guest)
@@ -233,7 +230,7 @@ class WishlistControllerTest {
         likeRepository.save(like2);
 
         //when  then
-        mockMvc.perform(get("/api/wishlist/all")
+        mockMvc.perform(get("/api/likes")
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isOk())
