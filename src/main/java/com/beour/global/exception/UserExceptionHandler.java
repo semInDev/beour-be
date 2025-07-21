@@ -3,6 +3,7 @@ package com.beour.global.exception;
 import com.beour.global.exception.exceptionType.DuplicateUserInfoException;
 import com.beour.global.exception.exceptionType.InvalidCredentialsException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
+import com.beour.global.exception.exceptionType.UserWithdrawException;
 import com.beour.global.response.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -32,5 +33,11 @@ public class UserExceptionHandler {
     public ResponseEntity<ErrorResponse> handleDuplicateUserInfo(DuplicateUserInfoException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
             .body(new ErrorResponse(ex.getErrorCode(), "DUPLICATE_USER_INFO", ex.getMessage()));
+    }
+
+    @ExceptionHandler(UserWithdrawException.class)
+    public ResponseEntity<ErrorResponse> handleUserWithdraw(UserWithdrawException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(new ErrorResponse(ex.getErrorCode(), "USER_WITHDRAW_IMPOSSIBLE", ex.getMessage()));
     }
 }
