@@ -28,15 +28,13 @@ public class MyInformationService {
     @Transactional
     public void updatePassword(ChangePasswordRequestDto changePasswordRequestDto){
         User user = findUserFromToken();
-
-        String newPassword = bCryptPasswordEncoder.encode(changePasswordRequestDto.getNewPassword());
-        user.updatePassword(newPassword);
+        user.updatePassword(bCryptPasswordEncoder.encode(changePasswordRequestDto.getNewPassword()));
     }
 
     public UserInformationSimpleResponseDto getUserInformationSimple(){
         User user = findUserFromToken();
 
-        return new UserInformationSimpleResponseDto(user.getName(), user.getEmail());
+        return new UserInformationSimpleResponseDto(user.getName(), user.getLoginId());
     }
 
     public UserInformationDetailResponseDto getUserInformationDetail(){
@@ -60,7 +58,6 @@ public class MyInformationService {
         }
 
         if(!requestDto.getNewPhone().isEmpty()){
-
             user.updatePhone(requestDto.getNewPhone());
         }
 

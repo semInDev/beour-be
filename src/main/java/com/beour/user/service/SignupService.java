@@ -25,7 +25,6 @@ public class SignupService {
     }
 
     private void checkValidUser(SignupRequestDto dto) {
-        checkDuplicateWithAdminId(dto.getLoginId());
         checkLoginIdDuplicate(dto.getLoginId());
         checkNicknameDuplicate(dto.getNickname());
     }
@@ -37,6 +36,8 @@ public class SignupService {
     }
 
     public boolean checkLoginIdDuplicate(String loginId) {
+        checkDuplicateWithAdminId(loginId);
+
         Boolean isUserExist = userRepository.existsByLoginIdAndDeletedAtIsNull(loginId);
 
         if (isUserExist) {
@@ -50,7 +51,7 @@ public class SignupService {
         Boolean isUserExist = userRepository.existsByNicknameAndDeletedAtIsNull(nickname);
 
         if (isUserExist) {
-            throw new DuplicateUserInfoException(UserErrorCode.NICKNAME_ID_DUPLICATE);
+            throw new DuplicateUserInfoException(UserErrorCode.NICKNAME_DUPLICATE);
         }
 
         return false;

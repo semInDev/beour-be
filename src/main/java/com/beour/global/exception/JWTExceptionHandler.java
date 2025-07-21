@@ -15,13 +15,13 @@ public class JWTExceptionHandler {
     @ExceptionHandler(LoginUserNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleLoginUserNotFound(LoginUserNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-            .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), "LOGIN_USER_NOT_FOUND", ex.getMessage()));
+            .body(new ErrorResponse(ex.getErrorCode(), "USER_NOT_FOUND", ex.getMessage()));
     }
 
     @ExceptionHandler(LoginUserMismatchRole.class)
     public ResponseEntity<ErrorResponse> handleLoginUserRoleMismatch(LoginUserMismatchRole ex) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-            .body(new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), "ROLE_MISMATCH", ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(new ErrorResponse(ex.getErrorCode(), "ROLE_MISMATCH", ex.getMessage()));
     }
 
     @ExceptionHandler(TokenNotFoundException.class)

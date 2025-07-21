@@ -62,7 +62,6 @@ public class SpaceService {
                 .notice(dto.getNotice())
                 .locationDescription(dto.getLocationDescription())
                 .refundPolicy(dto.getRefundPolicy())
-                .websiteUrl(dto.getWebsiteUrl())
                 .build();
         descriptionRepository.save(description);
 
@@ -126,7 +125,6 @@ public class SpaceService {
                 .notice(desc.getNotice())
                 .locationDescription(desc.getLocationDescription())
                 .refundPolicy(desc.getRefundPolicy())
-                .websiteUrl(desc.getWebsiteUrl())
                 .tags(space.getTags().stream().map(Tag::getContents).toList())
                 .imageUrls(space.getSpaceImages().stream().map(SpaceImage::getImageUrl).toList())
                 .build();
@@ -170,7 +168,7 @@ public class SpaceService {
         Description desc = space.getDescription();
         desc.update(
                 dto.getDescription(), dto.getPriceGuide(), dto.getFacilityNotice(), dto.getNotice(),
-                dto.getLocationDescription(), dto.getRefundPolicy(), dto.getWebsiteUrl()
+                dto.getLocationDescription(), dto.getRefundPolicy()
         );
 
         // 3. Tags 재저장
@@ -225,7 +223,6 @@ public class SpaceService {
             if (dto.getNotice() != null) desc.updateNotice(dto.getNotice());
             if (dto.getLocationDescription() != null) desc.updateLocationDescription(dto.getLocationDescription());
             if (dto.getRefundPolicy() != null) desc.updateRefundPolicy(dto.getRefundPolicy());
-            if (dto.getWebsiteUrl() != null) desc.updateWebsiteUrl(dto.getWebsiteUrl());
         }
     }
 

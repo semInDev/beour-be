@@ -1,5 +1,6 @@
 package com.beour.global.jwt;
 
+import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.exception.exceptionType.LoginUserMismatchRole;
 import com.beour.global.exception.exceptionType.LoginUserNotFoundException;
 import com.beour.token.entity.RefreshToken;
@@ -17,6 +18,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -38,31 +40,34 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     public Authentication attemptAuthentication(HttpServletRequest request,
         HttpServletResponse response) {
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        LoginDto loginDto = null;
-
         try {
-            loginDto = objectMapper.readValue(request.getInputStream(), LoginDto.class);
+            LoginDto loginDto = new ObjectMapper().readValue(request.getInputStream(),
+                LoginDto.class);
+            validateUser(loginDto);
+
+            return authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                    loginDto.getLoginId(), loginDto.getPassword(), null)
+            );
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
 
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-            loginDto.getLoginId(), loginDto.getPassword(), null);
-
+    private void validateUser(LoginDto loginDto) {
         User user = userRepository.findByLoginId(loginDto.getLoginId()).orElse(null);
         if (user == null || user.isDeleted()) {
-            throw new LoginUserNotFoundException("존재하지 않는 사용자입니다.");
+            throw new LoginUserNotFoundException(UserErrorCode.USER_NOT_FOUND);
         }
 
         if (!user.getRole().equals(loginDto.getRole())) {
-            throw new LoginUserMismatchRole("역할이 일치하지 않습니다.");
+            throw new LoginUserMismatchRole(UserErrorCode.USER_ROLE_MISMATCH);
         }
-
-        return authenticationManager.authenticate(authToken);
     }
 
-    //로그인 성공 시 토큰 발급 함수
+
+    //로그인 성공시 수행되는 함수
     @Override
     protected void successfulAuthentication(HttpServletRequest request,
         HttpServletResponse response,
@@ -73,10 +78,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         //토큰에 넣을 정보(역할, 로그인 아이디) 뽑아옴
         String loginId = customUserDetails.getUsername();
-        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-        Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
-        GrantedAuthority auth = iterator.next();
-        String role = auth.getAuthority();
+        String role = extractRole(authentication);
 
         //토큰 생성
         String access = "Bearer " + jwtUtil.createJwt("access", loginId, "ROLE_" + role,
@@ -94,21 +96,24 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         boolean isSecure = request.isSecure();
         ManageCookie.addRefreshCookie(response, "refresh", refresh, isSecure);
 
-        Long userId = customUserDetails.getUserId();
-        String jsonResponse = String.format("""
-            {
-                "code": 200,
-                "message": "로그인 성공",
-                "userId": %d,
-                "loginId": "%s",
-                "role": "%s",
-                "accessToken": "%s"
-            }
-            """, userId, loginId, role, access);
+        Map<String, Object> body = Map.of(
+            "code", 200,
+            "message", "로그인 성공",
+            "role", role,
+            "accessToken", access
+        );
 
-        response.getWriter().write(jsonResponse);
+        writeJsonResponse(response, body);
+
         addRefreshEntity(loginId, refresh,
             TokenExpireTime.REFRESH_TOKEN_EXPIRATION_MILLIS.getValue());
+    }
+
+    private static String extractRole(Authentication authentication) {
+        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+        Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
+        GrantedAuthority auth = iterator.next();
+        return auth.getAuthority();
     }
 
     private void addRefreshEntity(String loginId, String refresh, Long expiredMs) {
@@ -128,28 +133,44 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     protected void unsuccessfulAuthentication(HttpServletRequest request,
         HttpServletResponse response, AuthenticationException failed)
         throws IOException {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
 
+        int code;
+        String codeName;
         String message;
         if (failed instanceof LoginUserNotFoundException) {
-            message = "존재하지 않는 사용자입니다.";
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            code = ((LoginUserNotFoundException) failed).getErrorCode();
+            codeName = "USER_NOT_FOUND";
+            message = failed.getMessage();
         } else if (failed instanceof LoginUserMismatchRole) {
-            message = "역할이 일치하지 않습니다.";
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            code = ((LoginUserMismatchRole) failed).getErrorCode();
+            codeName = "ROLE_MISMATCH";
+            message = failed.getMessage();
         } else if (failed instanceof BadCredentialsException) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            code = 400;
+            codeName = "INVALID_INFORMATION";
             message = "아이디 또는 비밀번호가 올바르지 않습니다.";
         } else {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            code = 401;
+            codeName = "LOGIN_FAILED";
             message = "로그인에 실패했습니다.";
         }
 
-        String jsonResponse = String.format("""
-            {
-                "code": 401,
-                "message": "%s"
-            }
-            """, message);
+        Map<String, Object> errorBody = Map.of(
+            "code", code,
+            "codeName", codeName,
+            "message", message
+        );
 
-        response.getWriter().write(jsonResponse);
+        writeJsonResponse(response, errorBody);
+    }
+
+    private void writeJsonResponse(HttpServletResponse response, Map<String, Object> body)
+        throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        response.getWriter().write(objectMapper.writeValueAsString(body));
     }
 }

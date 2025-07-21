@@ -38,7 +38,7 @@ class SignupControllerValidationTest {
         """;
 
         //when then
-        mockMvc.perform(post("/api/users/signup")
+        mockMvc.perform(post("/api/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -64,7 +64,7 @@ class SignupControllerValidationTest {
         """;
 
         //when then
-        mockMvc.perform(post("/api/users/signup")
+        mockMvc.perform(post("/api/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -89,7 +89,7 @@ class SignupControllerValidationTest {
         """;
 
         //when then
-        mockMvc.perform(post("/api/users/signup")
+        mockMvc.perform(post("/api/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -114,7 +114,7 @@ class SignupControllerValidationTest {
         """;
 
         //when then
-        mockMvc.perform(post("/api/users/signup")
+        mockMvc.perform(post("/api/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -139,7 +139,7 @@ class SignupControllerValidationTest {
         """;
 
         //when then
-        mockMvc.perform(post("/api/users/signup")
+        mockMvc.perform(post("/api/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -164,7 +164,7 @@ class SignupControllerValidationTest {
         """;
 
         //when then
-        mockMvc.perform(post("/api/users/signup")
+        mockMvc.perform(post("/api/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -189,7 +189,7 @@ class SignupControllerValidationTest {
         """;
 
         //when then
-        mockMvc.perform(post("/api/users/signup")
+        mockMvc.perform(post("/api/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -214,7 +214,7 @@ class SignupControllerValidationTest {
         """;
 
         //when then
-        mockMvc.perform(post("/api/users/signup")
+        mockMvc.perform(post("/api/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -239,7 +239,7 @@ class SignupControllerValidationTest {
         """;
 
         //when then
-        mockMvc.perform(post("/api/users/signup")
+        mockMvc.perform(post("/api/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -264,7 +264,7 @@ class SignupControllerValidationTest {
         """;
 
         //when then
-        mockMvc.perform(post("/api/users/signup")
+        mockMvc.perform(post("/api/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -289,7 +289,7 @@ class SignupControllerValidationTest {
         """;
 
         //when then
-        mockMvc.perform(post("/api/users/signup")
+        mockMvc.perform(post("/api/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -314,7 +314,7 @@ class SignupControllerValidationTest {
         """;
 
         //when then
-        mockMvc.perform(post("/api/users/signup")
+        mockMvc.perform(post("/api/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -339,7 +339,7 @@ class SignupControllerValidationTest {
         """;
 
         //when then
-        mockMvc.perform(post("/api/users/signup")
+        mockMvc.perform(post("/api/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -364,7 +364,7 @@ class SignupControllerValidationTest {
         """;
 
         //when then
-        mockMvc.perform(post("/api/users/signup")
+        mockMvc.perform(post("/api/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -389,7 +389,7 @@ class SignupControllerValidationTest {
         """;
 
         //when then
-        mockMvc.perform(post("/api/users/signup")
+        mockMvc.perform(post("/api/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -414,7 +414,7 @@ class SignupControllerValidationTest {
         """;
 
         //when then
-        mockMvc.perform(post("/api/users/signup")
+        mockMvc.perform(post("/api/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -439,7 +439,7 @@ class SignupControllerValidationTest {
         """;
 
         //when then
-        mockMvc.perform(post("/api/users/signup")
+        mockMvc.perform(post("/api/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -464,7 +464,7 @@ class SignupControllerValidationTest {
         """;
 
         //when then
-        mockMvc.perform(post("/api/users/signup")
+        mockMvc.perform(post("/api/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )

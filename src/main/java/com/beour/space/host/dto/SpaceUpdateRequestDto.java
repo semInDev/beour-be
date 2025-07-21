@@ -50,8 +50,6 @@ public class SpaceUpdateRequestDto {
     @NotBlank(message = "환불 정책은 필수입니다.")
     private String refundPolicy;
 
-    private String websiteUrl;
-
     // tags, imageUrls
     private List<String> tags;
     private List<String> imageUrls;

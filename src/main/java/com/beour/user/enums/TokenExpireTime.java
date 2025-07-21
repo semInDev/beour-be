@@ -7,9 +7,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum TokenExpireTime {
 
-    //10분
+    //10분  1000L * 60 * 10
     ACCESS_TOKEN_EXPIRATION_MILLIS(1000L * 60 * 10, "access token 만료 시간"),
-    //1일
+    //1일  1000L * 60 * 60 * 24
     REFRESH_TOKEN_EXPIRATION_MILLIS(1000L * 60 * 60 * 24, "refresh token 만료 시간");
 
     private final long value;

@@ -51,7 +51,7 @@ public class SecurityConfig {
 
         LoginFilter loginFilter = new LoginFilter(authenticationManager, userRepository, jwtUtil,
             refreshTokenRepository);
-        loginFilter.setFilterProcessesUrl("/api/users/login");
+        loginFilter.setFilterProcessesUrl("/api/login");
 
         http.cors((cors) -> cors
             .configurationSource(new CorsConfigurationSource() {
@@ -64,7 +64,8 @@ public class SecurityConfig {
                         List.of("http://localhost:3000",
                             "http://beour-bucket.s3-website.ap-northeast-2.amazonaws.com")
                     );
-                    configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+                    configuration.setAllowedMethods(
+                        List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
                     configuration.setAllowCredentials(true);
                     configuration.setAllowedHeaders(Collections.singletonList("*"));
                     configuration.setMaxAge(3600L);
@@ -79,21 +80,23 @@ public class SecurityConfig {
         http
             .authorizeHttpRequests((auth) -> auth
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                    .requestMatchers("/api/users/**").permitAll()
+                    .requestMatchers("/api/signup/**", "/api/login",
+                        "/api/users/find/login-id", "/api/users/reset/password", "/api/token/reissue")
+                    .permitAll()
                     .requestMatchers("/api/spaces/reserve/available-times", "/api/spaces/search/**",
                         "/api/spaces/new", "/api/reviews/new", "/api/banners").permitAll()
-                    .requestMatchers("/admin").hasRole("ADMIN")
+//                    .requestMatchers("/admin").hasRole("ADMIN")
                     .requestMatchers("/api/spaces/reserve", "/api/reservation/**", "/api/guest/**")
                     .hasRole("GUEST")
                     .requestMatchers("/api/spaces", "/api/spaces/my-spaces", "/api/spaces/*",
                         "/api/spaces/*/*",
                         "/api/host/available-times/spaces", "/api/host/available-times/space/*")
                     .hasRole("HOST")
-
                     .requestMatchers("/api/mypage/**").hasAnyRole("HOST", "GUEST")
-                    .requestMatchers("/logout").hasAnyRole("HOST", "GUEST", "ADMIN")
+                    .requestMatchers("/api/logout", "/api/users", "/api/users/me/**")
+                    .hasAnyRole("HOST", "GUEST", "ADMIN")
                     .anyRequest().authenticated()
-//                .anyRequest().permitAll();
+//                    .anyRequest().permitAll()
             );
 
         http

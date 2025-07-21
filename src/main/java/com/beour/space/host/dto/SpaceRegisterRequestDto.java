@@ -49,8 +49,6 @@ public class SpaceRegisterRequestDto {
     @NotBlank(message = "환불 정책은 필수입니다.")
     private String refundPolicy;
 
-    private String websiteUrl;
-
     // 3. Tags
     private List<String> tags;
 

@@ -37,6 +37,8 @@ out/
 ### VS Code ###
 .vscode/
 
+#application-test.yml
 *.yml
 
 /uploads
+/uploads-test

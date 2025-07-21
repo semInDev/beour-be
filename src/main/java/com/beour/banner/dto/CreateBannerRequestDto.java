@@ -10,9 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CreateBannerRequestDto {
 
-    @NotBlank(message = "이미지를 등록해주세요.")
-    private String imgUrl;
-
     @NotBlank(message = "이동링크를 등록해주세요.")
     private String linkUrl;
 
