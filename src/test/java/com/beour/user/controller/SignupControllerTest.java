@@ -116,7 +116,7 @@ class SignupControllerTest {
             )
             .andExpect(status().isConflict())
             .andExpect(
-                jsonPath("$.message").value(UserErrorCode.NICKNAME_ID_DUPLICATE.getMessage()));
+                jsonPath("$.message").value(UserErrorCode.NICKNAME_DUPLICATE.getMessage()));
     }
 
     @Test
@@ -147,7 +147,7 @@ class SignupControllerTest {
                 .param("nickname", "duptest"))
             .andExpect(status().isConflict())
             .andExpect(
-                jsonPath("$.message").value(UserErrorCode.NICKNAME_ID_DUPLICATE.getMessage()));
+                jsonPath("$.message").value(UserErrorCode.NICKNAME_DUPLICATE.getMessage()));
     }
 
     @Test

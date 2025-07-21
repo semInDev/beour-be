@@ -2,6 +2,7 @@ package com.beour.user.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.beour.global.exception.exceptionType.DuplicateUserInfoException;
 import com.beour.global.exception.exceptionType.InputInvalidFormatException;
 import com.beour.user.dto.ChangePasswordRequestDto;
 import com.beour.user.dto.UpdateUserInfoRequestDto;
@@ -34,6 +35,7 @@ class MyInformationServiceTest {
     private MyInformationService myInformationService;
 
     private User savedUser;
+    private User duplicateUser;
 
     @BeforeEach
     void setUp(){
@@ -46,8 +48,18 @@ class MyInformationServiceTest {
             .phone("01012345678")
             .role("GUEST")
             .build();
-
         userRepository.save(savedUser);
+
+        duplicateUser = User.builder()
+            .loginId("dupUser")
+            .password(passwordEncoder.encode("oldpassword!"))
+            .name("중복")
+            .nickname("dupUser")
+            .email("dupUser@gmail.com")
+            .phone("01012345678")
+            .role("GUEST")
+            .build();
+        userRepository.save(duplicateUser);
 
         // SecurityContext 설정
         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
@@ -98,7 +110,18 @@ class MyInformationServiceTest {
         assertThrows(InputInvalidFormatException.class, () -> myInformationService.updateUserInfo(requestDto));
     }
 
-    //todo: 중복된 닉네임으로 가입할 경우
+    @Test
+    @DisplayName("개인정보 수정 - 중복된 닉네임 사용")
+    void update_user_info_with_duplicate_nickname(){
+        //given
+        UpdateUserInfoRequestDto requestDto = UpdateUserInfoRequestDto.builder()
+            .newNickname(duplicateUser.getNickname())
+            .newPhone("")
+            .build();
+
+        //when //then
+        assertThrows(DuplicateUserInfoException.class, () -> myInformationService.updateUserInfo(requestDto));
+    }
 
     @Test
     @DisplayName("개인정보 수정 - 닉네임만 변경")

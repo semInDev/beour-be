@@ -51,7 +51,7 @@ public class SignupService {
         Boolean isUserExist = userRepository.existsByNicknameAndDeletedAtIsNull(nickname);
 
         if (isUserExist) {
-            throw new DuplicateUserInfoException(UserErrorCode.NICKNAME_ID_DUPLICATE);
+            throw new DuplicateUserInfoException(UserErrorCode.NICKNAME_DUPLICATE);
         }
 
         return false;
