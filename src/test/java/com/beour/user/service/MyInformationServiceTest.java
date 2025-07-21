@@ -69,7 +69,7 @@ class MyInformationServiceTest {
 
         //then
         assertEquals("테스트", result.getUserName());
-        assertEquals("test@gmail.com", result.getUserEmail());
+        assertEquals("testUser", result.getUserLoginId());
     }
 
     @Test
