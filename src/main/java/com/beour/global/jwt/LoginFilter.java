@@ -91,7 +91,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         response.setHeader("Authorization", access);
-        response.addCookie(ManageCookie.createCookie("refresh", refresh));
+//      response.addCookie(ManageCookie.createCookie("refresh", refresh));
+
+        boolean isSecure = request.isSecure();
+        ManageCookie.addRefreshCookie(response, "refresh", refresh, isSecure);
 
         Map<String, Object> body = Map.of(
             "code", 200,
