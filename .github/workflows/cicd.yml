@@ -78,5 +78,5 @@ jobs:
             # 최신 이미지 pull 및 실행
             docker pull ${{ secrets.DOCKER_USERNAME }}/beour-repo:latest
             docker run -d --name beour-repo -p 8080:8080 \
-              -v /home/ubuntu/uploads:/home/ubuntu/uploads \  # volume mount도 함께 하면 더 좋음
+              -v /home/ubuntu/uploads:/home/ubuntu/uploads \
               ${{ secrets.DOCKER_USERNAME }}/beour-repo:latest
