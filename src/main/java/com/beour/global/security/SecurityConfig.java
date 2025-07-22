@@ -61,7 +61,7 @@ public class SecurityConfig {
                     .requestMatchers("/api/spaces/reserve/available-times", "/api/spaces/search/**",
                         "/api/spaces/new", "/api/reviews/new", "/api/banners").permitAll()
 //                    .requestMatchers("/admin").hasRole("ADMIN")
-                    .requestMatchers("/api/spaces/reserve", "/api/reservation/**", "/api/guest/**",
+                    .requestMatchers("/api/spaces/*/reservations", "/api/spaces/reserve", "/api/reservation/**", "/api/guest/**",
                         "/api/spaces/*/likes", "/api/likes")
                     .hasRole("GUEST")
                     .requestMatchers("/api/spaces", "/api/spaces/my-spaces", "/api/spaces/*",

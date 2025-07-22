@@ -151,25 +151,23 @@ class ReservationGuestServiceTest {
     @DisplayName("공간 예약 - 시간당 가격과 총 가격이 불일치할 경우")
     void create_reservation_not_same_price() {
         //given
-        ReservationCreateRequest request = new ReservationCreateRequest(host.getId(), space.getId(),
-            LocalDate.now().plusDays(1), LocalTime.of(13, 0, 0), LocalTime.of(15, 0, 0), 10000, 2,
+        ReservationCreateRequest request = new ReservationCreateRequest(LocalDate.now().plusDays(1), LocalTime.of(13, 0, 0), LocalTime.of(15, 0, 0), 10000, 2,
             UsagePurpose.BARISTA_TRAINING, "테슽뚜");
 
         //when  then
-        assertThrows(MissMatch.class, () -> reservationGuestService.createReservation(request));
+        assertThrows(MissMatch.class, () -> reservationGuestService.createReservation(space.getId(), request));
     }
 
     @Test
     @DisplayName("공간 예약 - 과거의 날짜")
     void create_reservation_past_date() {
         //given
-        ReservationCreateRequest request = new ReservationCreateRequest(host.getId(), space.getId(),
-            LocalDate.now().minusDays(1), LocalTime.of(13, 0, 0), LocalTime.of(15, 0, 0), 30000, 2,
+        ReservationCreateRequest request = new ReservationCreateRequest(LocalDate.now().minusDays(1), LocalTime.of(13, 0, 0), LocalTime.of(15, 0, 0), 30000, 2,
             UsagePurpose.BARISTA_TRAINING, "테슽뚜");
 
         //when  then
         assertThrows(AvailableTimeNotFound.class,
-            () -> reservationGuestService.createReservation(request));
+            () -> reservationGuestService.createReservation(space.getId(), request));
     }
 
     @Test
@@ -177,26 +175,24 @@ class ReservationGuestServiceTest {
     void create_reservation_past_time() {
         //given
         int currentHour = LocalTime.now().getHour();
-        ReservationCreateRequest request = new ReservationCreateRequest(host.getId(), space.getId(),
-            LocalDate.now(), LocalTime.of(currentHour - 1, 0, 0),
+        ReservationCreateRequest request = new ReservationCreateRequest(LocalDate.now(), LocalTime.of(currentHour - 1, 0, 0),
             LocalTime.of(currentHour + 1, 0, 0), 30000, 2,
             UsagePurpose.BARISTA_TRAINING, "테슽뚜");
 
         //when  then
         assertThrows(AvailableTimeNotFound.class,
-            () -> reservationGuestService.createReservation(request));
+            () -> reservationGuestService.createReservation(space.getId(), request));
     }
 
     @Test
     @DisplayName("공간 예약 - 인원 초과")
     void create_reservation_capacity_invalid() {
         //given
-        ReservationCreateRequest request = new ReservationCreateRequest(host.getId(), space.getId(),
-            LocalDate.now().plusDays(1), LocalTime.of(17, 0, 0), LocalTime.of(18, 0, 0), 15000, 10,
+        ReservationCreateRequest request = new ReservationCreateRequest(LocalDate.now().plusDays(1), LocalTime.of(17, 0, 0), LocalTime.of(18, 0, 0), 15000, 10,
             UsagePurpose.BARISTA_TRAINING, "테슽뚜");
 
         //when  then
-        assertThrows(MissMatch.class, () -> reservationGuestService.createReservation(request));
+        assertThrows(MissMatch.class, () -> reservationGuestService.createReservation(space.getId(), request));
     }
 
     @Test
@@ -218,55 +214,39 @@ class ReservationGuestServiceTest {
             .build();
         reservationRepository.save(reservation);
 
-        ReservationCreateRequest request = new ReservationCreateRequest(host.getId(), space.getId(),
-            LocalDate.now().plusDays(1), LocalTime.of(15, 0, 0), LocalTime.of(18, 0, 0), 45000, 2,
+        ReservationCreateRequest request = new ReservationCreateRequest(LocalDate.now().plusDays(1), LocalTime.of(15, 0, 0), LocalTime.of(18, 0, 0), 45000, 2,
             UsagePurpose.BARISTA_TRAINING, "테슽뚜");
 
         //when  then
         assertThrows(MissMatch.class,
-            () -> reservationGuestService.createReservation(request));
-    }
-
-    @Test
-    @DisplayName("공간 예약 - 없는 호스트")
-    void create_reservation_with_non_existent_host() {
-        //given
-        ReservationCreateRequest request = new ReservationCreateRequest(3L, space.getId(),
-            LocalDate.now().plusDays(1), LocalTime.of(17, 0, 0), LocalTime.of(18, 0, 0), 15000, 10,
-            UsagePurpose.BARISTA_TRAINING, "테슽뚜");
-
-        //when  then
-        assertThrows(UserNotFoundException.class,
-            () -> reservationGuestService.createReservation(request));
+            () -> reservationGuestService.createReservation(space.getId(), request));
     }
 
     @Test
     @DisplayName("공간 예약 - 없는 공간")
     void create_reservation_with_non_existent_space() {
         //given
-        ReservationCreateRequest request = new ReservationCreateRequest(host.getId(), 3L,
-            LocalDate.now().plusDays(1), LocalTime.of(17, 0, 0), LocalTime.of(18, 0, 0), 15000, 10,
+        ReservationCreateRequest request = new ReservationCreateRequest(LocalDate.now().plusDays(1), LocalTime.of(17, 0, 0), LocalTime.of(18, 0, 0), 15000, 10,
             UsagePurpose.BARISTA_TRAINING, "테슽뚜");
 
         //when  then
         assertThrows(SpaceNotFoundException.class,
-            () -> reservationGuestService.createReservation(request));
+            () -> reservationGuestService.createReservation(3L, request));
     }
 
     @Test
     @DisplayName("공간 예약 - 성공")
     void success_create_reservation() {
         //given
-        ReservationCreateRequest request = new ReservationCreateRequest(host.getId(), space.getId(),
-            LocalDate.now().plusDays(1), LocalTime.of(17, 0, 0), LocalTime.of(18, 0, 0), 15000, 2,
+        ReservationCreateRequest request = new ReservationCreateRequest(LocalDate.now().plusDays(1), LocalTime.of(17, 0, 0), LocalTime.of(18, 0, 0), 15000, 2,
             UsagePurpose.BARISTA_TRAINING, "테슽뚜");
 
         //when
-        ReservationResponseDto result = reservationGuestService.createReservation(request);
+        ReservationResponseDto result = reservationGuestService.createReservation(space.getId(), request);
 
         //then
         Reservation savedReservation = reservationRepository.findById(result.getId()).orElse(null);
-        assertEquals(request.getSpaceId(), savedReservation.getSpace().getId());
+        assertEquals(space.getId(), savedReservation.getSpace().getId());
         assertEquals(request.getDate(), savedReservation.getDate());
         assertEquals(request.getStartTime(), savedReservation.getStartTime());
         assertEquals(request.getEndTime(), savedReservation.getEndTime());

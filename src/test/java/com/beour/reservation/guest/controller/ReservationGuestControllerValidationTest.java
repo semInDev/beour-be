@@ -106,69 +106,11 @@ class ReservationGuestControllerValidationTest {
     }
 
     @Test
-    @DisplayName("예약 등록 유효성 검사 - 호스트 id 값 공백")
-    void invalid_create_reservation_host_id_empty() throws Exception {
-        //given
-        String requestJson = String.format("""
-            {
-                "hostId": null,
-                "spaceId": %d,
-                "date": "%s",
-                "startTime": "13:00:00",
-                "endTime": "14:00:00",
-                "price": 15000,
-                "guestCount": 2,
-                "usagePurpose": "BARISTA_TRAINING",
-                "requestMessage": "요청 사항 테스트"
-            }
-            """, space.getId(), LocalDate.now().plusDays(1));
-
-        //when  then
-        mockMvc.perform(post("/api/spaces/reserve")
-                .header("Authorization", "Bearer " + accessToken)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestJson)
-            )
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.message").value("호스트의 id 값 필수"));
-    }
-
-    @Test
-    @DisplayName("예약 등록 유효성 검사 - 공간 id 값 공백")
-    void invalid_create_reservation_space_id_empty() throws Exception {
-        //given
-        String requestJson = String.format("""
-            {
-                "hostId": %d,
-                "spaceId": null,
-                "date": "%s",
-                "startTime": "13:00:00",
-                "endTime": "14:00:00",
-                "price": 15000,
-                "guestCount": 2,
-                "usagePurpose": "BARISTA_TRAINING",
-                "requestMessage": "요청 사항 테스트"
-            }
-            """, host.getId(), LocalDate.now().plusDays(1));
-
-        //when  then
-        mockMvc.perform(post("/api/spaces/reserve")
-                .header("Authorization", "Bearer " + accessToken)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestJson)
-            )
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.message").value("예약할 공간 id 값 필수"));
-    }
-
-    @Test
     @DisplayName("예약 등록 유효성 검사 - 예약 날짜 데이터 공백")
     void invalid_create_reservation_date_empty() throws Exception {
         //given
         String requestJson = String.format("""
             {
-                "hostId": %d,
-                "spaceId": %d,
                 "date": "",
                 "startTime": "13:00:00",
                 "endTime": "14:00:00",
@@ -180,7 +122,7 @@ class ReservationGuestControllerValidationTest {
             """, space.getId(), host.getId());
 
         //when  then
-        mockMvc.perform(post("/api/spaces/reserve")
+        mockMvc.perform(post("/api/spaces/" + space.getId() + "/reservations")
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
@@ -195,8 +137,6 @@ class ReservationGuestControllerValidationTest {
         //given
         String requestJson = String.format("""
             {
-                "hostId": %d,
-                "spaceId": %d,
                 "date": "%s",
                 "startTime": null,
                 "endTime": "14:00:00",
@@ -205,10 +145,10 @@ class ReservationGuestControllerValidationTest {
                 "usagePurpose": "BARISTA_TRAINING",
                 "requestMessage": "요청 사항 테스트"
             }
-            """, space.getId(), host.getId(), LocalDate.now().plusDays(1));
+            """, LocalDate.now().plusDays(1));
 
         //when  then
-        mockMvc.perform(post("/api/spaces/reserve")
+        mockMvc.perform(post("/api/spaces/" + space.getId() + "/reservations")
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
@@ -223,8 +163,6 @@ class ReservationGuestControllerValidationTest {
         //given
         String requestJson = String.format("""
             {
-                "hostId": %d,
-                "spaceId": %d,
                 "date": "%s",
                 "startTime": "13:00:00",
                 "endTime": null,
@@ -233,10 +171,10 @@ class ReservationGuestControllerValidationTest {
                 "usagePurpose": "BARISTA_TRAINING",
                 "requestMessage": "요청 사항 테스트"
             }
-            """, space.getId(), host.getId(), LocalDate.now().plusDays(1));
+            """, LocalDate.now().plusDays(1));
 
         //when  then
-        mockMvc.perform(post("/api/spaces/reserve")
+        mockMvc.perform(post("/api/spaces/" + space.getId() + "/reservations")
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
@@ -251,8 +189,6 @@ class ReservationGuestControllerValidationTest {
         //given
         String requestJson = String.format("""
             {
-                "hostId": %d,
-                "spaceId": %d,
                 "date": "%s",
                 "startTime": "13:00:00",
                 "endTime": "14:00:00",
@@ -261,10 +197,10 @@ class ReservationGuestControllerValidationTest {
                 "usagePurpose": "BARISTA_TRAINING",
                 "requestMessage": "요청 사항 테스트"
             }
-            """, space.getId(), host.getId(), LocalDate.now().plusDays(1));
+            """, LocalDate.now().plusDays(1));
 
         //when  then
-        mockMvc.perform(post("/api/spaces/reserve")
+        mockMvc.perform(post("/api/spaces/" + space.getId() + "/reservations")
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
@@ -279,8 +215,6 @@ class ReservationGuestControllerValidationTest {
         //given
         String requestJson = String.format("""
             {
-                "hostId": %d,
-                "spaceId": %d,
                 "date": "%s",
                 "startTime": "13:00:00",
                 "endTime": "14:00:00",
@@ -289,10 +223,10 @@ class ReservationGuestControllerValidationTest {
                 "usagePurpose": "BARISTA_TRAINING",
                 "requestMessage": "요청 사항 테스트"
             }
-            """, space.getId(), host.getId(), LocalDate.now().plusDays(1));
+            """, LocalDate.now().plusDays(1));
 
         //when  then
-        mockMvc.perform(post("/api/spaces/reserve")
+        mockMvc.perform(post("/api/spaces/" + space.getId() + "/reservations")
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
@@ -307,8 +241,6 @@ class ReservationGuestControllerValidationTest {
         //given
         String requestJson = String.format("""
             {
-                "hostId": %d,
-                "spaceId": %d,
                 "date": "%s",
                 "startTime": "13:00:00",
                 "endTime": "14:00:00",
@@ -317,10 +249,10 @@ class ReservationGuestControllerValidationTest {
                 "usagePurpose": null,
                 "requestMessage": "요청 사항 테스트"
             }
-            """, space.getId(), host.getId(), LocalDate.now().plusDays(1));
+            """, LocalDate.now().plusDays(1));
 
         //when  then
-        mockMvc.perform(post("/api/spaces/reserve")
+        mockMvc.perform(post("/api/spaces/" + space.getId() + "/reservations")
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
@@ -335,8 +267,6 @@ class ReservationGuestControllerValidationTest {
         //given
         String requestJson = String.format("""
             {
-                "hostId": %d,
-                "spaceId": %d,
                 "date": "%s",
                 "startTime": "13:00:00",
                 "endTime": "14:00:00",
@@ -345,10 +275,10 @@ class ReservationGuestControllerValidationTest {
                 "usagePurpose": "BARISTA_TRAINING",
                 "requestMessage": "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901"
             }
-            """, space.getId(), host.getId(), LocalDate.now().plusDays(1));
+            """, LocalDate.now().plusDays(1));
 
         //when  then
-        mockMvc.perform(post("/api/spaces/reserve")
+        mockMvc.perform(post("/api/spaces/" + space.getId() + "/reservations")
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)

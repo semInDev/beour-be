@@ -13,6 +13,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,9 +26,9 @@ public class ReservationGuestController {
     private final ReservationGuestService reservationGuestService;
     private final CheckAvailableTimeService checkAvailableTimeService;
 
-    @PostMapping("/api/spaces/reserve")
-    public ApiResponse<ReservationResponseDto> createReservation(@Valid @RequestBody ReservationCreateRequest requestDto){
-        return ApiResponse.ok(reservationGuestService.createReservation(requestDto));
+    @PostMapping("/api/spaces/{spaceId}/reservations")
+    public ApiResponse<ReservationResponseDto> createReservation(@PathVariable(value = "spaceId")Long spaceId, @Valid @RequestBody ReservationCreateRequest requestDto){
+        return ApiResponse.ok(reservationGuestService.createReservation(spaceId, requestDto));
     }
 
     @PostMapping("/api/spaces/reserve/available-times")

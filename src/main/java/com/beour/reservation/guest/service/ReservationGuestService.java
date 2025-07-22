@@ -42,13 +42,13 @@ public class ReservationGuestService {
     private final CheckAvailableTimeService checkAvailableTimeService;
     private final ReviewRepository reviewRepository;
 
-    public ReservationResponseDto createReservation(ReservationCreateRequest requestDto) {
+    public ReservationResponseDto createReservation(Long spaceId, ReservationCreateRequest requestDto) {
         User guest = findUserFromToken();
-        User host = userRepository.findById(requestDto.getHostId()).orElseThrow(
-            () -> new UserNotFoundException(UserErrorCode.USER_NOT_FOUND)
-        );
-        Space space = spaceRepository.findById(requestDto.getSpaceId()).orElseThrow(
+        Space space = spaceRepository.findById(spaceId).orElseThrow(
             () -> new SpaceNotFoundException(SpaceErrorCode.SPACE_NOT_FOUND)
+        );
+        User host = userRepository.findById(space.getHost().getId()).orElseThrow(
+            () -> new UserNotFoundException(UserErrorCode.USER_NOT_FOUND)
         );
 
         checkReservationAvailable(requestDto, space);
@@ -67,14 +67,16 @@ public class ReservationGuestService {
             .requestMessage(requestDto.getRequestMessage())
             .build();
 
-        return ReservationResponseDto.of(reservationRepository.save(reservation));
+        return ReservationResponseDto.builder()
+            .id(reservationRepository.save(reservation).getId())
+            .build();
     }
 
     private void checkReservationAvailable(ReservationCreateRequest requestDto, Space space) {
         checkPriceCorrect(requestDto, space);
         checkValidCapacity(requestDto, space);
-        checkReservationAvailableDate(requestDto);
-        checkReservationAvailableTime(requestDto);
+        checkReservationAvailableDate(requestDto, space);
+        checkReservationAvailableTime(requestDto, space);
     }
 
     private static void checkValidCapacity(ReservationCreateRequest requestDto, Space space) {
@@ -90,10 +92,10 @@ public class ReservationGuestService {
         }
     }
 
-    private void checkReservationAvailableDate(ReservationCreateRequest requestDto) {
+    private void checkReservationAvailableDate(ReservationCreateRequest requestDto, Space space) {
         AvailableTime availableTime = checkAvailableTimeService.checkReservationAvailableDateAndGetAvailableTime(
             new CheckAvailableTimesRequestDto(
-                requestDto.getSpaceId(), requestDto.getDate()));
+                space.getId(), requestDto.getDate()));
 
         if (requestDto.getDate().equals(LocalDate.now()) && requestDto.getStartTime()
             .isBefore(LocalTime.now())) {
@@ -107,9 +109,9 @@ public class ReservationGuestService {
         }
     }
 
-    private void checkReservationAvailableTime(ReservationCreateRequest requestDto) {
+    private void checkReservationAvailableTime(ReservationCreateRequest requestDto, Space space) {
         List<Reservation> reservationList = reservationRepository.findBySpaceIdAndDateAndDeletedAtIsNull(
-            requestDto.getSpaceId(), requestDto.getDate());
+            space.getId(), requestDto.getDate());
 
         LocalTime startTime = requestDto.getStartTime();
         while (startTime.isBefore(requestDto.getEndTime())) {
