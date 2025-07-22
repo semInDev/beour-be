@@ -62,7 +62,9 @@ public class SecurityConfig {
 
                     configuration.setAllowedOrigins(
                         List.of("http://localhost:3000",
-                            "http://beour-bucket.s3-website.ap-northeast-2.amazonaws.com")
+                                "http://beour-bucket.s3-website.ap-northeast-2.amazonaws.com",
+                                "https://beour.store",
+                                "https://www.beour.store")
                     );
                     configuration.setAllowedMethods(
                         List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
