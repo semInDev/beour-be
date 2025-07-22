@@ -45,7 +45,8 @@ public class GuestSpaceController {
 
     @GetMapping("/keyword")
     public ApiResponse<SearchSpacePageResponseDto> searchSpaces(
-        @RequestParam(value = "keyword") String request, @PageableDefault(size = 20) Pageable pageable) {
+        @RequestParam(value = "keyword") String request,
+        @PageableDefault(size = 20) Pageable pageable) {
         return ApiResponse.ok(guestSpaceSearchService.search(request, pageable));
     }
 
@@ -55,12 +56,12 @@ public class GuestSpaceController {
         return ApiResponse.ok(guestSpaceSearchService.searchWithFiltering(requestDto));
     }
 
-    @GetMapping("/search/spacecategory")
-    public ApiResponse<List<SearchSpaceResponseDto>> searchWithSpaceCategory(
-        @RequestParam(value = "spacecategory")
-        SpaceCategory request) {
+    @GetMapping("/spacecategory")
+    public ApiResponse<SearchSpacePageResponseDto> searchWithSpaceCategory(
+        @RequestParam(value = "spacecategory") SpaceCategory request,
+        @PageableDefault(size = 20) Pageable pageable) {
 
-        return ApiResponse.ok(guestSpaceSearchService.searchSpaceWithSpaceCategory(request));
+        return ApiResponse.ok(guestSpaceSearchService.searchSpaceWithSpaceCategory(request, pageable));
     }
 
     @GetMapping("/search/usecategory")
