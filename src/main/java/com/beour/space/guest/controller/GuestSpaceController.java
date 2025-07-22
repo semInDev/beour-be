@@ -64,12 +64,11 @@ public class GuestSpaceController {
         return ApiResponse.ok(guestSpaceSearchService.searchSpaceWithSpaceCategory(request, pageable));
     }
 
-    @GetMapping("/search/usecategory")
-    public ApiResponse<List<SearchSpaceResponseDto>> searchWithUseCategory(
-        @RequestParam(value = "usecategory")
-        UseCategory request) {
+    @GetMapping("/usecategory")
+    public ApiResponse<SearchSpacePageResponseDto> searchWithUseCategory(
+        @RequestParam(value = "usecategory") UseCategory request, @PageableDefault(size = 20) Pageable pageable) {
 
-        return ApiResponse.ok(guestSpaceSearchService.searchSpaceWithUseCategory(request));
+        return ApiResponse.ok(guestSpaceSearchService.searchSpaceWithUseCategory(request, pageable));
     }
 
     @GetMapping("/new")

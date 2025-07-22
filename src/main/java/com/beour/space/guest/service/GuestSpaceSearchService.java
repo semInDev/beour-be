@@ -120,14 +120,16 @@ public class GuestSpaceSearchService {
         return new SearchSpacePageResponseDto(spaceResponseDtoList, spaces.isLast(), spaces.getTotalPages());
     }
 
-    public List<SearchSpaceResponseDto> searchSpaceWithUseCategory(UseCategory request) {
-        List<Space> space = spaceRepository.findByUseCategory(request);
+    public SearchSpacePageResponseDto searchSpaceWithUseCategory(UseCategory request, Pageable pageable) {
+        Page<Space> spaces = spaceRepository.findByUseCategory(request, pageable);
 
-        if (space.isEmpty()) {
+        if (spaces.isEmpty()) {
             throw new SpaceNotFoundException(SpaceErrorCode.NO_MATCHING_SPACE);
         }
 
-        return changeToSearchResponseDtoFrom(space);
+        List<SearchSpaceResponseDto> spaceResponseDtoList = changeToSearchResponseDtoFrom2(spaces);
+
+        return new SearchSpacePageResponseDto(spaceResponseDtoList, spaces.isLast(), spaces.getTotalPages());
     }
 
     private List<SearchSpaceResponseDto> changeToSearchResponseDtoFrom(List<Space> spaces) {

@@ -62,7 +62,7 @@ public interface SpaceRepository extends JpaRepository<Space, Long> {
     Page<Space> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
     Page<Space> findBySpaceCategory(SpaceCategory spaceCategory, Pageable pageable);
-    List<Space> findByUseCategory(UseCategory useCategory);
+    Page<Space> findByUseCategory(UseCategory useCategory, Pageable pageable);
     List<Space> findTop5ByDeletedAtIsNullOrderByCreatedAtDesc();
 
 
