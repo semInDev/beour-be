@@ -1,14 +1,13 @@
 package com.beour.space.guest.service;
 
 import com.beour.global.exception.error.errorcode.SpaceErrorCode;
-import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.exception.exceptionType.InputInvalidFormatException;
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
-import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.review.domain.repository.ReviewRepository;
 import com.beour.space.domain.entity.Space;
 import com.beour.space.domain.repository.SpaceRepository;
 import com.beour.space.guest.dto.FilteringSearchRequestDto;
+import com.beour.space.guest.dto.SearchSpacePageResponseDto;
 import com.beour.space.guest.dto.SearchSpaceResponseDto;
 import com.beour.space.domain.enums.SpaceCategory;
 import com.beour.space.domain.enums.UseCategory;
@@ -33,30 +32,12 @@ public class GuestSpaceSearchService {
     private final LikeRepository likeRepository;
     private final UserRepository userRepository;
 
-    public List<SearchSpaceResponseDto> search(String keyword) {
-        List<Space> spaces = searchWithKeyword(keyword);
-
-        return changeToSearchResponseDtoFrom(spaces);
-    }
-
-    private List<Space> searchWithKeyword(String keyword) {
-        if (keyword.isEmpty()) {
-            throw new InputInvalidFormatException(SpaceErrorCode.KEYWORD_REQUIRED);
-        }
-
-        List<Space> result = spaceRepository.searchByKeyword("%" + keyword + "%");
-        if (result.isEmpty()) {
-            throw new SpaceNotFoundException(SpaceErrorCode.NO_MATCHING_SPACE);
-        }
-
-        return result;
-    }
-
-    //todo : 찜 유무 확인
-    public List<SearchSpaceResponseDto> search2(String keyword, Pageable pageable) {
+    public SearchSpacePageResponseDto search(String keyword, Pageable pageable) {
         Page<Space> spaces = searchWithKeyword2(keyword, pageable);
 
-        return changeToSearchResponseDtoFrom2(spaces);
+        List<SearchSpaceResponseDto> spaceResponseDtoList = changeToSearchResponseDtoFrom2(spaces);
+
+        return new SearchSpacePageResponseDto(spaceResponseDtoList, spaces.isLast(), spaces.getTotalPages());
     }
 
     private Page<Space> searchWithKeyword2(String keyword, Pageable pageable) {
@@ -81,6 +62,19 @@ public class GuestSpaceSearchService {
         }
 
         return changeToSearchResponseDtoFrom(filtering);
+    }
+
+    private List<Space> searchWithKeyword(String keyword) {
+        if (keyword.isEmpty()) {
+            throw new InputInvalidFormatException(SpaceErrorCode.KEYWORD_REQUIRED);
+        }
+
+        List<Space> result = spaceRepository.searchByKeyword("%" + keyword + "%");
+        if (result.isEmpty()) {
+            throw new SpaceNotFoundException(SpaceErrorCode.NO_MATCHING_SPACE);
+        }
+
+        return result;
     }
 
     private List<Space> filterSpaces(List<Space> spaceListWithKeyword,

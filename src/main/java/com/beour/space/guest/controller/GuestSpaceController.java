@@ -1,10 +1,10 @@
 package com.beour.space.guest.controller;
 
 import com.beour.global.response.ApiResponse;
-import com.beour.space.domain.entity.Space;
 import com.beour.space.guest.dto.FilteringSearchRequestDto;
 import com.beour.space.guest.dto.NearbySpaceResponse;
 import com.beour.space.guest.dto.RecentCreatedSpcaceListResponseDto;
+import com.beour.space.guest.dto.SearchSpacePageResponseDto;
 import com.beour.space.guest.dto.SearchSpaceResponseDto;
 import com.beour.space.guest.service.GuestSpaceSearchService;
 import com.beour.space.guest.service.GuestSpaceService;
@@ -12,6 +12,7 @@ import com.beour.space.domain.enums.SpaceCategory;
 import com.beour.space.domain.enums.UseCategory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -42,16 +43,16 @@ public class GuestSpaceController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/keyword")
-    public ApiResponse<List<SearchSpaceResponseDto>> searchSpaces(
-        @RequestParam(value = "keyword") String request) {
-        return ApiResponse.ok(guestSpaceSearchService.search(request));
-    }
+//    @GetMapping("/keyword")
+//    public ApiResponse<List<SearchSpaceResponseDto>> searchSpaces(
+//        @RequestParam(value = "keyword") String request) {
+//        return ApiResponse.ok(guestSpaceSearchService.search(request));
+//    }
 
-    @GetMapping("/sub/keyword")
-    public ApiResponse<List<SearchSpaceResponseDto>> searchSpaces2(
-        @RequestParam(value = "keyword") String request, Pageable pageable) {
-        return ApiResponse.ok(guestSpaceSearchService.search2(request, pageable));
+    @GetMapping("/keyword")
+    public ApiResponse<SearchSpacePageResponseDto> searchSpaces(
+        @RequestParam(value = "keyword") String request, @PageableDefault(size = 20) Pageable pageable) {
+        return ApiResponse.ok(guestSpaceSearchService.search(request, pageable));
     }
 
     @PostMapping("/search/filter")
