@@ -3,10 +3,14 @@ package com.beour.wishlist.controller;
 import com.beour.global.response.ApiResponse;
 import com.beour.space.guest.dto.SpaceListSpaceResponseDto;
 import com.beour.wishlist.dto.MakeWishlistResponseDto;
+import com.beour.wishlist.dto.WishListPageResponseDto;
 import com.beour.wishlist.entity.Like;
 import com.beour.wishlist.service.WishlistService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,7 +38,7 @@ public class WishlistController {
     }
 
     @GetMapping("/api/likes")
-    public ApiResponse<List<SpaceListSpaceResponseDto>> getWishlist(){
-        return ApiResponse.ok(wishlistService.getWishlist());
+    public ApiResponse<WishListPageResponseDto> getWishlist(@PageableDefault(size = 20) Pageable pageable){
+        return ApiResponse.ok(wishlistService.getWishlist(pageable));
     }
 }

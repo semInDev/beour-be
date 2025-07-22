@@ -206,7 +206,7 @@ class WishlistControllerTest {
     @DisplayName("찜 목록 조회 - 아무것도 없을 경우")
     void get_wishlist_empty() throws Exception {
         //when  then
-        mockMvc.perform(get("/api/likes")
+        mockMvc.perform(get("/api/likes?page=0")
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isNotFound())
@@ -230,12 +230,14 @@ class WishlistControllerTest {
         likeRepository.save(like2);
 
         //when  then
-        mockMvc.perform(get("/api/likes")
+        mockMvc.perform(get("/api/likes?page=0")
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.data", hasSize(2)))
-            .andExpect(jsonPath("$.data[0].spaceId").value(space1.getId()))
-            .andExpect(jsonPath("$.data[1].spaceId").value(space2.getId()));
+            .andExpect(jsonPath("$.data.spaces", hasSize(2)))
+            .andExpect(jsonPath("$.data.spaces[0].spaceId").value(space1.getId()))
+            .andExpect(jsonPath("$.data.spaces[1].spaceId").value(space2.getId()))
+            .andExpect(jsonPath("$.data.last").value(true))
+            .andExpect(jsonPath("$.data.totalPage").value(1));
     }
 }

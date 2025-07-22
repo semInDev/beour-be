@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class SpaceListSpaceResponseDto {
 
+    //todo: 대표사진 변경
+
     private Long spaceId;
     private String spaceName;
     private String region;
