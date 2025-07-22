@@ -11,6 +11,7 @@ import com.beour.space.guest.service.GuestSpaceService;
 import com.beour.space.domain.enums.SpaceCategory;
 import com.beour.space.domain.enums.UseCategory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -45,6 +46,12 @@ public class GuestSpaceController {
     public ApiResponse<List<SearchSpaceResponseDto>> searchSpaces(
         @RequestParam(value = "keyword") String request) {
         return ApiResponse.ok(guestSpaceSearchService.search(request));
+    }
+
+    @GetMapping("/sub/keyword")
+    public ApiResponse<List<SearchSpaceResponseDto>> searchSpaces2(
+        @RequestParam(value = "keyword") String request, Pageable pageable) {
+        return ApiResponse.ok(guestSpaceSearchService.search2(request, pageable));
     }
 
     @PostMapping("/search/filter")

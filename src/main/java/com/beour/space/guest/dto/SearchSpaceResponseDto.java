@@ -56,6 +56,25 @@ public class SearchSpaceResponseDto {
             .build();
     }
 
+    public static SearchSpaceResponseDto oftmp(Space space, Long reviewCount, boolean likes) {
+        List<String> tagList = space.getTags().stream()
+            .map(Tag::getContents)
+            .collect(Collectors.toList());
+
+        return SearchSpaceResponseDto.builder()
+            .spaceId(space.getId())
+            .spaceName(space.getName())
+            .thumbnailUrl(space.getThumbnailUrl())
+            .price(space.getPricePerHour())
+            .address(abstractAddress(space.getAddress()))
+            .maxCapacity(space.getMaxCapacity())
+            .average(space.getAvgRating())
+            .reviewCount(reviewCount)
+            .tags(tagList)
+            .likes(likes)
+            .build();
+    }
+
     private static String abstractAddress(String address) {
         String[] splitAddress = address.split(" ");
 
