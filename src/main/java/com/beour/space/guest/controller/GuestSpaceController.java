@@ -41,9 +41,9 @@ public class GuestSpaceController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/search")
+    @GetMapping("/keyword")
     public ApiResponse<List<SearchSpaceResponseDto>> searchSpaces(
-        @RequestParam(value = "request") String request) {
+        @RequestParam(value = "keyword") String request) {
         return ApiResponse.ok(guestSpaceSearchService.search(request));
     }
 

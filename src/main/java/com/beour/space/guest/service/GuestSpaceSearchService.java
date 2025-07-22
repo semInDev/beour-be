@@ -22,6 +22,7 @@ public class GuestSpaceSearchService {
     private final SpaceRepository spaceRepository;
     private final ReviewRepository reviewRepository;
 
+    //todo : 찜 유무 확인
     public List<SearchSpaceResponseDto> search(String keyword) {
         List<Space> spaces = searchWithKeyword(keyword);
 
