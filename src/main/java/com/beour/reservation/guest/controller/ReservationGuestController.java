@@ -41,13 +41,13 @@ public class ReservationGuestController {
         return ApiResponse.ok(reservationGuestService.findReservationList());
     }
 
-    @GetMapping("/api/reservation/past")
+    @GetMapping("/api/reservations/past")
     public ApiResponse<List<ReservationListResponseDto>> checkPastReservationList(){
         return ApiResponse.ok(reservationGuestService.findPastReservationList());
     }
 
-    @DeleteMapping("/api/reservation/cancel")
-    public ApiResponse<String> cancelReservation(@RequestParam(value = "reservationId") Long reservationId){
+    @DeleteMapping("/api/reservations/{reservationId}")
+    public ApiResponse<String> cancelReservation(@PathVariable(value = "reservationId") Long reservationId){
         reservationGuestService.cancelReservation(reservationId);
         return ApiResponse.ok("예약이 성공적으로 취소되었습니다.");
     }
