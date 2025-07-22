@@ -32,9 +32,21 @@ public class GuestSpaceSearchService {
     private final LikeRepository likeRepository;
     private final UserRepository userRepository;
 
+    private List<Space> searchWithKeyword(String keyword) {
+        if (keyword.isEmpty()) {
+            throw new InputInvalidFormatException(SpaceErrorCode.KEYWORD_REQUIRED);
+        }
+
+        List<Space> result = spaceRepository.searchByKeyword("%" + keyword + "%");
+        if (result.isEmpty()) {
+            throw new SpaceNotFoundException(SpaceErrorCode.NO_MATCHING_SPACE);
+        }
+
+        return result;
+    }
+
     public SearchSpacePageResponseDto search(String keyword, Pageable pageable) {
         Page<Space> spaces = searchWithKeyword2(keyword, pageable);
-
         List<SearchSpaceResponseDto> spaceResponseDtoList = changeToSearchResponseDtoFrom2(spaces);
 
         return new SearchSpacePageResponseDto(spaceResponseDtoList, spaces.isLast(), spaces.getTotalPages());
@@ -62,19 +74,6 @@ public class GuestSpaceSearchService {
         }
 
         return changeToSearchResponseDtoFrom(filtering);
-    }
-
-    private List<Space> searchWithKeyword(String keyword) {
-        if (keyword.isEmpty()) {
-            throw new InputInvalidFormatException(SpaceErrorCode.KEYWORD_REQUIRED);
-        }
-
-        List<Space> result = spaceRepository.searchByKeyword("%" + keyword + "%");
-        if (result.isEmpty()) {
-            throw new SpaceNotFoundException(SpaceErrorCode.NO_MATCHING_SPACE);
-        }
-
-        return result;
     }
 
     private List<Space> filterSpaces(List<Space> spaceListWithKeyword,
@@ -137,6 +136,7 @@ public class GuestSpaceSearchService {
 
     private List<SearchSpaceResponseDto> changeToSearchResponseDtoFrom2(Page<Space> spaces) {
         User user = findUserFromToken();
+
         return spaces.stream()
             .map(
                 space -> toSearchSpaceResponseDto(space, user))

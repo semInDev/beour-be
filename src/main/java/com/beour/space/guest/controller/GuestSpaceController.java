@@ -43,12 +43,6 @@ public class GuestSpaceController {
         return ResponseEntity.ok(response);
     }
 
-//    @GetMapping("/keyword")
-//    public ApiResponse<List<SearchSpaceResponseDto>> searchSpaces(
-//        @RequestParam(value = "keyword") String request) {
-//        return ApiResponse.ok(guestSpaceSearchService.search(request));
-//    }
-
     @GetMapping("/keyword")
     public ApiResponse<SearchSpacePageResponseDto> searchSpaces(
         @RequestParam(value = "keyword") String request, @PageableDefault(size = 20) Pageable pageable) {
