@@ -62,7 +62,10 @@ public class SecurityConfig {
 
                     configuration.setAllowedOrigins(
                         List.of("http://localhost:3000",
-                            "http://beour-bucket.s3-website.ap-northeast-2.amazonaws.com")
+                            "https://localhost:3000",
+                            "http://beour-bucket.s3-website.ap-northeast-2.amazonaws.com",
+                            "https://beour.store",
+                            "https://www.beour.store")
                     );
                     configuration.setAllowedMethods(
                         List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
@@ -86,7 +89,8 @@ public class SecurityConfig {
                     .requestMatchers("/api/spaces/reserve/available-times", "/api/spaces/search/**",
                         "/api/spaces/new", "/api/reviews/new", "/api/banners").permitAll()
 //                    .requestMatchers("/admin").hasRole("ADMIN")
-                    .requestMatchers("/api/spaces/reserve", "/api/reservation/**", "/api/guest/**")
+                    .requestMatchers("/api/spaces/reserve", "/api/reservation/**", "/api/guest/**",
+                        "/api/spaces/*/likes", "/api/likes")
                     .hasRole("GUEST")
                     .requestMatchers("/api/spaces", "/api/spaces/my-spaces", "/api/spaces/*",
                         "/api/spaces/*/*",

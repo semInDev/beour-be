@@ -13,11 +13,14 @@ import com.beour.space.domain.repository.SpaceRepository;
 import com.beour.space.guest.dto.SpaceListSpaceResponseDto;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
+import com.beour.wishlist.dto.WishListPageResponseDto;
 import com.beour.wishlist.entity.Like;
 import com.beour.wishlist.repository.LikeRepository;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,7 +41,7 @@ public class WishlistService {
 
         Like like = likeRepository.findByUserIdAndSpaceId(user.getId(), spaceId);
 
-        if(like == null){
+        if (like == null) {
             Like saveLike = Like.builder()
                 .space(space)
                 .user(user)
@@ -47,7 +50,7 @@ public class WishlistService {
             return likeRepository.save(saveLike);
         }
 
-        if(like.isDeleted()){
+        if (like.isDeleted()) {
             like.resetDelete();
             return like;
         }
@@ -60,7 +63,8 @@ public class WishlistService {
         User user = findUserFromToken();
         Space space = getSpace(spaceId);
 
-        Like like = likeRepository.findByUserIdAndSpaceIdAndDeletedAtIsNull(user.getId(), space.getId()).orElseThrow(
+        Like like = likeRepository.findByUserIdAndSpaceIdAndDeletedAtIsNull(user.getId(),
+            space.getId()).orElseThrow(
             () -> new SpaceNotFoundException(SpaceErrorCode.SPACE_NOT_FOUND)
         );
 
@@ -73,18 +77,23 @@ public class WishlistService {
         );
     }
 
-    //todo : 리뷰 갯수 따로 컬럼 추가 하면 수정
-    public List<SpaceListSpaceResponseDto> getWishlist(){
+    public WishListPageResponseDto getWishlist(Pageable pageable) {
         User user = findUserFromToken();
-        List<Like> whisList = likeRepository.findByUserIdAndDeletedAtIsNull(user.getId());
+        Page<Like> whisList = likeRepository.findByUserIdAndDeletedAtIsNull(user.getId(), pageable);
 
-        if(whisList.isEmpty()){
+        if (whisList.isEmpty()) {
             throw new LikesNotFoundException(WishListErrorCode.EMPTY_WISHLIST);
         }
 
-        return whisList.stream()
-            .map(like -> SpaceListSpaceResponseDto.of(like.getSpace(), true, getReviewCountBySpaceId(like.getSpace().getId())))
+        List<SpaceListSpaceResponseDto> spaces = whisList.stream()
+            .map(like -> {
+                Space space = like.getSpace();
+                Long reviewCount = getReviewCountBySpaceId(space.getId());
+                return SpaceListSpaceResponseDto.of(space, true, reviewCount);
+            })
             .collect(Collectors.toList());
+
+        return new WishListPageResponseDto(spaces, whisList.isLast(), whisList.getTotalPages());
     }
 
     private long getReviewCountBySpaceId(Long spaceId) {
