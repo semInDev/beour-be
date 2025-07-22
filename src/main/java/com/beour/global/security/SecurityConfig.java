@@ -33,6 +33,7 @@ public class SecurityConfig {
     private final UserRepository userRepository;
     private final JWTUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final CorsConfigurationSource corsConfigurationSource;
 
     @Bean
     public AuthenticationManager authenticationManager() throws Exception {
@@ -53,32 +54,34 @@ public class SecurityConfig {
             refreshTokenRepository);
         loginFilter.setFilterProcessesUrl("/api/login");
 
-        http.cors((cors) -> cors
-            .configurationSource(new CorsConfigurationSource() {
-                @Override
-                public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
+//        http.cors((cors) -> cors
+//            .configurationSource(new CorsConfigurationSource() {
+//                @Override
+//                public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
+//
+//                    CorsConfiguration configuration = new CorsConfiguration();
+//
+//                    configuration.setAllowedOrigins(
+//                        List.of("http://localhost:3000",
+//                            "https://localhost:3000",
+//                            "http://beour-bucket.s3-website.ap-northeast-2.amazonaws.com",
+//                            "https://beour.store",
+//                            "https://www.beour.store")
+//                    );
+//                    configuration.setAllowedMethods(
+//                        List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+//                    configuration.setAllowCredentials(true);
+//                    configuration.setAllowedHeaders(Collections.singletonList("*"));
+//                    configuration.setMaxAge(3600L);
+//
+//                    configuration.setExposedHeaders(Collections.singletonList("Authorization"));
+//
+//                    return configuration;
+//                }
+//            })
+//        );
 
-                    CorsConfiguration configuration = new CorsConfiguration();
-
-                    configuration.setAllowedOrigins(
-                        List.of("http://localhost:3000",
-                            "https://localhost:3000",
-                            "http://beour-bucket.s3-website.ap-northeast-2.amazonaws.com",
-                            "https://beour.store",
-                            "https://www.beour.store")
-                    );
-                    configuration.setAllowedMethods(
-                        List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-                    configuration.setAllowCredentials(true);
-                    configuration.setAllowedHeaders(Collections.singletonList("*"));
-                    configuration.setMaxAge(3600L);
-
-                    configuration.setExposedHeaders(Collections.singletonList("Authorization"));
-
-                    return configuration;
-                }
-            })
-        );
+        http.cors((cors) -> cors.configurationSource(corsConfigurationSource));
 
         http
             .authorizeHttpRequests((auth) -> auth
