@@ -15,6 +15,7 @@ import com.beour.space.domain.enums.SpaceCategory;
 import com.beour.space.domain.enums.UseCategory;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
+import com.beour.wishlist.dto.WishListPageResponseDto;
 import com.beour.wishlist.entity.Like;
 import com.beour.wishlist.repository.LikeRepository;
 import java.util.ArrayList;
@@ -26,6 +27,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -189,8 +192,9 @@ class WishlistServiceTest {
     @Test
     @DisplayName("찜목록 조회 - 목록이 비어있을 경우")
     void get_wishlist_empty() {
+        Pageable pageable = PageRequest.of(0, 20);
         //when  then
-        assertThrows(LikesNotFoundException.class, () -> wishlistService.getWishlist());
+        assertThrows(LikesNotFoundException.class, () -> wishlistService.getWishlist(pageable));
     }
 
     @Test
@@ -209,14 +213,17 @@ class WishlistServiceTest {
             .space(space2)
             .build();
         likeRepository.save(like2);
+        Pageable pageable = PageRequest.of(0, 20);
 
         //when
-        List<SpaceListSpaceResponseDto> result = wishlistService.getWishlist();
+        WishListPageResponseDto result = wishlistService.getWishlist(pageable);
 
         //then
-        assertEquals(result.size(), 2);
-        assertEquals(result.get(0).getSpaceName(), "공간1");
-        assertEquals(result.get(1).getSpaceName(), "공간2");
+        assertEquals(result.getSpaces().size(), 2);
+        assertEquals(result.getSpaces().get(0).getSpaceName(), "공간1");
+        assertEquals(result.getSpaces().get(1).getSpaceName(), "공간2");
+        assertEquals(result.getTotalPage(), 1);
+        assertTrue(result.isLast());
     }
 
     @Test
