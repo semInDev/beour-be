@@ -20,6 +20,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
@@ -196,6 +199,37 @@ class LikeRepositoryTest {
 
         //when
         List<Like> likes = likeRepository.findByUserIdAndDeletedAtIsNull(guest.getId());
+
+        //then
+        assertThat(likes)
+            .hasSize(2)
+            .allSatisfy(like -> {
+                assertThat(like.getUser().getId()).isEqualTo(guest.getId());
+                assertThat(like.getDeletedAt()).isNull();
+            })
+            .extracting(like -> like.getSpace().getId())
+            .containsExactlyInAnyOrder(space1.getId(), space2.getId());
+    }
+
+    @Test
+    @DisplayName("찜 리스트 가져오기(페이징) - findByUserIdAndDeletedAtIsNull 함수")
+    void get_wishlist_page_findByUserIdAndDeletedAtIsNull() {
+        //given
+        Like like1 = Like.builder()
+            .user(guest)
+            .space(space1)
+            .build();
+        likeRepository.save(like1);
+
+        Like like2 = Like.builder()
+            .user(guest)
+            .space(space2)
+            .build();
+        likeRepository.save(like2);
+        Pageable pageable = PageRequest.of(0, 20);
+
+        //when
+        Page<Like> likes = likeRepository.findByUserIdAndDeletedAtIsNull(guest.getId(), pageable);
 
         //then
         assertThat(likes)
