@@ -27,24 +27,6 @@ public interface SpaceRepository extends JpaRepository<Space, Long> {
         @Param("longitude") double longitude,
         @Param("radius") double radiusInMeters);
 
-
-    @Query(value = """
-        SELECT DISTINCT s.*
-        FROM space s
-        LEFT JOIN description d ON s.id = d.space_id
-        LEFT JOIN tag t ON s.id = t.space_id
-        WHERE d.description LIKE %:keyword%
-           OR d.price_guide LIKE %:keyword%
-           OR d.facility_notice LIKE %:keyword%
-           OR d.notice LIKE %:keyword%
-           OR d.location_description LIKE %:keyword%
-           OR d.refund_policy LIKE %:keyword%
-           OR d.website_url LIKE %:keyword%
-           OR t.contents LIKE %:keyword%
-           OR s.address LIKE %:keyword%
-        """, nativeQuery = true)
-    List<Space> searchByKeyword(@Param("keyword") String keyword);
-
     @Query(value = """
         SELECT DISTINCT s.*
         FROM space s
