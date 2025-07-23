@@ -22,6 +22,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
@@ -253,15 +255,19 @@ class ReservationRepositoryTest {
         reservationRepository.save(reservation2);
 
         //when
-        List<Reservation> result = reservationRepository.findUpcomingReservationsByGuest(
-            guest.getId(), LocalDate.now(), LocalTime.now());
+        Page<Reservation> result = reservationRepository.findUpcomingReservationsByGuest(
+            guest.getId(), LocalDate.now(), LocalTime.now(), Pageable.ofSize(20));
 
         //then
-        assertEquals(1, result.size());
-        assertEquals(reservation2.getDate(), result.get(0).getDate());
-        assertEquals(reservation2.getStartTime(), result.get(0).getStartTime());
-        assertEquals(reservation2.getEndTime(), result.get(0).getEndTime());
-        assertEquals(reservation2.getStatus(), result.get(0).getStatus());
+        assertEquals(2, result.getContent().size());
+        assertEquals(reservation.getDate(), result.getContent().get(0).getDate());
+        assertEquals(reservation.getStartTime(), result.getContent().get(0).getStartTime());
+        assertEquals(reservation.getEndTime(), result.getContent().get(0).getEndTime());
+        assertEquals(reservation.getStatus(), result.getContent().get(0).getStatus());
+        assertEquals(reservation2.getDate(), result.getContent().get(1).getDate());
+        assertEquals(reservation2.getStartTime(), result.getContent().get(1).getStartTime());
+        assertEquals(reservation2.getEndTime(), result.getContent().get(1).getEndTime());
+        assertEquals(reservation2.getStatus(), result.getContent().get(1).getStatus());
     }
 
     @Test
@@ -299,15 +305,15 @@ class ReservationRepositoryTest {
         reservationRepository.save(reservation2);
 
         //when
-        List<Reservation> result = reservationRepository.findPastReservationsByGuest(
-            guest.getId(), LocalDate.now(), LocalTime.now());
+        Page<Reservation> result = reservationRepository.findPastReservationsByGuest(
+            guest.getId(), LocalDate.now(), LocalTime.now(), Pageable.ofSize(20));
 
         //then
-        assertEquals(1, result.size());
-        assertEquals(reservation.getDate(), result.get(0).getDate());
-        assertEquals(reservation.getStartTime(), result.get(0).getStartTime());
-        assertEquals(reservation.getEndTime(), result.get(0).getEndTime());
-        assertEquals(reservation.getStatus(), result.get(0).getStatus());
+        assertEquals(1, result.getContent().size());
+        assertEquals(reservation.getDate(), result.getContent().get(0).getDate());
+        assertEquals(reservation.getStartTime(), result.getContent().get(0).getStartTime());
+        assertEquals(reservation.getEndTime(), result.getContent().get(0).getEndTime());
+        assertEquals(reservation.getStatus(), result.getContent().get(0).getStatus());
     }
 
 }
