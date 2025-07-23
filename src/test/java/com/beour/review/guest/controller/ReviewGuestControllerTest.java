@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -169,35 +170,43 @@ class ReviewGuestControllerTest {
     }
 
     @Test
-    @DisplayName("리뷰 가능한 예약 조회 - 성공")
+    @DisplayName("리뷰 가능한 예약 조회 - 성공 (페이징)")
     void getReviewableReservations_success() throws Exception {
-        mockMvc.perform(get("/api/guest/reviews/reviewable")
+        mockMvc.perform(get("/api/users/me/reviewable-reservations")
+                        .param("page", "0")
+                        .param("size", "10")
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data[0].reservationId").value(completedReservation.getId()))
-                .andExpect(jsonPath("$.data[0].spaceName").value(space.getName()))
-                .andExpect(jsonPath("$.data[0].date").value(completedReservation.getDate().toString()))
-                .andExpect(jsonPath("$.data[0].guestCount").value(2))
-                .andExpect(jsonPath("$.data[0].usagePurpose").value("BARISTA_TRAINING"));
+                .andExpect(jsonPath("$.data.reservations[0].reservationId").value(completedReservation.getId()))
+                .andExpect(jsonPath("$.data.reservations[0].spaceName").value(space.getName()))
+                .andExpect(jsonPath("$.data.reservations[0].date").value(completedReservation.getDate().toString()))
+                .andExpect(jsonPath("$.data.reservations[0].guestCount").value(2))
+                .andExpect(jsonPath("$.data.reservations[0].usagePurpose").value("BARISTA_TRAINING"))
+                .andExpect(jsonPath("$.data.last").exists())
+                .andExpect(jsonPath("$.data.totalPage").exists());
     }
 
     @Test
-    @DisplayName("작성한 리뷰 조회 - 성공")
+    @DisplayName("작성한 리뷰 조회 - 성공 (페이징)")
     void getWrittenReviews_success() throws Exception {
-        mockMvc.perform(get("/api/guest/reviews/written")
+        mockMvc.perform(get("/api/users/me/reviews")
+                        .param("page", "0")
+                        .param("size", "10")
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data[0].reviewId").value(review.getId()))
-                .andExpect(jsonPath("$.data[0].guestNickname").value(guest.getNickname()))
-                .andExpect(jsonPath("$.data[0].reviewRating").value(5))
-                .andExpect(jsonPath("$.data[0].spaceName").value(space.getName()))
-                .andExpect(jsonPath("$.data[0].reviewContent").value("정말 좋은 공간이었습니다!"));
+                .andExpect(jsonPath("$.data.reviews[0].reviewId").value(review.getId()))
+                .andExpect(jsonPath("$.data.reviews[0].guestNickname").value(guest.getNickname()))
+                .andExpect(jsonPath("$.data.reviews[0].reviewRating").value(5))
+                .andExpect(jsonPath("$.data.reviews[0].spaceName").value(space.getName()))
+                .andExpect(jsonPath("$.data.reviews[0].reviewContent").value("정말 좋은 공간이었습니다!"))
+                .andExpect(jsonPath("$.data.last").exists())
+                .andExpect(jsonPath("$.data.totalPage").exists());
     }
 
     @Test
     @DisplayName("리뷰 작성용 예약 정보 조회 - 성공")
     void getReservationForReview_success() throws Exception {
-        mockMvc.perform(get("/api/guest/reviews/reservation/" + completedReservation.getId())
+        mockMvc.perform(get("/api/reviews/reservations/" + completedReservation.getId())
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.reservationId").value(completedReservation.getId()))
@@ -209,14 +218,14 @@ class ReviewGuestControllerTest {
     @Test
     @DisplayName("리뷰 작성용 예약 정보 조회 - 예약 없음")
     void getReservationForReview_not_found() throws Exception {
-        mockMvc.perform(get("/api/guest/reviews/reservation/999")
+        mockMvc.perform(get("/api/reviews/reservations/999")
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value(ReservationErrorCode.RESERVATION_NOT_FOUND.getMessage()));
     }
 
     @Test
-    @DisplayName("리뷰 생성 - 성공")
+    @DisplayName("리뷰 생성 - 성공 (multipart/form-data)")
     void createReview_success() throws Exception {
         // 새로운 완료된 예약 생성
         Reservation newReservation = Reservation.builder()
@@ -234,19 +243,79 @@ class ReviewGuestControllerTest {
                 .build();
         reservationRepository.save(newReservation);
 
-        String requestJson = String.format("""
-            {
-                "reservationId": %d,
-                "rating": 4,
-                "content": "괜찮은 공간입니다.",
-                "imageUrls": ["https://example.com/image1.jpg", "https://example.com/image2.jpg"]
-            }
-            """, newReservation.getId());
+        MockMultipartFile requestDto = new MockMultipartFile(
+                "requestDto",
+                "",
+                "application/json",
+                String.format("""
+                    {
+                        "reservationId": %d,
+                        "rating": 4,
+                        "content": "괜찮은 공간입니다."
+                    }
+                    """, newReservation.getId()).getBytes()
+        );
 
-        mockMvc.perform(post("/api/guest/reviews")
+        MockMultipartFile image1 = new MockMultipartFile(
+                "images",
+                "test1.jpg",
+                "image/jpeg",
+                "test image content 1".getBytes()
+        );
+
+        MockMultipartFile image2 = new MockMultipartFile(
+                "images",
+                "test2.jpg",
+                "image/jpeg",
+                "test image content 2".getBytes()
+        );
+
+        mockMvc.perform(multipart("/api/users/me/reviews")
+                        .file(requestDto)
+                        .file(image1)
+                        .file(image2)
                         .header("Authorization", "Bearer " + accessToken)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJson))
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").value("Review가 저장되었습니다."));
+    }
+
+    @Test
+    @DisplayName("리뷰 생성 - 이미지 없이")
+    void createReview_without_images() throws Exception {
+        // 새로운 완료된 예약 생성
+        Reservation newReservation = Reservation.builder()
+                .guest(guest)
+                .host(host)
+                .space(space)
+                .status(ReservationStatus.COMPLETED)
+                .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+                .requestMessage("테스트 요청")
+                .date(LocalDate.now().minusDays(3))
+                .startTime(LocalTime.of(16, 0, 0))
+                .endTime(LocalTime.of(17, 0, 0))
+                .price(15000)
+                .guestCount(2)
+                .build();
+        reservationRepository.save(newReservation);
+
+        MockMultipartFile requestDto = new MockMultipartFile(
+                "requestDto",
+                "",
+                "application/json",
+                String.format("""
+                    {
+                        "reservationId": %d,
+                        "rating": 4,
+                        "content": "괜찮은 공간입니다."
+                    }
+                    """, newReservation.getId()).getBytes()
+        );
+
+        mockMvc.perform(multipart("/api/users/me/reviews")
+                        .file(requestDto)
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data").value("Review가 저장되었습니다."));
     }
@@ -254,19 +323,23 @@ class ReviewGuestControllerTest {
     @Test
     @DisplayName("리뷰 생성 - 완료되지 않은 예약")
     void createReview_not_completed_reservation() throws Exception {
-        String requestJson = String.format("""
-            {
-                "reservationId": %d,
-                "rating": 4,
-                "content": "괜찮은 공간입니다.",
-                "imageUrls": []
-            }
-            """, pendingReservation.getId());
+        MockMultipartFile requestDto = new MockMultipartFile(
+                "requestDto",
+                "",
+                "application/json",
+                String.format("""
+                    {
+                        "reservationId": %d,
+                        "rating": 4,
+                        "content": "괜찮은 공간입니다."
+                    }
+                    """, pendingReservation.getId()).getBytes()
+        );
 
-        mockMvc.perform(post("/api/guest/reviews")
+        mockMvc.perform(multipart("/api/users/me/reviews")
+                        .file(requestDto)
                         .header("Authorization", "Bearer " + accessToken)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJson))
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value(ReviewErrorCode.ONLY_COMPLETED_CAN_REVIEW.getMessage()));
     }
@@ -274,19 +347,23 @@ class ReviewGuestControllerTest {
     @Test
     @DisplayName("리뷰 생성 - 중복 리뷰")
     void createReview_duplicate_review() throws Exception {
-        String requestJson = String.format("""
-            {
-                "reservationId": %d,
-                "rating": 4,
-                "content": "괜찮은 공간입니다.",
-                "imageUrls": []
-            }
-            """, completedReservation.getId());
+        MockMultipartFile requestDto = new MockMultipartFile(
+                "requestDto",
+                "",
+                "application/json",
+                String.format("""
+                    {
+                        "reservationId": %d,
+                        "rating": 4,
+                        "content": "괜찮은 공간입니다."
+                    }
+                    """, completedReservation.getId()).getBytes()
+        );
 
-        mockMvc.perform(post("/api/guest/reviews")
+        mockMvc.perform(multipart("/api/users/me/reviews")
+                        .file(requestDto)
                         .header("Authorization", "Bearer " + accessToken)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJson))
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").value(ReviewErrorCode.REVIEW_ALREADY_EXISTS.getMessage()));
     }
@@ -294,45 +371,53 @@ class ReviewGuestControllerTest {
     @Test
     @DisplayName("리뷰 생성 - 잘못된 별점")
     void createReview_invalid_rating() throws Exception {
-        String requestJson = String.format("""
-            {
-                "reservationId": %d,
-                "rating": 6,
-                "content": "괜찮은 공간입니다.",
-                "imageUrls": []
-            }
-            """, completedReservation.getId());
+        MockMultipartFile requestDto = new MockMultipartFile(
+                "requestDto",
+                "",
+                "application/json",
+                String.format("""
+                    {
+                        "reservationId": %d,
+                        "rating": 6,
+                        "content": "괜찮은 공간입니다."
+                    }
+                    """, completedReservation.getId()).getBytes()
+        );
 
-        mockMvc.perform(post("/api/guest/reviews")
+        mockMvc.perform(multipart("/api/users/me/reviews")
+                        .file(requestDto)
                         .header("Authorization", "Bearer " + accessToken)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJson))
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     @DisplayName("리뷰 생성 - 빈 내용")
     void createReview_empty_content() throws Exception {
-        String requestJson = String.format("""
-            {
-                "reservationId": %d,
-                "rating": 4,
-                "content": null,
-                "imageUrls": []
-            }
-            """, completedReservation.getId());
+        MockMultipartFile requestDto = new MockMultipartFile(
+                "requestDto",
+                "",
+                "application/json",
+                String.format("""
+                    {
+                        "reservationId": %d,
+                        "rating": 4,
+                        "content": null
+                    }
+                    """, completedReservation.getId()).getBytes()
+        );
 
-        mockMvc.perform(post("/api/guest/reviews")
+        mockMvc.perform(multipart("/api/users/me/reviews")
+                        .file(requestDto)
                         .header("Authorization", "Bearer " + accessToken)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJson))
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     @DisplayName("리뷰 상세 조회 - 성공")
     void getReviewDetail_success() throws Exception {
-        mockMvc.perform(get("/api/guest/reviews/" + review.getId())
+        mockMvc.perform(get("/api/users/me/reviews/" + review.getId())
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.reviewId").value(review.getId()))
@@ -344,27 +429,70 @@ class ReviewGuestControllerTest {
     @Test
     @DisplayName("리뷰 상세 조회 - 존재하지 않는 리뷰")
     void getReviewDetail_not_found() throws Exception {
-        mockMvc.perform(get("/api/guest/reviews/999")
+        mockMvc.perform(get("/api/users/me/reviews/999")
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value(ReviewErrorCode.REVIEW_NOT_FOUND.getMessage()));
     }
 
     @Test
-    @DisplayName("리뷰 수정 - 성공")
+    @DisplayName("리뷰 수정 - 성공 (multipart/form-data)")
     void updateReview_success() throws Exception {
-        String requestJson = """
-            {
-                "rating": 4,
-                "content": "수정된 리뷰 내용입니다.",
-                "imageUrls": ["https://example.com/updated.jpg"]
-            }
-            """;
+        MockMultipartFile requestDto = new MockMultipartFile(
+                "requestDto",
+                "",
+                "application/json",
+                """
+                {
+                    "rating": 4,
+                    "content": "수정된 리뷰 내용입니다."
+                }
+                """.getBytes()
+        );
 
-        mockMvc.perform(patch("/api/guest/reviews/" + review.getId())
+        MockMultipartFile image = new MockMultipartFile(
+                "images",
+                "updated.jpg",
+                "image/jpeg",
+                "updated image content".getBytes()
+        );
+
+        mockMvc.perform(multipart("/api/users/me/reviews/" + review.getId())
+                        .file(requestDto)
+                        .file(image)
                         .header("Authorization", "Bearer " + accessToken)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJson))
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .with(request -> {
+                            request.setMethod("PATCH");
+                            return request;
+                        }))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").value("Review가 수정되었습니다."));
+    }
+
+    @Test
+    @DisplayName("리뷰 수정 - 이미지 없이")
+    void updateReview_without_images() throws Exception {
+        MockMultipartFile requestDto = new MockMultipartFile(
+                "requestDto",
+                "",
+                "application/json",
+                """
+                {
+                    "rating": 4,
+                    "content": "수정된 리뷰 내용입니다."
+                }
+                """.getBytes()
+        );
+
+        mockMvc.perform(multipart("/api/users/me/reviews/" + review.getId())
+                        .file(requestDto)
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .with(request -> {
+                            request.setMethod("PATCH");
+                            return request;
+                        }))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data").value("Review가 수정되었습니다."));
     }
@@ -372,18 +500,26 @@ class ReviewGuestControllerTest {
     @Test
     @DisplayName("리뷰 수정 - 존재하지 않는 리뷰")
     void updateReview_not_found() throws Exception {
-        String requestJson = """
-            {
-                "rating": 4,
-                "content": "수정된 리뷰 내용입니다.",
-                "imageUrls": []
-            }
-            """;
+        MockMultipartFile requestDto = new MockMultipartFile(
+                "requestDto",
+                "",
+                "application/json",
+                """
+                {
+                    "rating": 4,
+                    "content": "수정된 리뷰 내용입니다."
+                }
+                """.getBytes()
+        );
 
-        mockMvc.perform(patch("/api/guest/reviews/999")
+        mockMvc.perform(multipart("/api/users/me/reviews/999")
+                        .file(requestDto)
                         .header("Authorization", "Bearer " + accessToken)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJson))
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .with(request -> {
+                            request.setMethod("PATCH");
+                            return request;
+                        }))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value(ReviewErrorCode.REVIEW_NOT_FOUND.getMessage()));
     }
@@ -391,36 +527,52 @@ class ReviewGuestControllerTest {
     @Test
     @DisplayName("리뷰 수정 - 잘못된 별점")
     void updateReview_invalid_rating() throws Exception {
-        String requestJson = """
-            {
-                "rating": 0,
-                "content": "수정된 리뷰 내용입니다.",
-                "imageUrls": []
-            }
-            """;
+        MockMultipartFile requestDto = new MockMultipartFile(
+                "requestDto",
+                "",
+                "application/json",
+                """
+                {
+                    "rating": 0,
+                    "content": "수정된 리뷰 내용입니다."
+                }
+                """.getBytes()
+        );
 
-        mockMvc.perform(patch("/api/guest/reviews/" + review.getId())
+        mockMvc.perform(multipart("/api/users/me/reviews/" + review.getId())
+                        .file(requestDto)
                         .header("Authorization", "Bearer " + accessToken)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJson))
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .with(request -> {
+                            request.setMethod("PATCH");
+                            return request;
+                        }))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     @DisplayName("리뷰 수정 - 빈 내용")
     void updateReview_blank_content() throws Exception {
-        String requestJson = """
-            {
-                "rating": 4,
-                "content": "",
-                "imageUrls": []
-            }
-            """;
+        MockMultipartFile requestDto = new MockMultipartFile(
+                "requestDto",
+                "",
+                "application/json",
+                """
+                {
+                    "rating": 4,
+                    "content": ""
+                }
+                """.getBytes()
+        );
 
-        mockMvc.perform(patch("/api/guest/reviews/" + review.getId())
+        mockMvc.perform(multipart("/api/users/me/reviews/" + review.getId())
+                        .file(requestDto)
                         .header("Authorization", "Bearer " + accessToken)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJson))
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .with(request -> {
+                            request.setMethod("PATCH");
+                            return request;
+                        }))
                 .andExpect(status().isBadRequest());
     }
 
@@ -428,7 +580,7 @@ class ReviewGuestControllerTest {
     @Transactional
     @DisplayName("리뷰 삭제 - 성공")
     void deleteReview_success() throws Exception {
-        mockMvc.perform(delete("/api/guest/reviews/" + review.getId())
+        mockMvc.perform(delete("/api/users/me/reviews/" + review.getId())
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data").value("Review가 삭제되었습니다."));
@@ -437,7 +589,7 @@ class ReviewGuestControllerTest {
     @Test
     @DisplayName("리뷰 삭제 - 존재하지 않는 리뷰")
     void deleteReview_not_found() throws Exception {
-        mockMvc.perform(delete("/api/guest/reviews/999")
+        mockMvc.perform(delete("/api/users/me/reviews/999")
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value(ReviewErrorCode.REVIEW_NOT_FOUND.getMessage()));
@@ -489,7 +641,7 @@ class ReviewGuestControllerTest {
                 1000L * 60 * 30
         );
 
-        mockMvc.perform(get("/api/guest/reviews/" + review.getId())
+        mockMvc.perform(get("/api/users/me/reviews/" + review.getId())
                         .header("Authorization", "Bearer " + otherAccessToken))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value(ReviewErrorCode.NO_PERMISSION.getMessage()));
@@ -526,19 +678,23 @@ class ReviewGuestControllerTest {
                 .build();
         reservationRepository.save(otherReservation);
 
-        String requestJson = String.format("""
-            {
-                "reservationId": %d,
-                "rating": 4,
-                "content": "괜찮은 공간입니다.",
-                "imageUrls": []
-            }
-            """, otherReservation.getId());
+        MockMultipartFile requestDto = new MockMultipartFile(
+                "requestDto",
+                "",
+                "application/json",
+                String.format("""
+                    {
+                        "reservationId": %d,
+                        "rating": 4,
+                        "content": "괜찮은 공간입니다."
+                    }
+                    """, otherReservation.getId()).getBytes()
+        );
 
-        mockMvc.perform(post("/api/guest/reviews")
+        mockMvc.perform(multipart("/api/users/me/reviews")
+                        .file(requestDto)
                         .header("Authorization", "Bearer " + accessToken)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJson))
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value(ReservationErrorCode.NO_PERMISSION.getMessage()));
     }
