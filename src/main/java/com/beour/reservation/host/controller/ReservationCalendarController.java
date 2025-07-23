@@ -1,17 +1,16 @@
 package com.beour.reservation.host.controller;
 
 import com.beour.global.response.ApiResponse;
-import com.beour.reservation.host.dto.CalendarReservationResponseDto;
+import com.beour.reservation.host.dto.CalendarReservationPageResponseDto;
 import com.beour.reservation.host.service.ReservationCalendarService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -19,38 +18,35 @@ public class ReservationCalendarController {
 
     private final ReservationCalendarService reservationCalendarService;
 
-    @GetMapping("/api/host/calendar/reservations")
-    public ApiResponse<List<CalendarReservationResponseDto>> getHostCalendarReservations(
-            @RequestParam(value = "date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @RequestParam(value = "spaceId", required = false) Long spaceId) {
-        return ApiResponse.ok(reservationCalendarService.getHostCalendarReservations(date, spaceId));
+    @GetMapping("/api/reservations")
+    public ApiResponse<CalendarReservationPageResponseDto> getHostCalendarReservations(
+            @RequestParam(value = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(value = "spaceId", required = false) Long spaceId,
+            @RequestParam(value = "status", required = false) String status,
+            @PageableDefault(size = 10, sort = "startTime", direction = Sort.Direction.ASC) Pageable pageable) {
+
+        LocalDate targetDate = (date != null) ? date : LocalDate.now();
+
+        if ("pending".equals(status)) {
+            return ApiResponse.ok(reservationCalendarService.getHostPendingReservations(targetDate, spaceId, pageable));
+        } else if ("accepted".equals(status)) {
+            return ApiResponse.ok(reservationCalendarService.getHostAcceptedReservations(targetDate, spaceId, pageable));
+        } else {
+            return ApiResponse.ok(reservationCalendarService.getHostCalendarReservations(targetDate, spaceId, pageable));
+        }
     }
 
-    @GetMapping("/api/host/calendar/reservations/pending")
-    public ApiResponse<List<CalendarReservationResponseDto>> getHostPendingReservations(
-            @RequestParam(value = "date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @RequestParam(value = "spaceId", required = false) Long spaceId) {
-        return ApiResponse.ok(reservationCalendarService.getHostPendingReservations(date, spaceId));
-    }
-
-    @GetMapping("/api/host/calendar/reservations/accepted")
-    public ApiResponse<List<CalendarReservationResponseDto>> getHostAcceptedReservations(
-            @RequestParam(value = "date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @RequestParam(value = "spaceId", required = false) Long spaceId) {
-        return ApiResponse.ok(reservationCalendarService.getHostAcceptedReservations(date, spaceId));
-    }
-
-    @PatchMapping("/api/host/calendar/reservations/accept")
+    @PatchMapping("/api/reservations/{reservationId}/accept")
     public ApiResponse<String> acceptReservation(
-            @RequestParam(value = "reservationId") Long reservationId,
+            @PathVariable("reservationId") Long reservationId,
             @RequestParam(value = "spaceId") Long spaceId) {
         reservationCalendarService.acceptReservation(reservationId, spaceId);
         return ApiResponse.ok("예약이 승인되었습니다.");
     }
 
-    @PatchMapping("/api/host/calendar/reservations/reject")
+    @PatchMapping("/api/reservations/{reservationId}/reject")
     public ApiResponse<String> rejectReservation(
-            @RequestParam(value = "reservationId") Long reservationId,
+            @PathVariable("reservationId") Long reservationId,
             @RequestParam(value = "spaceId") Long spaceId) {
         reservationCalendarService.rejectReservation(reservationId, spaceId);
         return ApiResponse.ok("예약이 거부되었습니다.");
