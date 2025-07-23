@@ -36,7 +36,7 @@ public class ReservationGuestController {
         return ApiResponse.ok(checkAvailableTimeService.findAvailableTime(requestDto));
     }
 
-    @GetMapping("/api/reservation")
+    @GetMapping("/api/reservations")
     public ApiResponse<List<ReservationListResponseDto>> checkReservationList(){
         return ApiResponse.ok(reservationGuestService.findReservationList());
     }

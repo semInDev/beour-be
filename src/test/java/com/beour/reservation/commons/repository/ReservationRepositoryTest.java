@@ -257,11 +257,15 @@ class ReservationRepositoryTest {
             guest.getId(), LocalDate.now(), LocalTime.now());
 
         //then
-        assertEquals(1, result.size());
-        assertEquals(reservation2.getDate(), result.get(0).getDate());
-        assertEquals(reservation2.getStartTime(), result.get(0).getStartTime());
-        assertEquals(reservation2.getEndTime(), result.get(0).getEndTime());
-        assertEquals(reservation2.getStatus(), result.get(0).getStatus());
+        assertEquals(2, result.size());
+        assertEquals(reservation.getDate(), result.get(0).getDate());
+        assertEquals(reservation.getStartTime(), result.get(0).getStartTime());
+        assertEquals(reservation.getEndTime(), result.get(0).getEndTime());
+        assertEquals(reservation.getStatus(), result.get(0).getStatus());
+        assertEquals(reservation2.getDate(), result.get(1).getDate());
+        assertEquals(reservation2.getStartTime(), result.get(1).getStartTime());
+        assertEquals(reservation2.getEndTime(), result.get(1).getEndTime());
+        assertEquals(reservation2.getStatus(), result.get(1).getStatus());
     }
 
     @Test

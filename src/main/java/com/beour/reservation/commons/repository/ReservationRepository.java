@@ -18,7 +18,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     @Query("SELECT r FROM Reservation r JOIN FETCH r.space " +
         "WHERE r.guest.id = :guestId AND " +
-        "(r.date > :today OR (r.date = :today AND r.startTime > :now))")
+        "(r.date > :today OR (r.date = :today AND r.endTime > :now))")
     List<Reservation> findUpcomingReservationsByGuest(
         @Param("guestId") Long guestId,
         @Param("today") LocalDate today,

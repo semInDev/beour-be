@@ -540,7 +540,7 @@ class ReservationGuestControllerTest {
         reservationRepository.save(reservationFuture);
 
         //when  then
-        mockMvc.perform(get("/api/reservation")
+        mockMvc.perform(get("/api/reservations")
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isOk())
@@ -550,10 +550,41 @@ class ReservationGuestControllerTest {
     }
 
     @Test
+    @DisplayName("예약 현황 조회 - 진행 중인 예약 있을 경우")
+    void check_reservation_list_with_ing_reservation() throws Exception {
+        //given
+        int currentHour = LocalTime.now().getHour();
+        Reservation reservation = Reservation.builder()
+            .guest(guest)
+            .host(host)
+            .space(space)
+            .status(ReservationStatus.COMPLETED)
+            .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+            .requestMessage("테슽뚜")
+            .date(LocalDate.now())
+            .startTime(LocalTime.of(currentHour - 1, 0, 0))
+            .endTime(LocalTime.of(currentHour + 1, 0, 0))
+            .price(15000)
+            .guestCount(2)
+            .build();
+        reservationRepository.save(reservation);
+
+        //when  then
+        mockMvc.perform(get("/api/reservations")
+                .header("Authorization", "Bearer " + accessToken)
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data[0].spaceName").value(reservation.getSpace().getName()))
+            .andExpect(jsonPath("$.data[0].startTime").value(String.format("%02d:00:00", reservation.getStartTime().getHour())))
+            .andExpect(jsonPath("$.data[0].endTime").value(String.format("%02d:00:00", reservation.getEndTime().getHour())))
+            .andExpect(jsonPath("$.data[0].currentUsing").value(true));
+    }
+
+    @Test
     @DisplayName("예약 현황 조회 - 예약 없을 경우")
     void check_reservation_list_not_found() throws Exception {
         //when  then
-        mockMvc.perform(get("/api/reservation")
+        mockMvc.perform(get("/api/reservations")
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isNotFound())
@@ -564,7 +595,7 @@ class ReservationGuestControllerTest {
     @DisplayName("지난 예약 현황 조회 - 예약 없을 경우")
     void check_past_reservation_list_not_found() throws Exception {
         //when  then
-        mockMvc.perform(get("/api/reservation/past")
+        mockMvc.perform(get("/api/reservations/past")
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isNotFound())
@@ -591,7 +622,7 @@ class ReservationGuestControllerTest {
         reservationRepository.save(reservationPast);
 
         //when  then
-        mockMvc.perform(get("/api/reservation/past")
+        mockMvc.perform(get("/api/reservations/past")
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isOk())
@@ -602,8 +633,7 @@ class ReservationGuestControllerTest {
     @DisplayName("예약 취소 - 존재하지 않는 에약일 경우")
     void cancel_reservation_not_found() throws Exception {
         //when  then
-        mockMvc.perform(delete("/api/reservation/cancel")
-                .param("reservationId", "100")
+        mockMvc.perform(delete("/api/reservations/100")
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isNotFound())
@@ -630,8 +660,7 @@ class ReservationGuestControllerTest {
         reservationRepository.save(reservation);
 
         //when  then
-        mockMvc.perform(delete("/api/reservation/cancel")
-                .param("reservationId", String.format("%d", reservation.getId()))
+        mockMvc.perform(delete("/api/reservations/" + reservation.getId())
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isBadRequest())
@@ -659,8 +688,7 @@ class ReservationGuestControllerTest {
         reservationRepository.save(reservation);
 
         //when  then
-        mockMvc.perform(delete("/api/reservation/cancel")
-                .param("reservationId", String.format("%d", reservation.getId()))
+        mockMvc.perform(delete("/api/reservations/" + reservation.getId())
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isOk())
