@@ -13,7 +13,6 @@ import com.beour.reservation.commons.exceptionType.ReservationNotFound;
 import com.beour.reservation.commons.repository.ReservationRepository;
 import com.beour.reservation.guest.dto.ReservationCreateRequest;
 import com.beour.reservation.guest.dto.ReservationListPageResponseDto;
-import com.beour.reservation.guest.dto.ReservationListResponseDto;
 import com.beour.reservation.guest.dto.ReservationResponseDto;
 import com.beour.space.domain.entity.AvailableTime;
 import com.beour.space.domain.entity.Space;
@@ -27,7 +26,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -385,15 +383,15 @@ class ReservationGuestServiceTest {
         reservationRepository.save(reservationFuture);
 
         //when
-        List<ReservationListResponseDto> result = reservationGuestService.findPastReservationList();
+        ReservationListPageResponseDto result = reservationGuestService.findPastReservationList(Pageable.ofSize(20));
 
         //then
-        assertThat(result).hasSize(1);
-        assertEquals(reservationPast.getSpace().getName(), result.get(0).getSpaceName());
-        assertEquals(reservationPast.getDate(), result.get(0).getDate());
-        assertEquals(reservationPast.getStartTime(), result.get(0).getStartTime());
-        assertEquals(reservationPast.getEndTime(), result.get(0).getEndTime());
-        assertEquals(ReservationStatus.COMPLETED, result.get(0).getStatus());
+        assertThat(result.getReservations()).hasSize(1);
+        assertEquals(reservationPast.getSpace().getName(), result.getReservations().get(0).getSpaceName());
+        assertEquals(reservationPast.getDate(), result.getReservations().get(0).getDate());
+        assertEquals(reservationPast.getStartTime(), result.getReservations().get(0).getStartTime());
+        assertEquals(reservationPast.getEndTime(), result.getReservations().get(0).getEndTime());
+        assertEquals(ReservationStatus.COMPLETED, result.getReservations().get(0).getStatus());
     }
 
     @Test
@@ -417,7 +415,7 @@ class ReservationGuestServiceTest {
 
         //when  //then
         assertThrows(ReservationNotFound.class,
-            () -> reservationGuestService.findPastReservationList());
+            () -> reservationGuestService.findPastReservationList(Pageable.ofSize(20)));
     }
 
     @Test

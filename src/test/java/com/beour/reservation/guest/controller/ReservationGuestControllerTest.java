@@ -626,7 +626,7 @@ class ReservationGuestControllerTest {
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.data[0].status").value("COMPLETED"));
+            .andExpect(jsonPath("$.data.reservations[0].status").value("COMPLETED"));
     }
 
     @Test

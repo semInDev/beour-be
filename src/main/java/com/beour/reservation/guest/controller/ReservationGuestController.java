@@ -4,13 +4,11 @@ import com.beour.global.response.ApiResponse;
 import com.beour.reservation.guest.dto.CheckAvailableTimesRequestDto;
 import com.beour.reservation.guest.dto.ReservationCreateRequest;
 import com.beour.reservation.guest.dto.ReservationListPageResponseDto;
-import com.beour.reservation.guest.dto.ReservationListResponseDto;
 import com.beour.reservation.guest.dto.ReservationResponseDto;
 import com.beour.reservation.guest.dto.SpaceAvailableTimeResponseDto;
 import com.beour.reservation.guest.service.CheckAvailableTimeService;
 import com.beour.reservation.guest.service.ReservationGuestService;
 import jakarta.validation.Valid;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -39,13 +37,13 @@ public class ReservationGuestController {
     }
 
     @GetMapping("/api/reservations")
-    public ApiResponse<ReservationListPageResponseDto> checkReservationList2(@PageableDefault(size=20) Pageable pageable){
+    public ApiResponse<ReservationListPageResponseDto> checkReservationList(@PageableDefault(size=20) Pageable pageable){
         return ApiResponse.ok(reservationGuestService.findReservationList(pageable));
     }
 
     @GetMapping("/api/reservations/past")
-    public ApiResponse<List<ReservationListResponseDto>> checkPastReservationList(){
-        return ApiResponse.ok(reservationGuestService.findPastReservationList());
+    public ApiResponse<ReservationListPageResponseDto> checkPastReservationList2(@PageableDefault(size=20) Pageable pageable){
+        return ApiResponse.ok(reservationGuestService.findPastReservationList(pageable));
     }
 
     @DeleteMapping("/api/reservations/{reservationId}")

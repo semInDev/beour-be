@@ -56,12 +56,12 @@ public class SecurityConfig {
             .authorizeHttpRequests((auth) -> auth
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                     .requestMatchers("/api/signup/**", "/api/login",
-                        "/api/users/find/login-id", "/api/users/reset/password", "/api/token/reissue", "/api/reservations/past")
+                        "/api/users/find/login-id", "/api/users/reset/password", "/api/token/reissue")
                     .permitAll()
                     .requestMatchers("/api/spaces/reserve/available-times", "/api/spaces/search/**",
                         "/api/spaces/new", "/api/reviews/new", "/api/banners").permitAll()
 //                    .requestMatchers("/admin").hasRole("ADMIN")
-                    .requestMatchers("/api/spaces/*/reservations", "/api/reservations/*","/api/spaces/reserve", "/api/reservation/**", "/api/guest/**",
+                    .requestMatchers("/api/spaces/*/reservations", "/api/reservations/*", "/api/reservations/past/*","/api/spaces/reserve", "/api/reservation/**", "/api/guest/**",
                         "/api/spaces/*/likes", "/api/likes")
                     .hasRole("GUEST")
                     .requestMatchers("/api/spaces", "/api/spaces/my-spaces", "/api/spaces/*",

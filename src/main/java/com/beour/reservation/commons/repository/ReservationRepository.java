@@ -31,10 +31,11 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     @Query("SELECT r FROM Reservation r " +
         "WHERE r.guest.id = :guestId AND " +
         "(r.date < :today OR (r.date = :today AND r.endTime <= :now))")
-    List<Reservation> findPastReservationsByGuest(
+    Page<Reservation> findPastReservationsByGuest(
         @Param("guestId") Long guestId,
         @Param("today") LocalDate today,
-        @Param("now") LocalTime now
+        @Param("now") LocalTime now,
+        Pageable pageable
     );
 
     @Query("SELECT r FROM Reservation r JOIN FETCH r.space WHERE r.guest.id = :guestId AND r.status = 'COMPLETED' AND r.deletedAt IS NULL")

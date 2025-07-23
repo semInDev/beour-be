@@ -305,15 +305,15 @@ class ReservationRepositoryTest {
         reservationRepository.save(reservation2);
 
         //when
-        List<Reservation> result = reservationRepository.findPastReservationsByGuest(
-            guest.getId(), LocalDate.now(), LocalTime.now());
+        Page<Reservation> result = reservationRepository.findPastReservationsByGuest(
+            guest.getId(), LocalDate.now(), LocalTime.now(), Pageable.ofSize(20));
 
         //then
-        assertEquals(1, result.size());
-        assertEquals(reservation.getDate(), result.get(0).getDate());
-        assertEquals(reservation.getStartTime(), result.get(0).getStartTime());
-        assertEquals(reservation.getEndTime(), result.get(0).getEndTime());
-        assertEquals(reservation.getStatus(), result.get(0).getStatus());
+        assertEquals(1, result.getContent().size());
+        assertEquals(reservation.getDate(), result.getContent().get(0).getDate());
+        assertEquals(reservation.getStartTime(), result.getContent().get(0).getStartTime());
+        assertEquals(reservation.getEndTime(), result.getContent().get(0).getEndTime());
+        assertEquals(reservation.getStatus(), result.getContent().get(0).getStatus());
     }
 
 }

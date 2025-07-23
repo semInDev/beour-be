@@ -138,7 +138,7 @@ public class ReservationGuestService {
         Page<Reservation> reservationList = reservationRepository.findUpcomingReservationsByGuest(
             guest.getId(), LocalDate.now(), LocalTime.now(), pageable);
 
-        checkEmptyReservation2(reservationList);
+        checkEmptyReservation(reservationList);
 
         List<ReservationListResponseDto> responseDtoList = new ArrayList<>();
         for (Reservation reservation : reservationList) {
@@ -149,10 +149,10 @@ public class ReservationGuestService {
     }
 
     @Transactional
-    public List<ReservationListResponseDto> findPastReservationList() {
+    public ReservationListPageResponseDto findPastReservationList(Pageable pageable) {
         User user = findUserFromToken();
-        List<Reservation> reservationList = reservationRepository.findPastReservationsByGuest(
-            user.getId(), LocalDate.now(), LocalTime.now());
+        Page<Reservation> reservationList = reservationRepository.findPastReservationsByGuest(
+            user.getId(), LocalDate.now(), LocalTime.now(), pageable);
 
         checkEmptyReservation(reservationList);
 
@@ -170,16 +170,10 @@ public class ReservationGuestService {
             responseDtoList.add(ReservationListResponseDto.of(reservation, reviewId));
         }
 
-        return responseDtoList;
+        return new ReservationListPageResponseDto(responseDtoList, reservationList.isLast(), reservationList.getTotalPages());
     }
 
-    private static void checkEmptyReservation(List<Reservation> reservationList) {
-        if (reservationList.isEmpty()) {
-            throw new ReservationNotFound(ReservationErrorCode.RESERVATION_NOT_FOUND);
-        }
-    }
-
-    private static void checkEmptyReservation2(Page<Reservation> reservationList) {
+    private static void checkEmptyReservation(Page<Reservation> reservationList) {
         if (reservationList.getContent().isEmpty()) {
             throw new ReservationNotFound(ReservationErrorCode.RESERVATION_NOT_FOUND);
         }
