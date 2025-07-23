@@ -5,7 +5,6 @@ import com.beour.space.guest.dto.FilteringSearchRequestDto;
 import com.beour.space.guest.dto.NearbySpaceResponse;
 import com.beour.space.guest.dto.RecentCreatedSpcaceListResponseDto;
 import com.beour.space.guest.dto.SearchSpacePageResponseDto;
-import com.beour.space.guest.dto.SearchSpaceResponseDto;
 import com.beour.space.guest.service.GuestSpaceSearchService;
 import com.beour.space.guest.service.GuestSpaceService;
 import com.beour.space.domain.enums.SpaceCategory;
@@ -50,10 +49,10 @@ public class GuestSpaceController {
         return ApiResponse.ok(guestSpaceSearchService.search(request, pageable));
     }
 
-    @PostMapping("/search/filter")
-    public ApiResponse<List<SearchSpaceResponseDto>> searchSpacesWithFiltering(
-        @RequestBody FilteringSearchRequestDto requestDto) {
-        return ApiResponse.ok(guestSpaceSearchService.searchWithFiltering(requestDto));
+    @PostMapping("/filter")
+    public ApiResponse<SearchSpacePageResponseDto> searchSpacesWithFiltering(
+        @RequestBody FilteringSearchRequestDto requestDto, @PageableDefault(size = 20) Pageable pageable) {
+        return ApiResponse.ok(guestSpaceSearchService.searchWithFiltering(requestDto, pageable));
     }
 
     @GetMapping("/spacecategory")

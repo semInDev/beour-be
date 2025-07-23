@@ -14,8 +14,8 @@ import com.beour.space.domain.enums.UseCategory;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
 import com.beour.wishlist.repository.LikeRepository;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,27 +32,15 @@ public class GuestSpaceSearchService {
     private final LikeRepository likeRepository;
     private final UserRepository userRepository;
 
-    private List<Space> searchWithKeyword(String keyword) {
-        if (keyword.isEmpty()) {
-            throw new InputInvalidFormatException(SpaceErrorCode.KEYWORD_REQUIRED);
-        }
-
-        List<Space> result = spaceRepository.searchByKeyword("%" + keyword + "%");
-        if (result.isEmpty()) {
-            throw new SpaceNotFoundException(SpaceErrorCode.NO_MATCHING_SPACE);
-        }
-
-        return result;
-    }
-
     public SearchSpacePageResponseDto search(String keyword, Pageable pageable) {
-        Page<Space> spaces = searchWithKeyword2(keyword, pageable);
-        List<SearchSpaceResponseDto> spaceResponseDtoList = changeToSearchResponseDtoFrom2(spaces);
+        Page<Space> spaces = searchWithKeyword(keyword, pageable);
+        List<SearchSpaceResponseDto> spaceResponseDtoList = changeToSearchResponseDtoFrom(spaces);
 
-        return new SearchSpacePageResponseDto(spaceResponseDtoList, spaces.isLast(), spaces.getTotalPages());
+        return new SearchSpacePageResponseDto(spaceResponseDtoList, spaces.isLast(),
+            spaces.getTotalPages());
     }
 
-    private Page<Space> searchWithKeyword2(String keyword, Pageable pageable) {
+    private Page<Space> searchWithKeyword(String keyword, Pageable pageable) {
         if (keyword.isEmpty()) {
             throw new InputInvalidFormatException(SpaceErrorCode.KEYWORD_REQUIRED);
         }
@@ -65,80 +53,61 @@ public class GuestSpaceSearchService {
         return result;
     }
 
-    public List<SearchSpaceResponseDto> searchWithFiltering(FilteringSearchRequestDto requestDto) {
-        List<Space> spaceListWithKeyword = searchWithKeyword(requestDto.getKeyword());
-        List<Space> filtering = filterSpaces(spaceListWithKeyword, requestDto);
+    public SearchSpacePageResponseDto searchWithFiltering(FilteringSearchRequestDto requestDto,
+        Pageable pageable) {
+        String keyword = requestDto.getKeyword().isBlank() ? null : requestDto.getKeyword();
+        String address = requestDto.getAddress().isBlank() ? null : requestDto.getAddress();
+        Integer minPrice = requestDto.getMinPrice() == 0 ? null : requestDto.getMinPrice();
+        Integer maxPrice = requestDto.getMaxPrice() == 0 ? null : requestDto.getMaxPrice();
+        Integer minCapacity = requestDto.getMinCapacity() == 0 ? null : requestDto.getMinCapacity();
+        List<SpaceCategory> spaceCategories =
+            requestDto.getSpaceCategories().isEmpty() ? null : requestDto.getSpaceCategories();
+        List<UseCategory> useCategories =
+            requestDto.getUseCategories().isEmpty() ? null : requestDto.getUseCategories();
 
-        if (filtering.isEmpty()) {
+        LocalDate date = requestDto.getDate();
+
+        Page<Space> result = spaceRepository.searchWithFiltering(
+            keyword, minPrice, maxPrice, address, minCapacity, spaceCategories, useCategories, date,pageable
+        );
+
+        if (result.isEmpty()) {
             throw new SpaceNotFoundException(SpaceErrorCode.NO_MATCHING_SPACE);
         }
 
-        return changeToSearchResponseDtoFrom(filtering);
+        List<SearchSpaceResponseDto> spaces = changeToSearchResponseDtoFrom(result);
+        return new SearchSpacePageResponseDto(spaces, result.isLast(), result.getTotalPages());
     }
 
-    private List<Space> filterSpaces(List<Space> spaceListWithKeyword,
-        FilteringSearchRequestDto requestDto) {
-        return spaceListWithKeyword.stream()
-            .filter(space -> space.getDeletedAt() == null)
-
-            .filter(space -> space.getPricePerHour() >= requestDto.getMinPrice())
-            .filter(space -> requestDto.getMaxPrice() == 0
-                || space.getPricePerHour() <= requestDto.getMaxPrice())
-
-            .filter(space -> requestDto.getAddress() == null ||
-                space.getAddress() != null && space.getAddress().contains(requestDto.getAddress()))
-
-            .filter(space -> requestDto.getMinCapacity() == 0
-                || space.getMaxCapacity() >= requestDto.getMinCapacity())
-
-            .filter(
-                space -> requestDto.getSpaceCategories() == null || requestDto.getSpaceCategories()
-                    .isEmpty() ||
-                    requestDto.getSpaceCategories().contains(space.getSpaceCategory()))
-
-            .filter(space -> requestDto.getUseCategories() == null || requestDto.getUseCategories()
-                .isEmpty() ||
-                requestDto.getUseCategories().contains(space.getUseCategory()))
-
-            .filter(space -> requestDto.getDate() == null ||
-                space.getAvailableTimes().stream()
-                    .anyMatch(at -> at.getDeletedAt() == null && requestDto.getDate()
-                        .equals(at.getDate())))
-
-            .collect(Collectors.toList());
-    }
-
-    public SearchSpacePageResponseDto searchSpaceWithSpaceCategory(SpaceCategory request, Pageable pageable) {
+    public SearchSpacePageResponseDto searchSpaceWithSpaceCategory(SpaceCategory request,
+        Pageable pageable) {
         Page<Space> spaces = spaceRepository.findBySpaceCategory(request, pageable);
 
         if (spaces.isEmpty()) {
             throw new SpaceNotFoundException(SpaceErrorCode.NO_MATCHING_SPACE);
         }
 
-        List<SearchSpaceResponseDto> spaceResponseDtoList = changeToSearchResponseDtoFrom2(spaces);
+        List<SearchSpaceResponseDto> spaceResponseDtoList = changeToSearchResponseDtoFrom(spaces);
 
-        return new SearchSpacePageResponseDto(spaceResponseDtoList, spaces.isLast(), spaces.getTotalPages());
+        return new SearchSpacePageResponseDto(spaceResponseDtoList, spaces.isLast(),
+            spaces.getTotalPages());
     }
 
-    public SearchSpacePageResponseDto searchSpaceWithUseCategory(UseCategory request, Pageable pageable) {
+    public SearchSpacePageResponseDto searchSpaceWithUseCategory(UseCategory request,
+        Pageable pageable) {
         Page<Space> spaces = spaceRepository.findByUseCategory(request, pageable);
 
         if (spaces.isEmpty()) {
             throw new SpaceNotFoundException(SpaceErrorCode.NO_MATCHING_SPACE);
         }
 
-        List<SearchSpaceResponseDto> spaceResponseDtoList = changeToSearchResponseDtoFrom2(spaces);
+        List<SearchSpaceResponseDto> spaceResponseDtoList = changeToSearchResponseDtoFrom(spaces);
 
-        return new SearchSpacePageResponseDto(spaceResponseDtoList, spaces.isLast(), spaces.getTotalPages());
+        return new SearchSpacePageResponseDto(spaceResponseDtoList, spaces.isLast(),
+            spaces.getTotalPages());
     }
 
-    private List<SearchSpaceResponseDto> changeToSearchResponseDtoFrom(List<Space> spaces) {
-        return spaces.stream()
-            .map(space -> SearchSpaceResponseDto.of(space, getReviewCountBySpaceId(space.getId())))
-            .toList();
-    }
-
-    private List<SearchSpaceResponseDto> changeToSearchResponseDtoFrom2(Page<Space> spaces) {
+    private List<SearchSpaceResponseDto> changeToSearchResponseDtoFrom(Page<Space> spaces) {
         User user = findUserFromToken();
 
         return spaces.stream()
@@ -150,8 +119,9 @@ public class GuestSpaceSearchService {
     private SearchSpaceResponseDto toSearchSpaceResponseDto(Space space, User user) {
         long reviewCount = getReviewCountBySpaceId(space.getId());
         boolean isLiked = false;
-        if(user != null){
-            isLiked = likeRepository.existsByUserIdAndSpaceIdAndDeletedAtIsNull(user.getId(), space.getId());
+        if (user != null) {
+            isLiked = likeRepository.existsByUserIdAndSpaceIdAndDeletedAtIsNull(user.getId(),
+                space.getId());
         }
 
         return SearchSpaceResponseDto.oftmp(space, reviewCount, isLiked);
