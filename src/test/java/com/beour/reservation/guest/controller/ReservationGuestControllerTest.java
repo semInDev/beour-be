@@ -353,19 +353,10 @@ class ReservationGuestControllerTest {
     @Test
     @DisplayName("이용 가능한 시간 조회 - 과거 날짜로 조회")
     void check_available_time_with_past_date() throws Exception {
-        //given
-        String requestJson = String.format("""
-            {
-                "spaceId": %d,
-                "date": "%s"
-            }
-            """, space.getId(), LocalDate.now().minusDays(1));
-
         //when  then
-        mockMvc.perform(post("/api/spaces/reserve/available-times")
+        mockMvc.perform(get("/api/spaces/"+ space.getId() +"/available-times?date=" + LocalDate.now().minusDays(1))
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestJson)
             )
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.message").value(AvailableTimeErrorCode.AVAILABLE_TIME_NOT_FOUND.getMessage()));
@@ -374,24 +365,16 @@ class ReservationGuestControllerTest {
     @Test
     @DisplayName("이용 가능한 시간 조회 - 오늘 날짜로 조회")
     void check_available_time_with_today() throws Exception {
-        //given
-        int currentHour = LocalTime.now().getHour();
-        String requestJson = String.format("""
-            {
-                "spaceId": %d,
-                "date": "%s"
-            }
-            """, space.getId(), LocalDate.now());
         List<String> availableTimes = new ArrayList<>();
+        int currentHour = LocalTime.now().getHour();
         for(int i = currentHour + 1; i <= 22; i++){
             availableTimes.add(String.format("%02d:00:00", i));
         }
 
         //when  then
-        mockMvc.perform(post("/api/spaces/reserve/available-times")
+        mockMvc.perform(get("/api/spaces/"+ space.getId() +"/available-times?date=" + LocalDate.now())
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestJson)
             )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.timeList.length()").value(availableTimes.size()))
@@ -401,19 +384,10 @@ class ReservationGuestControllerTest {
     @Test
     @DisplayName("이용 가능한 시간 조회 - 가능한 시간 없을 경우")
     void check_available_time_not_found() throws Exception {
-        //given
-        String requestJson = String.format("""
-            {
-                "spaceId": %d,
-                "date": "%s"
-            }
-            """, space.getId(), LocalDate.now().plusDays(3));
-
         //when  then
-        mockMvc.perform(post("/api/spaces/reserve/available-times")
+        mockMvc.perform(get("/api/spaces/"+ space.getId() +"/available-times?date=" + LocalDate.now().plusDays(3))
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestJson)
             )
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.message").value(AvailableTimeErrorCode.AVAILABLE_TIME_NOT_FOUND.getMessage()));
@@ -438,23 +412,15 @@ class ReservationGuestControllerTest {
             .build();
         reservationRepository.save(reservationPast);
 
-        String requestJson = String.format("""
-            {
-                "spaceId": %d,
-                "date": "%s"
-            }
-            """, space.getId(), LocalDate.now().plusDays(1));
-
         List<String> availableTimes = new ArrayList<>();
         for(int i = 5; i <= 22; i++){
             availableTimes.add(String.format("%02d:00:00", i));
         }
 
         //when  then
-        mockMvc.perform(post("/api/spaces/reserve/available-times")
+        mockMvc.perform(get("/api/spaces/"+ space.getId() +"/available-times?date=" + LocalDate.now().plusDays(1))
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestJson)
             )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.timeList.length()").value(availableTimes.size()))
@@ -482,23 +448,15 @@ class ReservationGuestControllerTest {
         reservationRepository.save(reservation);
         reservation.updateStatus(ReservationStatus.REJECTED);
 
-        String requestJson = String.format("""
-            {
-                "spaceId": %d,
-                "date": "%s"
-            }
-            """, space.getId(), LocalDate.now().plusDays(1));
-
         List<String> availableTimes = new ArrayList<>();
         for(int i = 1; i <= 22; i++){
             availableTimes.add(String.format("%02d:00:00", i));
         }
 
         //when  then
-        mockMvc.perform(post("/api/spaces/reserve/available-times")
+        mockMvc.perform(get("/api/spaces/"+ space.getId() +"/available-times?date=" + LocalDate.now().plusDays(1))
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestJson)
             )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.timeList.length()").value(availableTimes.size()))

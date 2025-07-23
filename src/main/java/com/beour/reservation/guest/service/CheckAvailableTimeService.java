@@ -5,7 +5,6 @@ import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
 import com.beour.reservation.commons.exceptionType.AvailableTimeNotFound;
 import com.beour.reservation.commons.repository.ReservationRepository;
-import com.beour.reservation.guest.dto.CheckAvailableTimesRequestDto;
 import com.beour.reservation.guest.dto.SpaceAvailableTimeResponseDto;
 import com.beour.space.domain.entity.AvailableTime;
 import com.beour.space.domain.repository.AvailableTimeRepository;
@@ -24,15 +23,14 @@ public class CheckAvailableTimeService {
     private final AvailableTimeRepository availableTimeRepository;
     private final ReservationRepository reservationRepository;
 
-    public SpaceAvailableTimeResponseDto findAvailableTime(
-        CheckAvailableTimesRequestDto requestDto) {
-        AvailableTime availableTime = checkReservationAvailableDateAndGetAvailableTime(requestDto);
+    public SpaceAvailableTimeResponseDto findAvailableTime(Long spaceId, LocalDate date) {
+        AvailableTime availableTime = checkReservationAvailableDateAndGetAvailableTime(spaceId, date);
 
         List<Reservation> reservationList = reservationRepository.findBySpaceIdAndDateAndStatusNot(
-            requestDto.getSpaceId(), requestDto.getDate(), ReservationStatus.REJECTED);
+            spaceId, date, ReservationStatus.REJECTED);
 
         List<LocalTime> findTimeList = getAvailableTimeList(availableTime, reservationList,
-            requestDto.getDate());
+            date);
         if (findTimeList.isEmpty()) {
             throw new AvailableTimeNotFound(AvailableTimeErrorCode.AVAILABLE_TIME_NOT_FOUND);
         }
@@ -40,14 +38,13 @@ public class CheckAvailableTimeService {
         return SpaceAvailableTimeResponseDto.of(findTimeList);
     }
 
-    public AvailableTime checkReservationAvailableDateAndGetAvailableTime(
-        CheckAvailableTimesRequestDto requestDto) {
-        if (requestDto.getDate().isBefore(LocalDate.now())) {
+    public AvailableTime checkReservationAvailableDateAndGetAvailableTime(Long spaceId, LocalDate date) {
+        if (date.isBefore(LocalDate.now())) {
             throw new AvailableTimeNotFound(AvailableTimeErrorCode.AVAILABLE_TIME_NOT_FOUND);
         }
 
         return availableTimeRepository.findBySpaceIdAndDateAndDeletedAtIsNull(
-            requestDto.getSpaceId(), requestDto.getDate()).orElseThrow(
+            spaceId, date).orElseThrow(
             () -> new AvailableTimeNotFound(AvailableTimeErrorCode.AVAILABLE_TIME_NOT_FOUND)
         );
     }

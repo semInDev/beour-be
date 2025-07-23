@@ -12,7 +12,6 @@ import com.beour.reservation.commons.exceptionType.AvailableTimeNotFound;
 import com.beour.reservation.commons.exceptionType.MissMatch;
 import com.beour.reservation.commons.exceptionType.ReservationNotFound;
 import com.beour.reservation.commons.repository.ReservationRepository;
-import com.beour.reservation.guest.dto.CheckAvailableTimesRequestDto;
 import com.beour.reservation.guest.dto.ReservationCreateRequest;
 import com.beour.reservation.guest.dto.ReservationListPageResponseDto;
 import com.beour.reservation.guest.dto.ReservationListResponseDto;
@@ -45,7 +44,8 @@ public class ReservationGuestService {
     private final CheckAvailableTimeService checkAvailableTimeService;
     private final ReviewRepository reviewRepository;
 
-    public ReservationResponseDto createReservation(Long spaceId, ReservationCreateRequest requestDto) {
+    public ReservationResponseDto createReservation(Long spaceId,
+        ReservationCreateRequest requestDto) {
         User guest = findUserFromToken();
         Space space = spaceRepository.findById(spaceId).orElseThrow(
             () -> new SpaceNotFoundException(SpaceErrorCode.SPACE_NOT_FOUND)
@@ -97,8 +97,7 @@ public class ReservationGuestService {
 
     private void checkReservationAvailableDate(ReservationCreateRequest requestDto, Space space) {
         AvailableTime availableTime = checkAvailableTimeService.checkReservationAvailableDateAndGetAvailableTime(
-            new CheckAvailableTimesRequestDto(
-                space.getId(), requestDto.getDate()));
+            space.getId(), requestDto.getDate());
 
         if (requestDto.getDate().equals(LocalDate.now()) && requestDto.getStartTime()
             .isBefore(LocalTime.now())) {
@@ -145,7 +144,8 @@ public class ReservationGuestService {
             responseDtoList.add(ReservationListResponseDto.of(reservation));
         }
 
-        return new ReservationListPageResponseDto(responseDtoList, reservationList.isLast(), reservationList.getTotalPages());
+        return new ReservationListPageResponseDto(responseDtoList, reservationList.isLast(),
+            reservationList.getTotalPages());
     }
 
     @Transactional
@@ -170,7 +170,8 @@ public class ReservationGuestService {
             responseDtoList.add(ReservationListResponseDto.of(reservation, reviewId));
         }
 
-        return new ReservationListPageResponseDto(responseDtoList, reservationList.isLast(), reservationList.getTotalPages());
+        return new ReservationListPageResponseDto(responseDtoList, reservationList.isLast(),
+            reservationList.getTotalPages());
     }
 
     private static void checkEmptyReservation(Page<Reservation> reservationList) {

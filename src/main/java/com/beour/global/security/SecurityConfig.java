@@ -59,7 +59,7 @@ public class SecurityConfig {
                         "/api/users/find/login-id", "/api/users/reset/password", "/api/token/reissue")
                     .permitAll()
                     .requestMatchers("/api/spaces/reserve/available-times", "/api/spaces/search/**",
-                        "/api/spaces/new", "/api/reviews/new", "/api/banners").permitAll()
+                        "/api/spaces/new", "/api/reviews/new", "/api/banners", "/api/spaces/*/available-times").permitAll()
 //                    .requestMatchers("/admin").hasRole("ADMIN")
                     .requestMatchers("/api/spaces/*/reservations", "/api/reservations/*", "/api/reservations/past/*","/api/spaces/reserve", "/api/reservation/**", "/api/guest/**",
                         "/api/spaces/*/likes", "/api/likes")

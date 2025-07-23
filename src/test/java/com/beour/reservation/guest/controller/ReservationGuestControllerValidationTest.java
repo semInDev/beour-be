@@ -287,46 +287,4 @@ class ReservationGuestControllerValidationTest {
             .andExpect(jsonPath("$.message").value("요청 사항은 200자 이내로 입력해주세요."));
     }
 
-    @Test
-    @DisplayName("이용가능 시간 체크 유효성 검사 - 공간 id 값 공백")
-    void invalid_check_available_times_space_id_empty() throws Exception {
-        //given
-        String requestJson = String.format("""
-            {
-                "spaceId": null,
-                "date": "%s"
-            }
-            """, LocalDate.now().plusDays(1));
-
-        //when  then
-        mockMvc.perform(post("/api/spaces/reserve/available-times")
-                .header("Authorization", "Bearer " + accessToken)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestJson)
-            )
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.message").value("공간 id 입력은 필수입니다."));
-    }
-
-    @Test
-    @DisplayName("이용가능 시간 체크 유효성 검사 - 날짜 데이터 공백")
-    void invalid_check_available_times_date_empty() throws Exception {
-        //given
-        String requestJson = String.format("""
-            {
-                "spaceId": %d,
-                "date": null
-            }
-            """, space.getId());
-
-        //when  then
-        mockMvc.perform(post("/api/spaces/reserve/available-times")
-                .header("Authorization", "Bearer " + accessToken)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestJson)
-            )
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.message").value("날짜 입력은 필수입니다."));
-    }
-
 }
