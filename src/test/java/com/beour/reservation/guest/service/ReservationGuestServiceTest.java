@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
-import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
 import com.beour.reservation.commons.enums.UsagePurpose;
@@ -13,6 +12,7 @@ import com.beour.reservation.commons.exceptionType.MissMatch;
 import com.beour.reservation.commons.exceptionType.ReservationNotFound;
 import com.beour.reservation.commons.repository.ReservationRepository;
 import com.beour.reservation.guest.dto.ReservationCreateRequest;
+import com.beour.reservation.guest.dto.ReservationListPageResponseDto;
 import com.beour.reservation.guest.dto.ReservationListResponseDto;
 import com.beour.reservation.guest.dto.ReservationResponseDto;
 import com.beour.space.domain.entity.AvailableTime;
@@ -34,6 +34,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -258,7 +259,7 @@ class ReservationGuestServiceTest {
     void get_reservation_list() {
         //when   //then
         assertThrows(ReservationNotFound.class,
-            () -> reservationGuestService.findReservationList());
+            () -> reservationGuestService.findReservationList(Pageable.ofSize(20)));
     }
 
     @Test
@@ -295,14 +296,14 @@ class ReservationGuestServiceTest {
         reservationRepository.save(reservationFuture);
 
         //when
-        List<ReservationListResponseDto> result = reservationGuestService.findReservationList();
+        ReservationListPageResponseDto result = reservationGuestService.findReservationList(Pageable.ofSize(20));
 
         //then
-        assertThat(result).hasSize(1);
-        assertEquals(reservationFuture.getSpace().getName(), result.get(0).getSpaceName());
-        assertEquals(reservationFuture.getDate(), result.get(0).getDate());
-        assertEquals(reservationFuture.getStartTime(), result.get(0).getStartTime());
-        assertEquals(reservationFuture.getEndTime(), result.get(0).getEndTime());
+        assertThat(result.getReservations()).hasSize(1);
+        assertEquals(reservationFuture.getSpace().getName(), result.getReservations().get(0).getSpaceName());
+        assertEquals(reservationFuture.getDate(), result.getReservations().get(0).getDate());
+        assertEquals(reservationFuture.getStartTime(), result.getReservations().get(0).getStartTime());
+        assertEquals(reservationFuture.getEndTime(), result.getReservations().get(0).getEndTime());
     }
 
     @Test
@@ -340,14 +341,14 @@ class ReservationGuestServiceTest {
         reservationRepository.save(reservationFuture);
 
         //when
-        List<ReservationListResponseDto> result = reservationGuestService.findReservationList();
+        ReservationListPageResponseDto result = reservationGuestService.findReservationList(Pageable.ofSize(20));
 
         //then
-        assertThat(result).hasSize(1);
-        assertEquals(reservationFuture.getSpace().getName(), result.get(0).getSpaceName());
-        assertEquals(reservationFuture.getDate(), result.get(0).getDate());
-        assertEquals(reservationFuture.getStartTime(), result.get(0).getStartTime());
-        assertEquals(reservationFuture.getEndTime(), result.get(0).getEndTime());
+        assertThat(result.getReservations()).hasSize(1);
+        assertEquals(reservationFuture.getSpace().getName(), result.getReservations().get(0).getSpaceName());
+        assertEquals(reservationFuture.getDate(), result.getReservations().get(0).getDate());
+        assertEquals(reservationFuture.getStartTime(), result.getReservations().get(0).getStartTime());
+        assertEquals(reservationFuture.getEndTime(), result.getReservations().get(0).getEndTime());
     }
 
     @Test

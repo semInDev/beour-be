@@ -544,9 +544,9 @@ class ReservationGuestControllerTest {
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.data[0].spaceName").value(reservationFuture.getSpace().getName()))
-            .andExpect(jsonPath("$.data[0].startTime").value(String.format("%02d:00:00", reservationFuture.getStartTime().getHour())))
-            .andExpect(jsonPath("$.data[0].endTime").value(String.format("%02d:00:00", reservationFuture.getEndTime().getHour())));
+            .andExpect(jsonPath("$.data.reservations[0].spaceName").value(reservationFuture.getSpace().getName()))
+            .andExpect(jsonPath("$.data.reservations[0].startTime").value(String.format("%02d:00:00", reservationFuture.getStartTime().getHour())))
+            .andExpect(jsonPath("$.data.reservations[0].endTime").value(String.format("%02d:00:00", reservationFuture.getEndTime().getHour())));
     }
 
     @Test
@@ -574,10 +574,10 @@ class ReservationGuestControllerTest {
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.data[0].spaceName").value(reservation.getSpace().getName()))
-            .andExpect(jsonPath("$.data[0].startTime").value(String.format("%02d:00:00", reservation.getStartTime().getHour())))
-            .andExpect(jsonPath("$.data[0].endTime").value(String.format("%02d:00:00", reservation.getEndTime().getHour())))
-            .andExpect(jsonPath("$.data[0].currentUsing").value(true));
+            .andExpect(jsonPath("$.data.reservations[0].spaceName").value(reservation.getSpace().getName()))
+            .andExpect(jsonPath("$.data.reservations[0].startTime").value(String.format("%02d:00:00", reservation.getStartTime().getHour())))
+            .andExpect(jsonPath("$.data.reservations[0].endTime").value(String.format("%02d:00:00", reservation.getEndTime().getHour())))
+            .andExpect(jsonPath("$.data.reservations[0].currentUsing").value(true));
     }
 
     @Test

@@ -14,6 +14,7 @@ import com.beour.reservation.commons.exceptionType.ReservationNotFound;
 import com.beour.reservation.commons.repository.ReservationRepository;
 import com.beour.reservation.guest.dto.CheckAvailableTimesRequestDto;
 import com.beour.reservation.guest.dto.ReservationCreateRequest;
+import com.beour.reservation.guest.dto.ReservationListPageResponseDto;
 import com.beour.reservation.guest.dto.ReservationListResponseDto;
 import com.beour.reservation.guest.dto.ReservationResponseDto;
 import com.beour.review.domain.entity.Review;
@@ -28,6 +29,8 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -130,19 +133,19 @@ public class ReservationGuestService {
         }
     }
 
-    public List<ReservationListResponseDto> findReservationList() {
+    public ReservationListPageResponseDto findReservationList(Pageable pageable) {
         User guest = findUserFromToken();
-        List<Reservation> reservationList = reservationRepository.findUpcomingReservationsByGuest(
-            guest.getId(), LocalDate.now(), LocalTime.now());
+        Page<Reservation> reservationList = reservationRepository.findUpcomingReservationsByGuest(
+            guest.getId(), LocalDate.now(), LocalTime.now(), pageable);
 
-        checkEmptyReservation(reservationList);
+        checkEmptyReservation2(reservationList);
 
         List<ReservationListResponseDto> responseDtoList = new ArrayList<>();
         for (Reservation reservation : reservationList) {
             responseDtoList.add(ReservationListResponseDto.of(reservation));
         }
 
-        return responseDtoList;
+        return new ReservationListPageResponseDto(responseDtoList, reservationList.isLast(), reservationList.getTotalPages());
     }
 
     @Transactional
@@ -172,6 +175,12 @@ public class ReservationGuestService {
 
     private static void checkEmptyReservation(List<Reservation> reservationList) {
         if (reservationList.isEmpty()) {
+            throw new ReservationNotFound(ReservationErrorCode.RESERVATION_NOT_FOUND);
+        }
+    }
+
+    private static void checkEmptyReservation2(Page<Reservation> reservationList) {
+        if (reservationList.getContent().isEmpty()) {
             throw new ReservationNotFound(ReservationErrorCode.RESERVATION_NOT_FOUND);
         }
     }

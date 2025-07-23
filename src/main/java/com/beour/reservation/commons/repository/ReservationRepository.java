@@ -5,6 +5,8 @@ import com.beour.reservation.commons.enums.ReservationStatus;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,10 +21,11 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     @Query("SELECT r FROM Reservation r JOIN FETCH r.space " +
         "WHERE r.guest.id = :guestId AND " +
         "(r.date > :today OR (r.date = :today AND r.endTime > :now))")
-    List<Reservation> findUpcomingReservationsByGuest(
+    Page<Reservation> findUpcomingReservationsByGuest(
         @Param("guestId") Long guestId,
         @Param("today") LocalDate today,
-        @Param("now") LocalTime now
+        @Param("now") LocalTime now,
+        Pageable pageable
     );
 
     @Query("SELECT r FROM Reservation r " +
