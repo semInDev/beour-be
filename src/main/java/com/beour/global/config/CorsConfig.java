@@ -37,11 +37,11 @@ public class CorsConfig {
         return source;
     }
 
-//    @Bean
-//    public FilterRegistrationBean<CorsFilter> corsFilterRegistration() {
-//        FilterRegistrationBean<CorsFilter> registrationBean = new FilterRegistrationBean<>(
-//            new CorsFilter(corsConfigurationSource()));
-//        registrationBean.setOrder(-102); // Spring Security보다 먼저 실행되게 우선순위 설정
-//        return registrationBean;
-//    }
+    @Bean
+    public FilterRegistrationBean<CorsFilter> corsFilterRegistration() {
+        FilterRegistrationBean<CorsFilter> registrationBean = new FilterRegistrationBean<>(
+            new CorsFilter(corsConfigurationSource()));
+        registrationBean.setOrder(-102); // Spring Security보다 먼저 실행되게 우선순위 설정
+        return registrationBean;
+    }
 }
