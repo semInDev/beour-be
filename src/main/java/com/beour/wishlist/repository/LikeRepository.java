@@ -10,6 +10,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface LikeRepository extends JpaRepository<Like, Long> {
     boolean existsByUserIdAndSpaceId(Long userId, Long spaceId);
 
+    //todo : 테스트 코드 추가
+    boolean existsByUserIdAndSpaceIdAndDeletedAtIsNull(Long userId, Long spaceId);
+
     Like findByUserIdAndSpaceId(Long userId, Long spaceId);
 
     Optional<Like> findByUserIdAndSpaceIdAndDeletedAtIsNull(Long userId, Long spaceId);
