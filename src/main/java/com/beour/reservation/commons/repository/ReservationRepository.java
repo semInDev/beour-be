@@ -16,44 +16,53 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     List<Reservation> findBySpaceIdAndDateAndDeletedAtIsNull(Long spaceId, LocalDate date);
 
     List<Reservation> findBySpaceIdAndDateAndStatusNot(Long spaceId, LocalDate date,
-        ReservationStatus status);
+                                                       ReservationStatus status);
 
     @Query("SELECT r FROM Reservation r JOIN FETCH r.space " +
-        "WHERE r.guest.id = :guestId AND " +
-        "(r.date > :today OR (r.date = :today AND r.endTime > :now))")
+            "WHERE r.guest.id = :guestId AND " +
+            "(r.date > :today OR (r.date = :today AND r.endTime > :now))")
     Page<Reservation> findUpcomingReservationsByGuest(
-        @Param("guestId") Long guestId,
-        @Param("today") LocalDate today,
-        @Param("now") LocalTime now,
-        Pageable pageable
+            @Param("guestId") Long guestId,
+            @Param("today") LocalDate today,
+            @Param("now") LocalTime now,
+            Pageable pageable
     );
 
     @Query("SELECT r FROM Reservation r " +
-        "WHERE r.guest.id = :guestId AND " +
-        "(r.date < :today OR (r.date = :today AND r.endTime <= :now))")
+            "WHERE r.guest.id = :guestId AND " +
+            "(r.date < :today OR (r.date = :today AND r.endTime <= :now))")
     Page<Reservation> findPastReservationsByGuest(
-        @Param("guestId") Long guestId,
-        @Param("today") LocalDate today,
-        @Param("now") LocalTime now,
-        Pageable pageable
+            @Param("guestId") Long guestId,
+            @Param("today") LocalDate today,
+            @Param("now") LocalTime now,
+            Pageable pageable
     );
+
+    @Query("""
+    SELECT r FROM Reservation r
+    JOIN FETCH r.space
+    WHERE r.guest.id = :guestId 
+    AND r.status = 'COMPLETED'
+    AND r.deletedAt IS NULL
+    """)
+    Page<Reservation> findCompletedReservationsByGuestId(@Param("guestId") Long guestId, Pageable pageable);
 
     @Query("SELECT r FROM Reservation r JOIN FETCH r.space WHERE r.guest.id = :guestId AND r.status = 'COMPLETED' AND r.deletedAt IS NULL")
     List<Reservation> findCompletedReservationsWithSpaceByGuestId(@Param("guestId") Long guestId);
 
     List<Reservation> findByHostIdAndDateAndDeletedAtIsNull(Long hostId, LocalDate date);
+    List<Reservation> findByHostIdAndDateAndSpaceIdAndDeletedAtIsNull(Long hostId, LocalDate date, Long spaceId);
+    List<Reservation> findByHostIdAndDateAndStatusAndDeletedAtIsNull(Long hostId, LocalDate date, ReservationStatus status);
+    List<Reservation> findByHostIdAndDateAndSpaceIdAndStatusAndDeletedAtIsNull(Long hostId, LocalDate date, Long spaceId, ReservationStatus status);
 
-    List<Reservation> findByHostIdAndDateAndSpaceIdAndDeletedAtIsNull(Long hostId, LocalDate date,
-        Long spaceId);
-
-    List<Reservation> findByHostIdAndDateAndStatusAndDeletedAtIsNull(Long hostId, LocalDate date,
-        ReservationStatus status);
-
-    List<Reservation> findByHostIdAndDateAndSpaceIdAndStatusAndDeletedAtIsNull(Long hostId,
-        LocalDate date, Long spaceId, ReservationStatus status);
+    // 페이징을 위한 새로운 메서드들 추가
+    Page<Reservation> findByHostIdAndDateAndDeletedAtIsNullOrderByStartTime(Long hostId, LocalDate date, Pageable pageable);
+    Page<Reservation> findByHostIdAndDateAndSpaceIdAndDeletedAtIsNullOrderByStartTime(Long hostId, LocalDate date, Long spaceId, Pageable pageable);
+    Page<Reservation> findByHostIdAndDateAndStatusAndDeletedAtIsNullOrderByStartTime(Long hostId, LocalDate date, ReservationStatus status, Pageable pageable);
+    Page<Reservation> findByHostIdAndDateAndSpaceIdAndStatusAndDeletedAtIsNullOrderByStartTime(Long hostId, LocalDate date, Long spaceId, ReservationStatus status, Pageable pageable);
 
     List<Reservation> findByHostIdAndStatusInAndDeletedAtIsNull(Long hostId,
-        List<ReservationStatus> statuses);
+                                                                List<ReservationStatus> statuses);
     List<Reservation> findByGuestIdAndStatusInAndDeletedAtIsNull(Long guestId,
-        List<ReservationStatus> statuses);
+                                                                 List<ReservationStatus> statuses);
 }

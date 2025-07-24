@@ -2,10 +2,13 @@ package com.beour.review.guest.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 import com.beour.global.exception.exceptionType.DuplicateException;
 import com.beour.global.exception.exceptionType.ReviewNotFoundException;
 import com.beour.global.exception.exceptionType.UnauthorityException;
+import com.beour.global.file.ImageUploader;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
 import com.beour.reservation.commons.enums.UsagePurpose;
@@ -22,14 +25,15 @@ import com.beour.review.guest.dto.ReviewDetailResponseDto;
 import com.beour.review.guest.dto.ReviewForReservationResponseDto;
 import com.beour.review.guest.dto.ReviewRequestDto;
 import com.beour.review.guest.dto.ReviewUpdateRequestDto;
-import com.beour.review.guest.dto.ReviewableReservationResponseDto;
-import com.beour.review.guest.dto.WrittenReviewResponseDto;
+import com.beour.review.guest.dto.ReviewableReservationPageResponseDto;
+import com.beour.review.guest.dto.WrittenReviewPageResponseDto;
 import com.beour.space.domain.entity.Space;
 import com.beour.space.domain.repository.SpaceRepository;
 import com.beour.space.domain.enums.SpaceCategory;
 import com.beour.space.domain.enums.UseCategory;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -39,17 +43,32 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @ActiveProfiles("test")
 @SpringBootTest
 class ReviewGuestServiceTest {
+
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        public ImageUploader imageUploader() {
+            return Mockito.mock(ImageUploader.class);
+        }
+    }
 
     @Autowired
     private ReviewGuestService reviewGuestService;
@@ -67,12 +86,15 @@ class ReviewGuestServiceTest {
     private ReviewImageRepository reviewImageRepository;
     @Autowired
     private ReviewCommentRepository reviewCommentRepository;
+    @Autowired
+    private ImageUploader imageUploader;
 
     private User guest;
     private User host;
     private Space space;
     private Reservation completedReservation;
     private Reservation acceptedReservation;
+    private Pageable pageable;
 
     @BeforeEach
     void setUp() {
@@ -148,6 +170,8 @@ class ReviewGuestServiceTest {
                 .guestCount(2)
                 .build();
         reservationRepository.save(acceptedReservation);
+
+        pageable = PageRequest.of(0, 10);
     }
 
     @AfterEach
@@ -165,27 +189,37 @@ class ReviewGuestServiceTest {
     @DisplayName("리뷰 작성 가능한 예약 조회 - 완료된 예약만 조회")
     void get_reviewable_reservations_only_completed() {
         //when
-        List<ReviewableReservationResponseDto> result = reviewGuestService.getReviewableReservations();
+        ReviewableReservationPageResponseDto result = reviewGuestService.getReviewableReservations(pageable);
 
         //then
-        assertThat(result).hasSize(1);
-        assertEquals(completedReservation.getId(), result.get(0).getReservationId());
-        assertEquals(completedReservation.getSpace().getName(), result.get(0).getSpaceName());
-        assertEquals(completedReservation.getDate(), result.get(0).getDate());
-        assertEquals(completedReservation.getStartTime(), result.get(0).getStartTime());
-        assertEquals(completedReservation.getEndTime(), result.get(0).getEndTime());
-        assertEquals(completedReservation.getGuestCount(), result.get(0).getGuestCount());
-        assertEquals(completedReservation.getUsagePurpose(), result.get(0).getUsagePurpose());
+        assertThat(result.getReservations()).hasSize(1);
+        assertEquals(completedReservation.getId(), result.getReservations().get(0).getReservationId());
+        assertEquals(completedReservation.getSpace().getName(), result.getReservations().get(0).getSpaceName());
+        assertEquals(completedReservation.getDate(), result.getReservations().get(0).getDate());
+        assertEquals(completedReservation.getStartTime(), result.getReservations().get(0).getStartTime());
+        assertEquals(completedReservation.getEndTime(), result.getReservations().get(0).getEndTime());
+        assertEquals(completedReservation.getGuestCount(), result.getReservations().get(0).getGuestCount());
+        assertEquals(completedReservation.getUsagePurpose(), result.getReservations().get(0).getUsagePurpose());
     }
 
     @Test
-    @DisplayName("작성한 리뷰 조회 - 빈 리스트")
-    void get_written_reviews_empty_list() {
-        //when
-        List<WrittenReviewResponseDto> result = reviewGuestService.getWrittenReviews();
+    @DisplayName("리뷰 작성 가능한 예약 조회 - 빈 페이지")
+    void get_reviewable_reservations_empty_page() {
+        //given
+        // 완료된 예약 삭제
+        reservationRepository.delete(completedReservation);
 
-        //then
-        assertThat(result).isEmpty();
+        //when then
+        assertThrows(ReservationNotFound.class,
+                () -> reviewGuestService.getReviewableReservations(pageable));
+    }
+
+    @Test
+    @DisplayName("작성한 리뷰 조회 - 빈 페이지")
+    void get_written_reviews_empty_page() {
+        //when then
+        assertThrows(ReviewNotFoundException.class,
+                () -> reviewGuestService.getWrittenReviews(pageable));
     }
 
     @Test
@@ -203,16 +237,16 @@ class ReviewGuestServiceTest {
         reviewRepository.save(review);
 
         //when
-        List<WrittenReviewResponseDto> result = reviewGuestService.getWrittenReviews();
+        WrittenReviewPageResponseDto result = reviewGuestService.getWrittenReviews(pageable);
 
         //then
-        assertThat(result).hasSize(1);
-        assertEquals(review.getId(), result.get(0).getReviewId());
-        assertEquals(guest.getNickname(), result.get(0).getGuestNickname());
-        assertEquals(5, result.get(0).getReviewRating());
-        assertEquals(space.getName(), result.get(0).getSpaceName());
-        assertEquals(completedReservation.getDate(), result.get(0).getReservationDate());
-        assertEquals("좋은 공간이었습니다.", result.get(0).getReviewContent());
+        assertThat(result.getReviews()).hasSize(1);
+        assertEquals(review.getId(), result.getReviews().get(0).getReviewId());
+        assertEquals(guest.getNickname(), result.getReviews().get(0).getGuestNickname());
+        assertEquals(5, result.getReviews().get(0).getReviewRating());
+        assertEquals(space.getName(), result.getReviews().get(0).getSpaceName());
+        assertEquals(completedReservation.getDate(), result.getReviews().get(0).getReservationDate());
+        assertEquals("좋은 공간이었습니다.", result.getReviews().get(0).getReviewContent());
     }
 
     @Test
@@ -277,19 +311,20 @@ class ReviewGuestServiceTest {
 
     @Test
     @DisplayName("리뷰 작성 - 완료되지 않은 예약")
-    void create_review_not_completed_reservation() {
+    void create_review_not_completed_reservation() throws IOException {
         //given
         ReviewRequestDto requestDto = new ReviewRequestDto(
-                acceptedReservation.getId(), 5, "좋은 공간이었습니다.", null);
+                acceptedReservation.getId(), 5, "좋은 공간이었습니다.");
+        List<MultipartFile> images = Collections.emptyList();
 
         //when then
         assertThrows(MissMatch.class,
-                () -> reviewGuestService.createReview(requestDto));
+                () -> reviewGuestService.createReview(requestDto, images));
     }
 
     @Test
     @DisplayName("리뷰 작성 - 중복 리뷰")
-    void create_review_duplicate() {
+    void create_review_duplicate() throws IOException {
         //given
         Review existingReview = Review.builder()
                 .guest(guest)
@@ -302,24 +337,56 @@ class ReviewGuestServiceTest {
         reviewRepository.save(existingReview);
 
         ReviewRequestDto requestDto = new ReviewRequestDto(
-                completedReservation.getId(), 5, "좋은 공간이었습니다.", null);
+                completedReservation.getId(), 5, "좋은 공간이었습니다.");
+        List<MultipartFile> images = Collections.emptyList();
 
         //when then
         assertThrows(DuplicateException.class,
-                () -> reviewGuestService.createReview(requestDto));
+                () -> reviewGuestService.createReview(requestDto, images));
     }
 
     @Test
     @Transactional
-    @DisplayName("리뷰 작성 - 성공")
-    void create_review_success() {
+    @DisplayName("리뷰 작성 - 성공 (이미지 없음)")
+    void create_review_success_without_images() throws IOException {
         //given
-        List<String> imageUrls = List.of("https://example.com/image1.jpg", "https://example.com/image2.jpg");
         ReviewRequestDto requestDto = new ReviewRequestDto(
-                completedReservation.getId(), 5, "좋은 공간이었습니다.", imageUrls);
+                completedReservation.getId(), 5, "좋은 공간이었습니다.");
+        List<MultipartFile> images = Collections.emptyList();
 
         //when
-        reviewGuestService.createReview(requestDto);
+        reviewGuestService.createReview(requestDto, images);
+
+        //then
+        List<Review> reviews = reviewRepository.findAll();
+        assertThat(reviews).hasSize(1);
+        Review savedReview = reviews.get(0);
+        assertEquals(guest.getId(), savedReview.getGuest().getId());
+        assertEquals(space.getId(), savedReview.getSpace().getId());
+        assertEquals(5, savedReview.getRating());
+        assertEquals("좋은 공간이었습니다.", savedReview.getContent());
+        assertEquals(completedReservation.getDate(), savedReview.getReservedDate());
+        assertThat(savedReview.getImages() == null || savedReview.getImages().isEmpty()).isTrue();
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("리뷰 작성 - 성공 (이미지 포함)")
+    void create_review_success_with_images() throws IOException {
+        //given
+        ReviewRequestDto requestDto = new ReviewRequestDto(
+                completedReservation.getId(), 5, "좋은 공간이었습니다.");
+
+        MockMultipartFile image1 = new MockMultipartFile("image1", "image1.jpg", "image/jpeg", "image1 content".getBytes());
+        MockMultipartFile image2 = new MockMultipartFile("image2", "image2.jpg", "image/jpeg", "image2 content".getBytes());
+        List<MultipartFile> images = List.of(image1, image2);
+
+        when(imageUploader.upload(any(MultipartFile.class)))
+                .thenReturn("https://example.com/image1.jpg")
+                .thenReturn("https://example.com/image2.jpg");
+
+        //when
+        reviewGuestService.createReview(requestDto, images);
 
         //then
         List<Review> reviews = reviewRepository.findAll();
@@ -409,8 +476,36 @@ class ReviewGuestServiceTest {
 
     @Test
     @Transactional
-    @DisplayName("리뷰 수정 - 성공")
-    void update_review_success() {
+    @DisplayName("리뷰 수정 - 성공 (이미지 없음)")
+    void update_review_success_without_images() throws IOException {
+        //given
+        Review review = Review.builder()
+                .guest(guest)
+                .space(space)
+                .reservation(completedReservation)
+                .rating(4)
+                .content("원래 리뷰")
+                .reservedDate(completedReservation.getDate())
+                .build();
+        reviewRepository.save(review);
+
+        ReviewUpdateRequestDto requestDto = new ReviewUpdateRequestDto(5, "수정된 리뷰");
+        List<MultipartFile> images = Collections.emptyList();
+
+        //when
+        reviewGuestService.updateReview(review.getId(), requestDto, images);
+
+        //then
+        Review updatedReview = reviewRepository.findById(review.getId()).orElseThrow();
+        assertEquals(5, updatedReview.getRating());
+        assertEquals("수정된 리뷰", updatedReview.getContent());
+        assertThat(updatedReview.getImages() == null || updatedReview.getImages().isEmpty()).isTrue();
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("리뷰 수정 - 성공 (이미지 포함)")
+    void update_review_success_with_images() throws IOException {
         //given
         ReviewImage existingImage = ReviewImage.builder()
                 .imageUrl("https://example.com/old-image.jpg")
@@ -428,12 +523,15 @@ class ReviewGuestServiceTest {
         review.addImage(existingImage);
         reviewRepository.save(review);
 
-        List<String> newImageUrls = List.of("https://example.com/new-image.jpg");
-        ReviewUpdateRequestDto requestDto = new ReviewUpdateRequestDto(
-                5, "수정된 리뷰", newImageUrls);
+        MockMultipartFile newImage = new MockMultipartFile("newImage", "new-image.jpg", "image/jpeg", "new image content".getBytes());
+        List<MultipartFile> images = List.of(newImage);
+        ReviewUpdateRequestDto requestDto = new ReviewUpdateRequestDto(5, "수정된 리뷰");
+
+        when(imageUploader.upload(any(MultipartFile.class)))
+                .thenReturn("https://example.com/new-image.jpg");
 
         //when
-        reviewGuestService.updateReview(review.getId(), requestDto);
+        reviewGuestService.updateReview(review.getId(), requestDto, images);
 
         //then
         Review updatedReview = reviewRepository.findById(review.getId()).orElseThrow();
@@ -504,7 +602,7 @@ class ReviewGuestServiceTest {
                 .build();
         reviewRepository.save(review1);
         reviewRepository.flush();
-        
+
         ReviewImage image = ReviewImage.builder()
                 .imageUrl("https://example.com/image.jpg")
                 .build();
