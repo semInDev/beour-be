@@ -29,6 +29,17 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     """)
     Page<Review> findAllWithCommentAndImagesByGuestIdPaged(@Param("guestId") Long guestId, Pageable pageable);
 
+    @Query("""
+    SELECT DISTINCT r FROM Review r
+    LEFT JOIN FETCH r.comment
+    LEFT JOIN FETCH r.images
+    WHERE r.space.host.id = :hostId 
+    AND r.deletedAt IS NULL 
+    AND r.comment IS NULL
+    ORDER BY r.createdAt DESC
+    """)
+    Page<Review> findCommentableReviewsByHostId(@Param("hostId") Long hostId, Pageable pageable);
+
     Optional<Review> findByGuestIdAndSpaceIdAndReservedDateAndDeletedAtIsNull(Long guestId, Long spaceId, LocalDate reservedDate);
 
     long countBySpaceIdAndDeletedAtIsNull(Long spaceId);
