@@ -18,7 +18,7 @@ public class ReservationCalendarController {
 
     private final ReservationCalendarService reservationCalendarService;
 
-    @GetMapping("/api/reservations")
+    @GetMapping("/api/reservations/condition")
     public ApiResponse<CalendarReservationPageResponseDto> getHostCalendarReservations(
             @RequestParam(value = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam(value = "spaceId", required = false) Long spaceId,
