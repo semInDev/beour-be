@@ -9,6 +9,7 @@ import com.beour.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -54,14 +55,15 @@ public class SecurityConfig {
 
         http
             .authorizeHttpRequests((auth) -> auth
+                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                     .requestMatchers("/api/signup/**", "/api/login",
-                        "/api/users/find/login-id", "/api/users/reset/password", "/api/token/reissue")
+                        "/api/users/find/login-id", "/api/users/reset/password", "/api/token/reissue",
+                        "/api/spaces/keyword", "/api/spaces/filter", "/api/spaces/spacecategory", "/api/spaces/usecategory")
                     .permitAll()
                     .requestMatchers("/api/spaces/reserve/available-times", "/api/spaces/search/**",
-                        "/api/spaces/new", "/api/reviews/new", "/api/banners").permitAll()
-//                    .requestMatchers("/admin").hasRole("ADMIN")
-                    .requestMatchers("/api/spaces/reserve", "/api/reservation/**", "/api/guest/**",
+                        "/api/spaces/new", "/api/reviews/new", "/api/banners", "/api/spaces/*/available-times").permitAll()
+                    .requestMatchers("/api/spaces/*/reservations", "/api/reservations/*", "/api/reservations/past/*","/api/spaces/reserve", "/api/reservation/**", "/api/guest/**",
                         "/api/spaces/*/likes", "/api/likes")
                     .hasRole("GUEST")
                     .requestMatchers("/api/spaces", "/api/spaces/my-spaces", "/api/spaces/*",
