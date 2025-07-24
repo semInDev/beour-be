@@ -230,28 +230,60 @@ class ReviewCommentHostControllerTest {
     @Test
     @DisplayName("댓글 작성 가능한 리뷰 조회 - 성공")
     void get_commentable_reviews_success() throws Exception {
-        mockMvc.perform(get("/api/host/review-comments/commentable")
+        mockMvc.perform(get("/api/users/me/commentable-reviews")
                         .header("Authorization", "Bearer " + hostAccessToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data[0].reviewId").value(review.getId()))
-                .andExpect(jsonPath("$.data[0].guestNickname").value(guest.getNickname()))
-                .andExpect(jsonPath("$.data[0].reviewRating").value(review.getRating()))
-                .andExpect(jsonPath("$.data[0].spaceName").value(space.getName()))
-                .andExpect(jsonPath("$.data[0].reviewContent").value(review.getContent()));
+                .andExpect(jsonPath("$.data.reviews[0].reviewId").value(review.getId()))
+                .andExpect(jsonPath("$.data.reviews[0].guestNickname").value(guest.getNickname()))
+                .andExpect(jsonPath("$.data.reviews[0].reviewRating").value(review.getRating()))
+                .andExpect(jsonPath("$.data.reviews[0].spaceName").value(space.getName()))
+                .andExpect(jsonPath("$.data.reviews[0].reviewContent").value(review.getContent()))
+                .andExpect(jsonPath("$.data.last").exists())
+                .andExpect(jsonPath("$.data.totalPage").exists());
+    }
+
+    @Test
+    @DisplayName("댓글 작성 가능한 리뷰 조회 - 페이징 파라미터 테스트")
+    void get_commentable_reviews_with_paging() throws Exception {
+        mockMvc.perform(get("/api/users/me/commentable-reviews")
+                        .param("page", "0")
+                        .param("size", "10")
+                        .param("sort", "createdAt,desc")
+                        .header("Authorization", "Bearer " + hostAccessToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.reviews").isArray())
+                .andExpect(jsonPath("$.data.last").exists())
+                .andExpect(jsonPath("$.data.totalPage").exists());
     }
 
     @Test
     @DisplayName("작성한 댓글 조회 - 성공")
     void get_written_review_comments_success() throws Exception {
-        mockMvc.perform(get("/api/host/review-comments/written")
+        mockMvc.perform(get("/api/users/me/review-comments")
                         .header("Authorization", "Bearer " + hostAccessToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data[0].guestNickname").value(guest.getNickname()))
-                .andExpect(jsonPath("$.data[0].reviewRating").value(reviewWithComment.getRating()))
-                .andExpect(jsonPath("$.data[0].spaceName").value(space.getName()))
-                .andExpect(jsonPath("$.data[0].reviewContent").value(reviewWithComment.getContent()))
-                .andExpect(jsonPath("$.data[0].hostNickname").value(host.getNickname()))
-                .andExpect(jsonPath("$.data[0].reviewCommentContent").value(reviewComment.getContent()));
+                .andExpect(jsonPath("$.data.reviewComments[0].guestNickname").value(guest.getNickname()))
+                .andExpect(jsonPath("$.data.reviewComments[0].reviewRating").value(reviewWithComment.getRating()))
+                .andExpect(jsonPath("$.data.reviewComments[0].spaceName").value(space.getName()))
+                .andExpect(jsonPath("$.data.reviewComments[0].reviewContent").value(reviewWithComment.getContent()))
+                .andExpect(jsonPath("$.data.reviewComments[0].hostNickname").value(host.getNickname()))
+                .andExpect(jsonPath("$.data.reviewComments[0].reviewCommentContent").value(reviewComment.getContent()))
+                .andExpect(jsonPath("$.data.last").exists())
+                .andExpect(jsonPath("$.data.totalPage").exists());
+    }
+
+    @Test
+    @DisplayName("작성한 댓글 조회 - 페이징 파라미터 테스트")
+    void get_written_review_comments_with_paging() throws Exception {
+        mockMvc.perform(get("/api/users/me/review-comments")
+                        .param("page", "0")
+                        .param("size", "5")
+                        .param("sort", "createdAt,desc")
+                        .header("Authorization", "Bearer " + hostAccessToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.reviewComments").isArray())
+                .andExpect(jsonPath("$.data.last").exists())
+                .andExpect(jsonPath("$.data.totalPage").exists());
     }
 
     @Test
@@ -264,7 +296,7 @@ class ReviewCommentHostControllerTest {
             }
             """, review.getId());
 
-        mockMvc.perform(post("/api/host/review-comments")
+        mockMvc.perform(post("/api/users/me/review-comments")
                         .header("Authorization", "Bearer " + hostAccessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
@@ -282,7 +314,7 @@ class ReviewCommentHostControllerTest {
             }
             """;
 
-        mockMvc.perform(post("/api/host/review-comments")
+        mockMvc.perform(post("/api/users/me/review-comments")
                         .header("Authorization", "Bearer " + hostAccessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
@@ -300,7 +332,7 @@ class ReviewCommentHostControllerTest {
             }
             """, review.getId());
 
-        mockMvc.perform(post("/api/host/review-comments")
+        mockMvc.perform(post("/api/users/me/review-comments")
                         .header("Authorization", "Bearer " + otherHostAccessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
@@ -318,7 +350,7 @@ class ReviewCommentHostControllerTest {
             }
             """, reviewWithComment.getId());
 
-        mockMvc.perform(post("/api/host/review-comments")
+        mockMvc.perform(post("/api/users/me/review-comments")
                         .header("Authorization", "Bearer " + hostAccessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
@@ -336,7 +368,7 @@ class ReviewCommentHostControllerTest {
             }
             """, review.getId());
 
-        mockMvc.perform(post("/api/host/review-comments")
+        mockMvc.perform(post("/api/users/me/review-comments")
                         .header("Authorization", "Bearer " + hostAccessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
@@ -354,7 +386,7 @@ class ReviewCommentHostControllerTest {
             }
             """;
 
-        mockMvc.perform(post("/api/host/review-comments")
+        mockMvc.perform(post("/api/users/me/review-comments")
                         .header("Authorization", "Bearer " + hostAccessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
@@ -372,7 +404,7 @@ class ReviewCommentHostControllerTest {
             }
             """;
 
-        mockMvc.perform(patch("/api/host/review-comments/" + reviewComment.getId())
+        mockMvc.perform(patch("/api/users/me/review-comments/" + reviewComment.getId())
                         .header("Authorization", "Bearer " + hostAccessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
@@ -392,7 +424,7 @@ class ReviewCommentHostControllerTest {
             }
             """;
 
-        mockMvc.perform(patch("/api/host/review-comments/999")
+        mockMvc.perform(patch("/api/users/me/review-comments/999")
                         .header("Authorization", "Bearer " + hostAccessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
@@ -409,7 +441,7 @@ class ReviewCommentHostControllerTest {
             }
             """;
 
-        mockMvc.perform(patch("/api/host/review-comments/" + reviewComment.getId())
+        mockMvc.perform(patch("/api/users/me/review-comments/" + reviewComment.getId())
                         .header("Authorization", "Bearer " + otherHostAccessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
@@ -426,7 +458,7 @@ class ReviewCommentHostControllerTest {
             }
             """;
 
-        mockMvc.perform(patch("/api/host/review-comments/" + reviewComment.getId())
+        mockMvc.perform(patch("/api/users/me/review-comments/" + reviewComment.getId())
                         .header("Authorization", "Bearer " + hostAccessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
@@ -438,7 +470,7 @@ class ReviewCommentHostControllerTest {
     @Transactional
     @DisplayName("리뷰 댓글 삭제 - 성공")
     void delete_review_comment_success() throws Exception {
-        mockMvc.perform(delete("/api/host/review-comments/" + reviewComment.getId())
+        mockMvc.perform(delete("/api/users/me/review-comments/" + reviewComment.getId())
                         .header("Authorization", "Bearer " + hostAccessToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data").value("답글이 삭제되었습니다."));
@@ -450,7 +482,7 @@ class ReviewCommentHostControllerTest {
     @Test
     @DisplayName("리뷰 댓글 삭제 - 존재하지 않는 댓글")
     void delete_review_comment_not_found() throws Exception {
-        mockMvc.perform(delete("/api/host/review-comments/999")
+        mockMvc.perform(delete("/api/users/me/review-comments/999")
                         .header("Authorization", "Bearer " + hostAccessToken))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value(CommentErrorCode.COMMENT_NOT_FOUND.getMessage()));
@@ -459,7 +491,7 @@ class ReviewCommentHostControllerTest {
     @Test
     @DisplayName("리뷰 댓글 삭제 - 다른 호스트의 댓글")
     void delete_review_comment_not_owner() throws Exception {
-        mockMvc.perform(delete("/api/host/review-comments/" + reviewComment.getId())
+        mockMvc.perform(delete("/api/users/me/review-comments/" + reviewComment.getId())
                         .header("Authorization", "Bearer " + otherHostAccessToken))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value(CommentErrorCode.UNAUTHORIZED_COMMENT.getMessage()));
