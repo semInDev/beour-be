@@ -354,7 +354,7 @@ class ReservationGuestControllerTest {
     @DisplayName("이용 가능한 시간 조회 - 과거 날짜로 조회")
     void check_available_time_with_past_date() throws Exception {
         //when  then
-        mockMvc.perform(get("/api/spaces/"+ space.getId() +"/available-times?date=" + LocalDate.now().minusDays(1))
+        mockMvc.perform(get("/api/spaces/"+ space.getId() +"/available-times/date?date=" + LocalDate.now().minusDays(1))
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
             )
@@ -372,7 +372,7 @@ class ReservationGuestControllerTest {
         }
 
         //when  then
-        mockMvc.perform(get("/api/spaces/"+ space.getId() +"/available-times?date=" + LocalDate.now())
+        mockMvc.perform(get("/api/spaces/"+ space.getId() +"/available-times/date?date=" + LocalDate.now())
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
             )
@@ -385,7 +385,7 @@ class ReservationGuestControllerTest {
     @DisplayName("이용 가능한 시간 조회 - 가능한 시간 없을 경우")
     void check_available_time_not_found() throws Exception {
         //when  then
-        mockMvc.perform(get("/api/spaces/"+ space.getId() +"/available-times?date=" + LocalDate.now().plusDays(3))
+        mockMvc.perform(get("/api/spaces/"+ space.getId() +"/available-times/date?date=" + LocalDate.now().plusDays(3))
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
             )
@@ -418,7 +418,7 @@ class ReservationGuestControllerTest {
         }
 
         //when  then
-        mockMvc.perform(get("/api/spaces/"+ space.getId() +"/available-times?date=" + LocalDate.now().plusDays(1))
+        mockMvc.perform(get("/api/spaces/"+ space.getId() +"/available-times/date?date=" + LocalDate.now().plusDays(1))
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
             )
@@ -454,7 +454,7 @@ class ReservationGuestControllerTest {
         }
 
         //when  then
-        mockMvc.perform(get("/api/spaces/"+ space.getId() +"/available-times?date=" + LocalDate.now().plusDays(1))
+        mockMvc.perform(get("/api/spaces/"+ space.getId() +"/available-times/date?date=" + LocalDate.now().plusDays(1))
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
             )

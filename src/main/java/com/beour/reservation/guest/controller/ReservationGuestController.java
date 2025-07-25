@@ -34,7 +34,7 @@ public class ReservationGuestController {
         return ApiResponse.ok(reservationGuestService.createReservation(spaceId, requestDto));
     }
 
-    @GetMapping("/api/spaces/{spaceId}/available-times")
+    @GetMapping("/api/spaces/{spaceId}/available-times/date")
     public ApiResponse<SpaceAvailableTimeResponseDto> checkAvailableTimes(
         @PathVariable(value = "spaceId") Long spaceId, @RequestParam(value = "date")
     LocalDate date) {
