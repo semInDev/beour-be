@@ -10,6 +10,7 @@ import com.beour.reservation.commons.enums.ReservationStatus;
 import com.beour.reservation.commons.enums.UsagePurpose;
 import com.beour.reservation.commons.exceptionType.ReservationNotFound;
 import com.beour.reservation.commons.repository.ReservationRepository;
+import com.beour.reservation.host.dto.HostReservationListPageResponseDto;
 import com.beour.reservation.host.dto.HostReservationListResponseDto;
 import com.beour.reservation.host.dto.HostSpaceListResponseDto;
 import com.beour.space.domain.entity.Space;
@@ -29,6 +30,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -186,6 +189,7 @@ class ReservationHostServiceTest {
     void get_host_reservations_by_date_success() {
         //given
         LocalDate targetDate = LocalDate.now().plusDays(1);
+        Pageable pageable = PageRequest.of(0, 10);
 
         Reservation acceptedReservation = Reservation.builder()
                 .guest(guest)
@@ -218,17 +222,18 @@ class ReservationHostServiceTest {
         reservationRepository.save(pendingReservation);
 
         //when
-        List<HostReservationListResponseDto> result = reservationHostService.getHostReservationsByDate(targetDate);
+        HostReservationListPageResponseDto result = reservationHostService.getHostReservationsByDate(targetDate, pageable);
 
         //then
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getReservationId()).isEqualTo(acceptedReservation.getId());
-        assertThat(result.get(0).getGuestName()).isEqualTo("게스트");
-        assertThat(result.get(0).getStatus()).isEqualTo(ReservationStatus.ACCEPTED);
-        assertThat(result.get(0).getSpaceName()).isEqualTo("공간1");
-        assertThat(result.get(0).getStartTime()).isEqualTo(LocalTime.of(14, 0, 0));
-        assertThat(result.get(0).getEndTime()).isEqualTo(LocalTime.of(16, 0, 0));
-        assertThat(result.get(0).getGuestCount()).isEqualTo(2);
+        List<HostReservationListResponseDto> reservations = result.getReservations();
+        assertThat(reservations).hasSize(1);
+        assertThat(reservations.get(0).getReservationId()).isEqualTo(acceptedReservation.getId());
+        assertThat(reservations.get(0).getGuestName()).isEqualTo("게스트");
+        assertThat(reservations.get(0).getStatus()).isEqualTo(ReservationStatus.ACCEPTED);
+        assertThat(reservations.get(0).getSpaceName()).isEqualTo("공간1");
+        assertThat(reservations.get(0).getStartTime()).isEqualTo(LocalTime.of(14, 0, 0));
+        assertThat(reservations.get(0).getEndTime()).isEqualTo(LocalTime.of(16, 0, 0));
+        assertThat(reservations.get(0).getGuestCount()).isEqualTo(2);
     }
 
     @Test
@@ -236,6 +241,7 @@ class ReservationHostServiceTest {
     void get_host_reservations_by_date_no_accepted_reservations() {
         //given
         LocalDate targetDate = LocalDate.now().plusDays(1);
+        Pageable pageable = PageRequest.of(0, 10);
 
         Reservation pendingReservation = Reservation.builder()
                 .guest(guest)
@@ -254,7 +260,7 @@ class ReservationHostServiceTest {
 
         //when & then
         assertThrows(ReservationNotFound.class,
-                () -> reservationHostService.getHostReservationsByDate(targetDate));
+                () -> reservationHostService.getHostReservationsByDate(targetDate, pageable));
     }
 
     @Test
@@ -262,10 +268,11 @@ class ReservationHostServiceTest {
     void get_host_reservations_by_date_no_reservations() {
         //given
         LocalDate targetDate = LocalDate.now().plusDays(1);
+        Pageable pageable = PageRequest.of(0, 10);
 
         //when & then
         assertThrows(ReservationNotFound.class,
-                () -> reservationHostService.getHostReservationsByDate(targetDate));
+                () -> reservationHostService.getHostReservationsByDate(targetDate, pageable));
     }
 
     @Test
@@ -274,6 +281,7 @@ class ReservationHostServiceTest {
     void get_host_reservations_by_date_and_space_success() {
         //given
         LocalDate targetDate = LocalDate.now().plusDays(1);
+        Pageable pageable = PageRequest.of(0, 10);
 
         Reservation acceptedReservation1 = Reservation.builder()
                 .guest(guest)
@@ -306,14 +314,15 @@ class ReservationHostServiceTest {
         reservationRepository.save(acceptedReservation2);
 
         //when
-        List<HostReservationListResponseDto> result = reservationHostService.getHostReservationsByDateAndSpace(
-                targetDate, space1.getId());
+        HostReservationListPageResponseDto result = reservationHostService.getHostReservationsByDateAndSpace(
+                targetDate, space1.getId(), pageable);
 
         //then
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getReservationId()).isEqualTo(acceptedReservation1.getId());
-        assertThat(result.get(0).getSpaceName()).isEqualTo("공간1");
-        assertThat(result.get(0).getGuestCount()).isEqualTo(2);
+        List<HostReservationListResponseDto> reservations = result.getReservations();
+        assertThat(reservations).hasSize(1);
+        assertThat(reservations.get(0).getReservationId()).isEqualTo(acceptedReservation1.getId());
+        assertThat(reservations.get(0).getSpaceName()).isEqualTo("공간1");
+        assertThat(reservations.get(0).getGuestCount()).isEqualTo(2);
     }
 
     @Test
@@ -322,10 +331,11 @@ class ReservationHostServiceTest {
         //given
         LocalDate targetDate = LocalDate.now().plusDays(1);
         Long nonExistentSpaceId = 999L;
+        Pageable pageable = PageRequest.of(0, 10);
 
         //when & then
         assertThrows(SpaceNotFoundException.class,
-                () -> reservationHostService.getHostReservationsByDateAndSpace(targetDate, nonExistentSpaceId));
+                () -> reservationHostService.getHostReservationsByDateAndSpace(targetDate, nonExistentSpaceId, pageable));
     }
 
     @Test
@@ -333,10 +343,11 @@ class ReservationHostServiceTest {
     void get_host_reservations_by_date_and_space_not_owner() {
         //given
         LocalDate targetDate = LocalDate.now().plusDays(1);
+        Pageable pageable = PageRequest.of(0, 10);
 
         //when & then
         assertThrows(UnauthorityException.class,
-                () -> reservationHostService.getHostReservationsByDateAndSpace(targetDate, anotherHostSpace.getId()));
+                () -> reservationHostService.getHostReservationsByDateAndSpace(targetDate, anotherHostSpace.getId(), pageable));
     }
 
     @Test
@@ -344,6 +355,7 @@ class ReservationHostServiceTest {
     void get_host_reservations_by_date_and_space_no_accepted_reservations() {
         //given
         LocalDate targetDate = LocalDate.now().plusDays(1);
+        Pageable pageable = PageRequest.of(0, 10);
 
         Reservation pendingReservation = Reservation.builder()
                 .guest(guest)
@@ -362,7 +374,7 @@ class ReservationHostServiceTest {
 
         //when & then
         assertThrows(ReservationNotFound.class,
-                () -> reservationHostService.getHostReservationsByDateAndSpace(targetDate, space1.getId()));
+                () -> reservationHostService.getHostReservationsByDateAndSpace(targetDate, space1.getId(), pageable));
     }
 
     @Test
@@ -372,6 +384,7 @@ class ReservationHostServiceTest {
         //given
         LocalDate today = LocalDate.now();
         LocalTime now = LocalTime.now();
+        Pageable pageable = PageRequest.of(0, 10);
 
         // 현재 시간 기준으로 1시간 전부터 1시간 후까지의 예약 생성
         Reservation currentReservation = Reservation.builder()
@@ -390,11 +403,12 @@ class ReservationHostServiceTest {
         reservationRepository.save(currentReservation);
 
         //when
-        List<HostReservationListResponseDto> result = reservationHostService.getHostReservationsByDate(today);
+        HostReservationListPageResponseDto result = reservationHostService.getHostReservationsByDate(today, pageable);
 
         //then
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).isCurrentlyInUse()).isTrue();
+        List<HostReservationListResponseDto> reservations = result.getReservations();
+        assertThat(reservations).hasSize(1);
+        assertThat(reservations.get(0).isCurrentlyInUse()).isTrue();
     }
 
     @Test
@@ -404,6 +418,7 @@ class ReservationHostServiceTest {
         //given
         LocalDate today = LocalDate.now();
         LocalTime now = LocalTime.now();
+        Pageable pageable = PageRequest.of(0, 10);
 
         // 현재 시간 기준으로 1시간 후부터 2시간 후까지의 예약 생성
         Reservation futureReservation = Reservation.builder()
@@ -422,11 +437,12 @@ class ReservationHostServiceTest {
         reservationRepository.save(futureReservation);
 
         //when
-        List<HostReservationListResponseDto> result = reservationHostService.getHostReservationsByDate(today);
+        HostReservationListPageResponseDto result = reservationHostService.getHostReservationsByDate(today, pageable);
 
         //then
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).isCurrentlyInUse()).isFalse();
+        List<HostReservationListResponseDto> reservations = result.getReservations();
+        assertThat(reservations).hasSize(1);
+        assertThat(reservations.get(0).isCurrentlyInUse()).isFalse();
     }
 
     @Test
@@ -436,6 +452,7 @@ class ReservationHostServiceTest {
         //given
         LocalDate today = LocalDate.now();
         LocalTime now = LocalTime.now();
+        Pageable pageable = PageRequest.of(0, 10);
 
         // 현재 시간 기준으로 2시간 전부터 1시간 전까지의 예약 생성
         Reservation pastReservation = Reservation.builder()
@@ -454,11 +471,12 @@ class ReservationHostServiceTest {
         reservationRepository.save(pastReservation);
 
         //when
-        List<HostReservationListResponseDto> result = reservationHostService.getHostReservationsByDate(today);
+        HostReservationListPageResponseDto result = reservationHostService.getHostReservationsByDate(today, pageable);
 
         //then
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).isCurrentlyInUse()).isFalse();
+        List<HostReservationListResponseDto> reservations = result.getReservations();
+        assertThat(reservations).hasSize(1);
+        assertThat(reservations.get(0).isCurrentlyInUse()).isFalse();
     }
 
     @Test
@@ -467,6 +485,7 @@ class ReservationHostServiceTest {
     void filter_only_accepted_reservations() {
         //given
         LocalDate targetDate = LocalDate.now().plusDays(1);
+        Pageable pageable = PageRequest.of(0, 10);
 
         Reservation acceptedReservation = Reservation.builder()
                 .guest(guest)
@@ -529,11 +548,82 @@ class ReservationHostServiceTest {
         reservationRepository.save(completedReservation);
 
         //when
-        List<HostReservationListResponseDto> result = reservationHostService.getHostReservationsByDate(targetDate);
+        HostReservationListPageResponseDto result = reservationHostService.getHostReservationsByDate(targetDate, pageable);
 
         //then
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getReservationId()).isEqualTo(acceptedReservation.getId());
-        assertThat(result.get(0).getStatus()).isEqualTo(ReservationStatus.ACCEPTED);
+        List<HostReservationListResponseDto> reservations = result.getReservations();
+        assertThat(reservations).hasSize(1);
+        assertThat(reservations.get(0).getReservationId()).isEqualTo(acceptedReservation.getId());
+        assertThat(reservations.get(0).getStatus()).isEqualTo(ReservationStatus.ACCEPTED);
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("페이징 기능 테스트 - 페이지 정보 확인")
+    void test_pagination_info() {
+        //given
+        LocalDate targetDate = LocalDate.now().plusDays(1);
+        Pageable pageable = PageRequest.of(0, 2); // 페이지 크기를 2로 설정
+
+        // 3개의 ACCEPTED 예약 생성
+        for (int i = 0; i < 3; i++) {
+            Reservation reservation = Reservation.builder()
+                    .guest(guest)
+                    .host(host)
+                    .space(space1)
+                    .status(ReservationStatus.ACCEPTED)
+                    .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+                    .requestMessage("예약 " + (i + 1))
+                    .date(targetDate)
+                    .startTime(LocalTime.of(10 + i, 0, 0))
+                    .endTime(LocalTime.of(12 + i, 0, 0))
+                    .price(30000)
+                    .guestCount(2)
+                    .build();
+            reservationRepository.save(reservation);
+        }
+
+        //when
+        HostReservationListPageResponseDto result = reservationHostService.getHostReservationsByDate(targetDate, pageable);
+
+        //then
+        assertThat(result.getReservations()).hasSize(2); // 페이지 크기만큼만 반환
+        assertThat(result.isLast()).isFalse(); // 마지막 페이지가 아님
+        assertThat(result.getTotalPage()).isEqualTo(2); // 총 2페이지
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("페이징 기능 테스트 - 마지막 페이지")
+    void test_pagination_last_page() {
+        //given
+        LocalDate targetDate = LocalDate.now().plusDays(1);
+        Pageable pageable = PageRequest.of(1, 2); // 두 번째 페이지
+
+        // 3개의 ACCEPTED 예약 생성
+        for (int i = 0; i < 3; i++) {
+            Reservation reservation = Reservation.builder()
+                    .guest(guest)
+                    .host(host)
+                    .space(space1)
+                    .status(ReservationStatus.ACCEPTED)
+                    .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+                    .requestMessage("예약 " + (i + 1))
+                    .date(targetDate)
+                    .startTime(LocalTime.of(10 + i, 0, 0))
+                    .endTime(LocalTime.of(12 + i, 0, 0))
+                    .price(30000)
+                    .guestCount(2)
+                    .build();
+            reservationRepository.save(reservation);
+        }
+
+        //when
+        HostReservationListPageResponseDto result = reservationHostService.getHostReservationsByDate(targetDate, pageable);
+
+        //then
+        assertThat(result.getReservations()).hasSize(1); // 마지막 페이지에는 1개만
+        assertThat(result.isLast()).isTrue(); // 마지막 페이지임
+        assertThat(result.getTotalPage()).isEqualTo(2); // 총 2페이지
     }
 }

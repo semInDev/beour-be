@@ -217,21 +217,70 @@ class ReservationHostControllerTest {
         reservationRepository.save(reservation2);
 
         //when then
-        mockMvc.perform(get("/api/host/reservations")
+        mockMvc.perform(get("/api/reservations")
                         .param("date", targetDate.toString())
                         .header("Authorization", "Bearer " + hostAccessToken)
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.length()").value(2))
-                .andExpect(jsonPath("$.data[0].reservationId").value(reservation1.getId()))
-                .andExpect(jsonPath("$.data[0].guestName").value("게스트"))
-                .andExpect(jsonPath("$.data[0].status").value("ACCEPTED"))
-                .andExpect(jsonPath("$.data[0].spaceName").value("공간1"))
-                .andExpect(jsonPath("$.data[0].startTime").value("10:00:00"))
-                .andExpect(jsonPath("$.data[0].endTime").value("12:00:00"))
-                .andExpect(jsonPath("$.data[0].guestCount").value(3))
-                .andExpect(jsonPath("$.data[1].reservationId").value(reservation2.getId()))
-                .andExpect(jsonPath("$.data[1].spaceName").value("공간2"));
+                .andExpect(jsonPath("$.data.reservations.length()").value(2))
+                .andExpect(jsonPath("$.data.reservations[0].reservationId").value(reservation1.getId()))
+                .andExpect(jsonPath("$.data.reservations[0].guestName").value("게스트"))
+                .andExpect(jsonPath("$.data.reservations[0].status").value("ACCEPTED"))
+                .andExpect(jsonPath("$.data.reservations[0].spaceName").value("공간1"))
+                .andExpect(jsonPath("$.data.reservations[0].startTime").value("10:00:00"))
+                .andExpect(jsonPath("$.data.reservations[0].endTime").value("12:00:00"))
+                .andExpect(jsonPath("$.data.reservations[0].guestCount").value(3))
+                .andExpect(jsonPath("$.data.reservations[1].reservationId").value(reservation2.getId()))
+                .andExpect(jsonPath("$.data.reservations[1].spaceName").value("공간2"));
+    }
+
+    @Test
+    @DisplayName("특정 날짜 호스트 예약 목록 조회 - 페이징 테스트")
+    void getHostReservationsByDate_withPaging() throws Exception {
+        //given
+        LocalDate targetDate = LocalDate.now().plusDays(1);
+
+        // 15개의 예약 생성 (페이징 테스트용)
+        for (int i = 0; i < 15; i++) {
+            Reservation reservation = Reservation.builder()
+                    .guest(guest)
+                    .host(host)
+                    .space(space1)
+                    .status(ReservationStatus.ACCEPTED)
+                    .usagePurpose(UsagePurpose.COOKING_PRACTICE)
+                    .requestMessage("예약 " + (i + 1))
+                    .date(targetDate)
+                    .startTime(LocalTime.of(9 + i % 8, 0, 0))
+                    .endTime(LocalTime.of(9 + i % 8 + 1, 0, 0))
+                    .price(30000)
+                    .guestCount(3)
+                    .build();
+            reservationRepository.save(reservation);
+        }
+
+        //when then - 첫 번째 페이지 (size=10)
+        mockMvc.perform(get("/api/reservations")
+                        .param("date", targetDate.toString())
+                        .param("page", "0")
+                        .param("size", "10")
+                        .header("Authorization", "Bearer " + hostAccessToken)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.reservations.length()").value(10))
+                .andExpect(jsonPath("$.data.totalPage").value(2))
+                .andExpect(jsonPath("$.data.last").value(false));
+
+        // 두 번째 페이지
+        mockMvc.perform(get("/api/reservations")
+                        .param("date", targetDate.toString())
+                        .param("page", "1")
+                        .param("size", "10")
+                        .header("Authorization", "Bearer " + hostAccessToken)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.reservations.length()").value(5))
+                .andExpect(jsonPath("$.data.totalPage").value(2))
+                .andExpect(jsonPath("$.data.last").value(true));
     }
 
     @Test
@@ -273,14 +322,14 @@ class ReservationHostControllerTest {
         reservationRepository.save(pendingReservation);
 
         //when then
-        mockMvc.perform(get("/api/host/reservations")
+        mockMvc.perform(get("/api/reservations")
                         .param("date", targetDate.toString())
                         .header("Authorization", "Bearer " + hostAccessToken)
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.length()").value(1))
-                .andExpect(jsonPath("$.data[0].reservationId").value(acceptedReservation.getId()))
-                .andExpect(jsonPath("$.data[0].status").value("ACCEPTED"));
+                .andExpect(jsonPath("$.data.reservations.length()").value(1))
+                .andExpect(jsonPath("$.data.reservations[0].reservationId").value(acceptedReservation.getId()))
+                .andExpect(jsonPath("$.data.reservations[0].status").value("ACCEPTED"));
     }
 
     @Test
@@ -290,7 +339,7 @@ class ReservationHostControllerTest {
         LocalDate targetDate = LocalDate.now().plusDays(1);
 
         //when then
-        mockMvc.perform(get("/api/host/reservations")
+        mockMvc.perform(get("/api/reservations")
                         .param("date", targetDate.toString())
                         .header("Authorization", "Bearer " + hostAccessToken)
                 )
@@ -322,14 +371,14 @@ class ReservationHostControllerTest {
         reservationRepository.save(currentReservation);
 
         //when then
-        mockMvc.perform(get("/api/host/reservations")
+        mockMvc.perform(get("/api/reservations")
                         .param("date", today.toString())
                         .header("Authorization", "Bearer " + hostAccessToken)
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.length()").value(1))
-                .andExpect(jsonPath("$.data[0].reservationId").value(currentReservation.getId()))
-                .andExpect(jsonPath("$.data[0].currentlyInUse").value(true));
+                .andExpect(jsonPath("$.data.reservations.length()").value(1))
+                .andExpect(jsonPath("$.data.reservations[0].reservationId").value(currentReservation.getId()))
+                .andExpect(jsonPath("$.data.reservations[0].currentlyInUse").value(true));
     }
 
     @Test
@@ -371,15 +420,53 @@ class ReservationHostControllerTest {
         reservationRepository.save(reservation2);
 
         //when then
-        mockMvc.perform(get("/api/host/reservations/space")
+        mockMvc.perform(get("/api/spaces/reservations")
                         .param("date", targetDate.toString())
                         .param("spaceId", space1.getId().toString())
                         .header("Authorization", "Bearer " + hostAccessToken)
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.length()").value(1))
-                .andExpect(jsonPath("$.data[0].reservationId").value(reservation1.getId()))
-                .andExpect(jsonPath("$.data[0].spaceName").value("공간1"));
+                .andExpect(jsonPath("$.data.reservations.length()").value(1))
+                .andExpect(jsonPath("$.data.reservations[0].reservationId").value(reservation1.getId()))
+                .andExpect(jsonPath("$.data.reservations[0].spaceName").value("공간1"));
+    }
+
+    @Test
+    @DisplayName("특정 날짜와 공간의 호스트 예약 목록 조회 - 페이징 테스트")
+    void getHostReservationsByDateAndSpace_withPaging() throws Exception {
+        //given
+        LocalDate targetDate = LocalDate.now().plusDays(1);
+
+        // space1에 12개의 예약 생성
+        for (int i = 0; i < 12; i++) {
+            Reservation reservation = Reservation.builder()
+                    .guest(guest)
+                    .host(host)
+                    .space(space1)
+                    .status(ReservationStatus.ACCEPTED)
+                    .usagePurpose(UsagePurpose.COOKING_PRACTICE)
+                    .requestMessage("예약 " + (i + 1))
+                    .date(targetDate)
+                    .startTime(LocalTime.of(9 + i % 8, 0, 0))
+                    .endTime(LocalTime.of(9 + i % 8 + 1, 0, 0))
+                    .price(30000)
+                    .guestCount(3)
+                    .build();
+            reservationRepository.save(reservation);
+        }
+
+        //when then - 첫 번째 페이지 (size=10)
+        mockMvc.perform(get("/api/spaces/reservations")
+                        .param("date", targetDate.toString())
+                        .param("spaceId", space1.getId().toString())
+                        .param("page", "0")
+                        .param("size", "10")
+                        .header("Authorization", "Bearer " + hostAccessToken)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.reservations.length()").value(10))
+                .andExpect(jsonPath("$.data.totalPage").value(2))
+                .andExpect(jsonPath("$.data.last").value(false));
     }
 
     @Test
@@ -389,7 +476,7 @@ class ReservationHostControllerTest {
         LocalDate targetDate = LocalDate.now().plusDays(1);
 
         //when then
-        mockMvc.perform(get("/api/host/reservations/space")
+        mockMvc.perform(get("/api/spaces/reservations")
                         .param("date", targetDate.toString())
                         .param("spaceId", "999")
                         .header("Authorization", "Bearer " + hostAccessToken)
@@ -435,7 +522,7 @@ class ReservationHostControllerTest {
         spaceRepository.save(otherSpace);
 
         //when then
-        mockMvc.perform(get("/api/host/reservations/space")
+        mockMvc.perform(get("/api/spaces/reservations")
                         .param("date", targetDate.toString())
                         .param("spaceId", otherSpace.getId().toString())
                         .header("Authorization", "Bearer " + hostAccessToken)
@@ -451,7 +538,7 @@ class ReservationHostControllerTest {
         LocalDate targetDate = LocalDate.now().plusDays(1);
 
         //when then
-        mockMvc.perform(get("/api/host/reservations/space")
+        mockMvc.perform(get("/api/spaces/reservations")
                         .param("date", targetDate.toString())
                         .param("spaceId", space1.getId().toString())
                         .header("Authorization", "Bearer " + hostAccessToken)
@@ -501,12 +588,12 @@ class ReservationHostControllerTest {
         reservationRepository.save(deletedReservation);
 
         //when then
-        mockMvc.perform(get("/api/host/reservations")
+        mockMvc.perform(get("/api/reservations")
                         .param("date", targetDate.toString())
                         .header("Authorization", "Bearer " + hostAccessToken)
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.length()").value(1))
-                .andExpect(jsonPath("$.data[0].reservationId").value(normalReservation.getId()));
+                .andExpect(jsonPath("$.data.reservations.length()").value(1))
+                .andExpect(jsonPath("$.data.reservations[0].reservationId").value(normalReservation.getId()));
     }
 }
