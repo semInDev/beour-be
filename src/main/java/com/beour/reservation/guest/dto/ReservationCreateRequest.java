@@ -17,12 +17,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ReservationCreateRequest {
 
-    @NotNull(message = "호스트의 id 값 필수")
-    private Long hostId;
-
-    @NotNull(message = "예약할 공간 id 값 필수")
-    private Long spaceId;
-
     @NotNull(message = "예약일자 필수")
     private LocalDate date;
 

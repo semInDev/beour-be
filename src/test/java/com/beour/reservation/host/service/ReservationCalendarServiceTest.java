@@ -11,6 +11,7 @@ import com.beour.reservation.commons.enums.UsagePurpose;
 import com.beour.reservation.commons.exceptionType.MissMatch;
 import com.beour.reservation.commons.exceptionType.ReservationNotFound;
 import com.beour.reservation.commons.repository.ReservationRepository;
+import com.beour.reservation.host.dto.CalendarReservationPageResponseDto;
 import com.beour.reservation.host.dto.CalendarReservationResponseDto;
 import com.beour.space.domain.entity.Space;
 import com.beour.space.domain.repository.SpaceRepository;
@@ -30,6 +31,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -215,15 +218,19 @@ class ReservationCalendarServiceTest {
     void getHostCalendarReservations_without_spaceId() {
         // given
         LocalDate today = LocalDate.now();
+        Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        List<CalendarReservationResponseDto> result = reservationCalendarService.getHostCalendarReservations(today, null);
+        CalendarReservationPageResponseDto result = reservationCalendarService.getHostCalendarReservations(today, null, pageable);
 
         // then
-        assertEquals(3, result.size()); // 삭제된 예약은 제외
-        assertTrue(result.stream().anyMatch(dto -> dto.getStatus() == ReservationStatus.PENDING));
-        assertTrue(result.stream().anyMatch(dto -> dto.getStatus() == ReservationStatus.ACCEPTED));
-        assertTrue(result.stream().anyMatch(dto -> dto.getStatus() == ReservationStatus.REJECTED));
+        List<CalendarReservationResponseDto> reservations = result.getReservations();
+        assertEquals(3, reservations.size()); // 삭제된 예약은 제외
+        assertTrue(reservations.stream().anyMatch(dto -> dto.getStatus() == ReservationStatus.PENDING));
+        assertTrue(reservations.stream().anyMatch(dto -> dto.getStatus() == ReservationStatus.ACCEPTED));
+        assertTrue(reservations.stream().anyMatch(dto -> dto.getStatus() == ReservationStatus.REJECTED));
+        assertTrue(result.isLast());
+        assertEquals(1, result.getTotalPage());
     }
 
     @Test
@@ -231,13 +238,17 @@ class ReservationCalendarServiceTest {
     void getHostCalendarReservations_with_spaceId() {
         // given
         LocalDate today = LocalDate.now();
+        Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        List<CalendarReservationResponseDto> result = reservationCalendarService.getHostCalendarReservations(today, space.getId());
+        CalendarReservationPageResponseDto result = reservationCalendarService.getHostCalendarReservations(today, space.getId(), pageable);
 
         // then
-        assertEquals(3, result.size());
-        assertTrue(result.stream().allMatch(dto -> dto.getSpaceName().equals(space.getName())));
+        List<CalendarReservationResponseDto> reservations = result.getReservations();
+        assertEquals(3, reservations.size());
+        assertTrue(reservations.stream().allMatch(dto -> dto.getSpaceName().equals(space.getName())));
+        assertTrue(result.isLast());
+        assertEquals(1, result.getTotalPage());
     }
 
     @Test
@@ -245,10 +256,11 @@ class ReservationCalendarServiceTest {
     void getHostCalendarReservations_unauthorized_space() {
         // given
         LocalDate today = LocalDate.now();
+        Pageable pageable = PageRequest.of(0, 10);
 
         // when & then
         assertThrows(UnauthorityException.class, () ->
-                reservationCalendarService.getHostCalendarReservations(today, otherSpace.getId()));
+                reservationCalendarService.getHostCalendarReservations(today, otherSpace.getId(), pageable));
     }
 
     @Test
@@ -256,14 +268,18 @@ class ReservationCalendarServiceTest {
     void getHostPendingReservations_without_spaceId() {
         // given
         LocalDate today = LocalDate.now();
+        Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        List<CalendarReservationResponseDto> result = reservationCalendarService.getHostPendingReservations(today, null);
+        CalendarReservationPageResponseDto result = reservationCalendarService.getHostPendingReservations(today, null, pageable);
 
         // then
-        assertEquals(1, result.size());
-        assertEquals(ReservationStatus.PENDING, result.get(0).getStatus());
-        assertEquals(LocalTime.of(10, 0, 0), result.get(0).getStartTime());
+        List<CalendarReservationResponseDto> reservations = result.getReservations();
+        assertEquals(1, reservations.size());
+        assertEquals(ReservationStatus.PENDING, reservations.get(0).getStatus());
+        assertEquals(LocalTime.of(10, 0, 0), reservations.get(0).getStartTime());
+        assertTrue(result.isLast());
+        assertEquals(1, result.getTotalPage());
     }
 
     @Test
@@ -271,14 +287,18 @@ class ReservationCalendarServiceTest {
     void getHostPendingReservations_with_spaceId() {
         // given
         LocalDate today = LocalDate.now();
+        Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        List<CalendarReservationResponseDto> result = reservationCalendarService.getHostPendingReservations(today, space.getId());
+        CalendarReservationPageResponseDto result = reservationCalendarService.getHostPendingReservations(today, space.getId(), pageable);
 
         // then
-        assertEquals(1, result.size());
-        assertEquals(ReservationStatus.PENDING, result.get(0).getStatus());
-        assertEquals(space.getName(), result.get(0).getSpaceName());
+        List<CalendarReservationResponseDto> reservations = result.getReservations();
+        assertEquals(1, reservations.size());
+        assertEquals(ReservationStatus.PENDING, reservations.get(0).getStatus());
+        assertEquals(space.getName(), reservations.get(0).getSpaceName());
+        assertTrue(result.isLast());
+        assertEquals(1, result.getTotalPage());
     }
 
     @Test
@@ -286,14 +306,18 @@ class ReservationCalendarServiceTest {
     void getHostAcceptedReservations_without_spaceId() {
         // given
         LocalDate today = LocalDate.now();
+        Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        List<CalendarReservationResponseDto> result = reservationCalendarService.getHostAcceptedReservations(today, null);
+        CalendarReservationPageResponseDto result = reservationCalendarService.getHostAcceptedReservations(today, null, pageable);
 
         // then
-        assertEquals(1, result.size());
-        assertEquals(ReservationStatus.ACCEPTED, result.get(0).getStatus());
-        assertEquals(LocalTime.of(14, 0, 0), result.get(0).getStartTime());
+        List<CalendarReservationResponseDto> reservations = result.getReservations();
+        assertEquals(1, reservations.size());
+        assertEquals(ReservationStatus.ACCEPTED, reservations.get(0).getStatus());
+        assertEquals(LocalTime.of(14, 0, 0), reservations.get(0).getStartTime());
+        assertTrue(result.isLast());
+        assertEquals(1, result.getTotalPage());
     }
 
     @Test
@@ -301,14 +325,52 @@ class ReservationCalendarServiceTest {
     void getHostAcceptedReservations_with_spaceId() {
         // given
         LocalDate today = LocalDate.now();
+        Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        List<CalendarReservationResponseDto> result = reservationCalendarService.getHostAcceptedReservations(today, space.getId());
+        CalendarReservationPageResponseDto result = reservationCalendarService.getHostAcceptedReservations(today, space.getId(), pageable);
 
         // then
-        assertEquals(1, result.size());
-        assertEquals(ReservationStatus.ACCEPTED, result.get(0).getStatus());
-        assertEquals(space.getName(), result.get(0).getSpaceName());
+        List<CalendarReservationResponseDto> reservations = result.getReservations();
+        assertEquals(1, reservations.size());
+        assertEquals(ReservationStatus.ACCEPTED, reservations.get(0).getStatus());
+        assertEquals(space.getName(), reservations.get(0).getSpaceName());
+        assertTrue(result.isLast());
+        assertEquals(1, result.getTotalPage());
+    }
+
+    @Test
+    @DisplayName("페이징 기능 테스트 - 첫 번째 페이지")
+    void getHostCalendarReservations_paging_first_page() {
+        // given
+        LocalDate today = LocalDate.now();
+        Pageable pageable = PageRequest.of(0, 2); // 페이지 크기를 2로 설정
+
+        // when
+        CalendarReservationPageResponseDto result = reservationCalendarService.getHostCalendarReservations(today, null, pageable);
+
+        // then
+        List<CalendarReservationResponseDto> reservations = result.getReservations();
+        assertEquals(2, reservations.size());
+        assertFalse(result.isLast());
+        assertEquals(2, result.getTotalPage());
+    }
+
+    @Test
+    @DisplayName("페이징 기능 테스트 - 두 번째 페이지")
+    void getHostCalendarReservations_paging_second_page() {
+        // given
+        LocalDate today = LocalDate.now();
+        Pageable pageable = PageRequest.of(1, 2); // 두 번째 페이지, 페이지 크기 2
+
+        // when
+        CalendarReservationPageResponseDto result = reservationCalendarService.getHostCalendarReservations(today, null, pageable);
+
+        // then
+        List<CalendarReservationResponseDto> reservations = result.getReservations();
+        assertEquals(1, reservations.size());
+        assertTrue(result.isLast());
+        assertEquals(2, result.getTotalPage());
     }
 
     @Test
@@ -455,10 +517,11 @@ class ReservationCalendarServiceTest {
         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                 "nonexistent", null, Collections.emptyList());
         SecurityContextHolder.getContext().setAuthentication(auth);
+        Pageable pageable = PageRequest.of(0, 10);
 
         // when & then
         assertThrows(UserNotFoundException.class, () ->
-                reservationCalendarService.getHostCalendarReservations(LocalDate.now(), null));
+                reservationCalendarService.getHostCalendarReservations(LocalDate.now(), null, pageable));
     }
 
     @Test
@@ -466,12 +529,15 @@ class ReservationCalendarServiceTest {
     void getHostCalendarReservations_different_date() {
         // given
         LocalDate tomorrow = LocalDate.now().plusDays(1);
+        Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        List<CalendarReservationResponseDto> result = reservationCalendarService.getHostCalendarReservations(tomorrow, null);
+        CalendarReservationPageResponseDto result = reservationCalendarService.getHostCalendarReservations(tomorrow, null, pageable);
 
         // then
-        assertEquals(0, result.size());
+        assertEquals(0, result.getReservations().size());
+        assertTrue(result.isLast());
+        assertEquals(0, result.getTotalPage());
     }
 
     @Test
@@ -479,6 +545,7 @@ class ReservationCalendarServiceTest {
     void getHostCalendarReservations_deleted_reservation_excluded() {
         // given
         LocalDate today = LocalDate.now();
+        Pageable pageable = PageRequest.of(0, 10);
 
         // 모든 예약을 삭제 처리
         pendingReservation.softDelete();
@@ -489,9 +556,11 @@ class ReservationCalendarServiceTest {
         reservationRepository.save(rejectedReservation);
 
         // when
-        List<CalendarReservationResponseDto> result = reservationCalendarService.getHostCalendarReservations(today, null);
+        CalendarReservationPageResponseDto result = reservationCalendarService.getHostCalendarReservations(today, null, pageable);
 
         // then
-        assertEquals(0, result.size());
+        assertEquals(0, result.getReservations().size());
+        assertTrue(result.isLast());
+        assertEquals(0, result.getTotalPage());
     }
 }

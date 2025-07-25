@@ -205,35 +205,54 @@ class ReservationCalendarControllerTest {
     @Test
     @DisplayName("호스트 캘린더 예약 조회 - 전체 예약 조회 성공")
     void getHostCalendarReservations_success() throws Exception {
-        mockMvc.perform(get("/api/host/calendar/reservations")
+        mockMvc.perform(get("/api/reservations/condition")
                         .param("date", LocalDate.now().toString())
                         .header("Authorization", "Bearer " + hostAccessToken)
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data").isArray())
-                .andExpect(jsonPath("$.data.length()").value(3))
-                .andExpect(jsonPath("$.data[0].guestName").value("게스트"))
-                .andExpect(jsonPath("$.data[0].spaceName").value("공간1"));
+                .andExpect(jsonPath("$.data.reservations").isArray())
+                .andExpect(jsonPath("$.data.reservations.length()").value(3))
+                .andExpect(jsonPath("$.data.reservations[0].guestName").value("게스트"))
+                .andExpect(jsonPath("$.data.reservations[0].spaceName").value("공간1"))
+                .andExpect(jsonPath("$.data.totalPage").value(1))
+                .andExpect(jsonPath("$.data.last").value(true));
     }
 
     @Test
     @DisplayName("호스트 캘린더 예약 조회 - 특정 공간 예약 조회 성공")
     void getHostCalendarReservations_with_spaceId_success() throws Exception {
-        mockMvc.perform(get("/api/host/calendar/reservations")
+        mockMvc.perform(get("/api/reservations/condition")
                         .param("date", LocalDate.now().toString())
                         .param("spaceId", space.getId().toString())
                         .header("Authorization", "Bearer " + hostAccessToken)
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data").isArray())
-                .andExpect(jsonPath("$.data.length()").value(3))
-                .andExpect(jsonPath("$.data[0].spaceName").value("공간1"));
+                .andExpect(jsonPath("$.data.reservations").isArray())
+                .andExpect(jsonPath("$.data.reservations.length()").value(3))
+                .andExpect(jsonPath("$.data.reservations[0].spaceName").value("공간1"));
+    }
+
+    @Test
+    @DisplayName("호스트 캘린더 예약 조회 - 페이징 테스트")
+    void getHostCalendarReservations_with_paging() throws Exception {
+        mockMvc.perform(get("/api/reservations/condition")
+                        .param("date", LocalDate.now().toString())
+                        .param("page", "0")
+                        .param("size", "2")
+                        .param("sort", "startTime,asc")
+                        .header("Authorization", "Bearer " + hostAccessToken)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.reservations").isArray())
+                .andExpect(jsonPath("$.data.reservations.length()").value(2))
+                .andExpect(jsonPath("$.data.totalPage").value(2))
+                .andExpect(jsonPath("$.data.last").value(false));
     }
 
     @Test
     @DisplayName("호스트 캘린더 예약 조회 - 다른 호스트 공간 조회 시 권한 오류")
     void getHostCalendarReservations_unauthorized_space() throws Exception {
-        mockMvc.perform(get("/api/host/calendar/reservations")
+        mockMvc.perform(get("/api/reservations/condition")
                         .param("date", LocalDate.now().toString())
                         .param("spaceId", anotherSpace.getId().toString())
                         .header("Authorization", "Bearer " + hostAccessToken)
@@ -245,7 +264,7 @@ class ReservationCalendarControllerTest {
     @Test
     @DisplayName("호스트 캘린더 예약 조회 - 존재하지 않는 공간")
     void getHostCalendarReservations_space_not_found() throws Exception {
-        mockMvc.perform(get("/api/host/calendar/reservations")
+        mockMvc.perform(get("/api/reservations/condition")
                         .param("date", LocalDate.now().toString())
                         .param("spaceId", "999")
                         .header("Authorization", "Bearer " + hostAccessToken)
@@ -257,51 +276,63 @@ class ReservationCalendarControllerTest {
     @Test
     @DisplayName("호스트 대기중 예약 조회 - 성공")
     void getHostPendingReservations_success() throws Exception {
-        mockMvc.perform(get("/api/host/calendar/reservations/pending")
+        mockMvc.perform(get("/api/reservations/condition")
                         .param("date", LocalDate.now().toString())
+                        .param("status", "pending")
                         .header("Authorization", "Bearer " + hostAccessToken)
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data").isArray())
-                .andExpect(jsonPath("$.data.length()").value(1))
-                .andExpect(jsonPath("$.data[0].status").value("PENDING"))
-                .andExpect(jsonPath("$.data[0].guestName").value("게스트"));
+                .andExpect(jsonPath("$.data.reservations").isArray())
+                .andExpect(jsonPath("$.data.reservations.length()").value(1))
+                .andExpect(jsonPath("$.data.reservations[0].status").value("PENDING"))
+                .andExpect(jsonPath("$.data.reservations[0].guestName").value("게스트"));
     }
 
     @Test
     @DisplayName("호스트 승인된 예약 조회 - 성공")
     void getHostAcceptedReservations_success() throws Exception {
-        mockMvc.perform(get("/api/host/calendar/reservations/accepted")
+        mockMvc.perform(get("/api/reservations/condition")
                         .param("date", LocalDate.now().toString())
+                        .param("status", "accepted")
                         .header("Authorization", "Bearer " + hostAccessToken)
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data").isArray())
-                .andExpect(jsonPath("$.data.length()").value(1))
-                .andExpect(jsonPath("$.data[0].status").value("ACCEPTED"))
-                .andExpect(jsonPath("$.data[0].guestName").value("게스트"));
+                .andExpect(jsonPath("$.data.reservations").isArray())
+                .andExpect(jsonPath("$.data.reservations.length()").value(1))
+                .andExpect(jsonPath("$.data.reservations[0].status").value("ACCEPTED"))
+                .andExpect(jsonPath("$.data.reservations[0].guestName").value("게스트"));
     }
 
     @Test
     @DisplayName("호스트 대기중 예약 조회 - 특정 공간으로 조회")
     void getHostPendingReservations_with_spaceId() throws Exception {
-        mockMvc.perform(get("/api/host/calendar/reservations/pending")
+        mockMvc.perform(get("/api/reservations/condition")
                         .param("date", LocalDate.now().toString())
                         .param("spaceId", space.getId().toString())
+                        .param("status", "pending")
                         .header("Authorization", "Bearer " + hostAccessToken)
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data").isArray())
-                .andExpect(jsonPath("$.data.length()").value(1))
-                .andExpect(jsonPath("$.data[0].status").value("PENDING"));
+                .andExpect(jsonPath("$.data.reservations").isArray())
+                .andExpect(jsonPath("$.data.reservations.length()").value(1))
+                .andExpect(jsonPath("$.data.reservations[0].status").value("PENDING"));
+    }
+
+    @Test
+    @DisplayName("호스트 예약 조회 - 날짜 없이 조회 (현재 날짜 사용)")
+    void getHostCalendarReservations_without_date() throws Exception {
+        mockMvc.perform(get("/api/reservations/condition")
+                        .header("Authorization", "Bearer " + hostAccessToken)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.reservations").isArray());
     }
 
     @Test
     @Transactional
     @DisplayName("예약 승인 - 성공")
     void acceptReservation_success() throws Exception {
-        mockMvc.perform(patch("/api/host/calendar/reservations/accept")
-                        .param("reservationId", pendingReservation.getId().toString())
+        mockMvc.perform(patch("/api/reservations/{reservationId}/accept", pendingReservation.getId())
                         .param("spaceId", space.getId().toString())
                         .header("Authorization", "Bearer " + hostAccessToken)
                 )
@@ -315,8 +346,7 @@ class ReservationCalendarControllerTest {
     @Test
     @DisplayName("예약 승인 - 존재하지 않는 예약")
     void acceptReservation_reservation_not_found() throws Exception {
-        mockMvc.perform(patch("/api/host/calendar/reservations/accept")
-                        .param("reservationId", "999")
+        mockMvc.perform(patch("/api/reservations/{reservationId}/accept", 999L)
                         .param("spaceId", space.getId().toString())
                         .header("Authorization", "Bearer " + hostAccessToken)
                 )
@@ -327,8 +357,7 @@ class ReservationCalendarControllerTest {
     @Test
     @DisplayName("예약 승인 - 존재하지 않는 공간")
     void acceptReservation_space_not_found() throws Exception {
-        mockMvc.perform(patch("/api/host/calendar/reservations/accept")
-                        .param("reservationId", pendingReservation.getId().toString())
+        mockMvc.perform(patch("/api/reservations/{reservationId}/accept", pendingReservation.getId())
                         .param("spaceId", "999")
                         .header("Authorization", "Bearer " + hostAccessToken)
                 )
@@ -339,8 +368,7 @@ class ReservationCalendarControllerTest {
     @Test
     @DisplayName("예약 승인 - 다른 호스트의 공간")
     void acceptReservation_unauthorized_space() throws Exception {
-        mockMvc.perform(patch("/api/host/calendar/reservations/accept")
-                        .param("reservationId", pendingReservation.getId().toString())
+        mockMvc.perform(patch("/api/reservations/{reservationId}/accept", pendingReservation.getId())
                         .param("spaceId", anotherSpace.getId().toString())
                         .header("Authorization", "Bearer " + hostAccessToken)
                 )
@@ -367,8 +395,7 @@ class ReservationCalendarControllerTest {
                 .build();
         reservationRepository.save(anotherReservation);
 
-        mockMvc.perform(patch("/api/host/calendar/reservations/accept")
-                        .param("reservationId", anotherReservation.getId().toString())
+        mockMvc.perform(patch("/api/reservations/{reservationId}/accept", anotherReservation.getId())
                         .param("spaceId", space.getId().toString())
                         .header("Authorization", "Bearer " + hostAccessToken)
                 )
@@ -394,8 +421,7 @@ class ReservationCalendarControllerTest {
                 .build();
         reservationRepository.save(anotherReservation);
 
-        mockMvc.perform(patch("/api/host/calendar/reservations/accept")
-                        .param("reservationId", anotherReservation.getId().toString())
+        mockMvc.perform(patch("/api/reservations/{reservationId}/accept", anotherReservation.getId())
                         .param("spaceId", anotherSpace.getId().toString())
                         .header("Authorization", "Bearer " + hostAccessToken)
                 )
@@ -407,8 +433,7 @@ class ReservationCalendarControllerTest {
     @Transactional
     @DisplayName("예약 거부 - 성공")
     void rejectReservation_success() throws Exception {
-        mockMvc.perform(patch("/api/host/calendar/reservations/reject")
-                        .param("reservationId", pendingReservation.getId().toString())
+        mockMvc.perform(patch("/api/reservations/{reservationId}/reject", pendingReservation.getId())
                         .param("spaceId", space.getId().toString())
                         .header("Authorization", "Bearer " + hostAccessToken)
                 )
@@ -422,8 +447,7 @@ class ReservationCalendarControllerTest {
     @Test
     @DisplayName("예약 거부 - 존재하지 않는 예약")
     void rejectReservation_reservation_not_found() throws Exception {
-        mockMvc.perform(patch("/api/host/calendar/reservations/reject")
-                        .param("reservationId", "999")
+        mockMvc.perform(patch("/api/reservations/{reservationId}/reject", 999L)
                         .param("spaceId", space.getId().toString())
                         .header("Authorization", "Bearer " + hostAccessToken)
                 )
@@ -434,8 +458,7 @@ class ReservationCalendarControllerTest {
     @Test
     @DisplayName("예약 거부 - 존재하지 않는 공간")
     void rejectReservation_space_not_found() throws Exception {
-        mockMvc.perform(patch("/api/host/calendar/reservations/reject")
-                        .param("reservationId", pendingReservation.getId().toString())
+        mockMvc.perform(patch("/api/reservations/{reservationId}/reject", pendingReservation.getId())
                         .param("spaceId", "999")
                         .header("Authorization", "Bearer " + hostAccessToken)
                 )
@@ -446,8 +469,7 @@ class ReservationCalendarControllerTest {
     @Test
     @DisplayName("예약 거부 - 다른 호스트의 공간")
     void rejectReservation_unauthorized_space() throws Exception {
-        mockMvc.perform(patch("/api/host/calendar/reservations/reject")
-                        .param("reservationId", pendingReservation.getId().toString())
+        mockMvc.perform(patch("/api/reservations/{reservationId}/reject", pendingReservation.getId())
                         .param("spaceId", anotherSpace.getId().toString())
                         .header("Authorization", "Bearer " + hostAccessToken)
                 )

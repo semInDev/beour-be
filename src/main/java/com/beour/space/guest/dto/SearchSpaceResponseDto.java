@@ -21,10 +21,11 @@ public class SearchSpaceResponseDto {
     private Double average;
     private Long reviewCount;
     private List<String> tags;
+    private boolean likes;
 
     @Builder
     private SearchSpaceResponseDto(Long spaceId, String spaceName, String thumbnailUrl, int price,
-        String address, int maxCapacity, Double average, Long reviewCount, List<String> tags) {
+        String address, int maxCapacity, Double average, Long reviewCount, List<String> tags, boolean likes) {
         this.spaceId = spaceId;
         this.spaceName = spaceName;
         this.thumbnailUrl = thumbnailUrl;
@@ -34,6 +35,7 @@ public class SearchSpaceResponseDto {
         this.average = average;
         this.reviewCount = reviewCount;
         this.tags = tags;
+        this.likes = likes;
     }
 
     public static SearchSpaceResponseDto of(Space space, Long reviewCount) {
@@ -51,6 +53,25 @@ public class SearchSpaceResponseDto {
             .average(space.getAvgRating())
             .reviewCount(reviewCount)
             .tags(tagList)
+            .build();
+    }
+
+    public static SearchSpaceResponseDto oftmp(Space space, Long reviewCount, boolean likes) {
+        List<String> tagList = space.getTags().stream()
+            .map(Tag::getContents)
+            .collect(Collectors.toList());
+
+        return SearchSpaceResponseDto.builder()
+            .spaceId(space.getId())
+            .spaceName(space.getName())
+            .thumbnailUrl(space.getThumbnailUrl())
+            .price(space.getPricePerHour())
+            .address(abstractAddress(space.getAddress()))
+            .maxCapacity(space.getMaxCapacity())
+            .average(space.getAvgRating())
+            .reviewCount(reviewCount)
+            .tags(tagList)
+            .likes(likes)
             .build();
     }
 

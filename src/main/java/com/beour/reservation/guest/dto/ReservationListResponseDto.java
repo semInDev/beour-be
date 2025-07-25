@@ -25,12 +25,14 @@ public class ReservationListResponseDto {
     private UsagePurpose usagePurpose;
     private String requestMessage;
     private Long reviewId;
+    private boolean currentUsing;
 
     @Builder
-    private ReservationListResponseDto(Long reservationId, String spaceName, String spaceThumbImageUrl,
-                                       LocalDate date, LocalTime startTime, LocalTime endTime,
-                                       int price, int guestCount, ReservationStatus status,
-                                       UsagePurpose usagePurpose, String requestMessage, Long reviewId){
+    private ReservationListResponseDto(Long reservationId, String spaceName,
+        String spaceThumbImageUrl,
+        LocalDate date, LocalTime startTime, LocalTime endTime,
+        int price, int guestCount, ReservationStatus status,
+        UsagePurpose usagePurpose, String requestMessage, Long reviewId, boolean currentUsing) {
         this.reservationId = reservationId;
         this.spaceName = spaceName;
         this.spaceThumbImageUrl = spaceThumbImageUrl;
@@ -43,38 +45,49 @@ public class ReservationListResponseDto {
         this.usagePurpose = usagePurpose;
         this.requestMessage = requestMessage;
         this.reviewId = reviewId;
+        this.currentUsing = currentUsing;
     }
 
-    public static ReservationListResponseDto of(Reservation reservation){
+    public static ReservationListResponseDto of(Reservation reservation) {
         return ReservationListResponseDto.builder()
-                .reservationId(reservation.getId())
-                .spaceName(reservation.getSpace().getName())
-                .spaceThumbImageUrl(reservation.getSpace().getThumbnailUrl())
-                .date(reservation.getDate())
-                .startTime(reservation.getStartTime())
-                .endTime(reservation.getEndTime())
-                .price(reservation.getPrice())
-                .guestCount(reservation.getGuestCount())
-                .status(reservation.getStatus())
-                .usagePurpose(reservation.getUsagePurpose())
-                .requestMessage(reservation.getRequestMessage())
-                .build();
+            .reservationId(reservation.getId())
+            .spaceName(reservation.getSpace().getName())
+            .spaceThumbImageUrl(reservation.getSpace().getThumbnailUrl())
+            .date(reservation.getDate())
+            .startTime(reservation.getStartTime())
+            .endTime(reservation.getEndTime())
+            .price(reservation.getPrice())
+            .guestCount(reservation.getGuestCount())
+            .status(reservation.getStatus())
+            .usagePurpose(reservation.getUsagePurpose())
+            .requestMessage(reservation.getRequestMessage())
+            .currentUsing(isCurrentUsing(reservation))
+            .build();
     }
 
-    public static ReservationListResponseDto of(Reservation reservation, Long reviewId){
+    public static ReservationListResponseDto of(Reservation reservation, Long reviewId) {
         return ReservationListResponseDto.builder()
-                .reservationId(reservation.getId())
-                .spaceName(reservation.getSpace().getName())
-                .spaceThumbImageUrl(reservation.getSpace().getThumbnailUrl())
-                .date(reservation.getDate())
-                .startTime(reservation.getStartTime())
-                .endTime(reservation.getEndTime())
-                .price(reservation.getPrice())
-                .guestCount(reservation.getGuestCount())
-                .status(reservation.getStatus())
-                .usagePurpose(reservation.getUsagePurpose())
-                .requestMessage(reservation.getRequestMessage())
-                .reviewId(reviewId)
-                .build();
+            .reservationId(reservation.getId())
+            .spaceName(reservation.getSpace().getName())
+            .spaceThumbImageUrl(reservation.getSpace().getThumbnailUrl())
+            .date(reservation.getDate())
+            .startTime(reservation.getStartTime())
+            .endTime(reservation.getEndTime())
+            .price(reservation.getPrice())
+            .guestCount(reservation.getGuestCount())
+            .status(reservation.getStatus())
+            .usagePurpose(reservation.getUsagePurpose())
+            .requestMessage(reservation.getRequestMessage())
+            .reviewId(reviewId)
+            .build();
+    }
+
+    private static boolean isCurrentUsing(Reservation reservation){
+        LocalDate today = LocalDate.now();
+        LocalTime now = LocalTime.now();
+
+        return reservation.getDate().equals(today) &&
+            !now.isBefore(reservation.getStartTime()) &&
+            now.isBefore(reservation.getEndTime());
     }
 }
