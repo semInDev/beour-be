@@ -4,6 +4,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.jwt.JWTUtil;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
@@ -69,19 +70,19 @@ class MyInfomationControllerTest {
     @DisplayName("사용자 메인 정보 조회 - 성공")
     void success_read_user_info() throws Exception {
         //when //then
-        mockMvc.perform(get("/api/mypage")
+        mockMvc.perform(get("/api/users/me")
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.userName").value(savedUser.getName()))
-            .andExpect(jsonPath("$.data.userEmail").value(savedUser.getEmail()));
+            .andExpect(jsonPath("$.data.userLoginId").value(savedUser.getLoginId()));
     }
 
     @Test
     @DisplayName("사용자 세부 정보 조회 - 성공")
     void success_read_user_info_detail() throws Exception {
         //when //then
-        mockMvc.perform(get("/api/mypage/detail")
+        mockMvc.perform(get("/api/users/me/detail")
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isOk())
@@ -103,13 +104,13 @@ class MyInfomationControllerTest {
             """;
 
         //when //then
-        mockMvc.perform(patch("/api/mypage/detail")
+        mockMvc.perform(patch("/api/users/me/detail")
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
             .andExpect(status().isConflict())
-            .andExpect(jsonPath("$.message").value("이미 사용중인 닉네임입니다."));
+            .andExpect(jsonPath("$.message").value(UserErrorCode.NICKNAME_DUPLICATE.getMessage()));
     }
 
     @Test
@@ -124,7 +125,7 @@ class MyInfomationControllerTest {
             """;
 
         //when //then
-        mockMvc.perform(patch("/api/mypage/detail")
+        mockMvc.perform(patch("/api/users/me/detail")
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
@@ -145,7 +146,7 @@ class MyInfomationControllerTest {
             """;
 
         //when //then
-        mockMvc.perform(patch("/api/mypage/password")
+        mockMvc.perform(patch("/api/users/me/password")
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)

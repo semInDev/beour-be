@@ -36,7 +36,7 @@ public class LoginControllerValidationTest {
         """;
 
         //when then
-        mockMvc.perform(post("/api/users/find-login-id")
+        mockMvc.perform(post("/api/users/find/login-id")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -58,7 +58,7 @@ public class LoginControllerValidationTest {
         """;
 
         //when then
-        mockMvc.perform(post("/api/users/find-login-id")
+        mockMvc.perform(post("/api/users/find/login-id")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -80,7 +80,7 @@ public class LoginControllerValidationTest {
         """;
 
         //when then
-        mockMvc.perform(post("/api/users/find-login-id")
+        mockMvc.perform(post("/api/users/find/login-id")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -101,7 +101,7 @@ public class LoginControllerValidationTest {
         """;
 
         //when then
-        mockMvc.perform(post("/api/users/find-login-id")
+        mockMvc.perform(post("/api/users/find/login-id")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -123,7 +123,7 @@ public class LoginControllerValidationTest {
         """;
 
         //when then
-        mockMvc.perform(post("/api/users/reset-pw")
+        mockMvc.perform(post("/api/users/reset/password")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -145,7 +145,7 @@ public class LoginControllerValidationTest {
         """;
 
         //when then
-        mockMvc.perform(post("/api/users/reset-pw")
+        mockMvc.perform(post("/api/users/reset/password")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -167,7 +167,7 @@ public class LoginControllerValidationTest {
         """;
 
         //when then
-        mockMvc.perform(post("/api/users/reset-pw")
+        mockMvc.perform(post("/api/users/reset/password")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -190,7 +190,7 @@ public class LoginControllerValidationTest {
         """;
 
         //when then
-        mockMvc.perform(post("/api/users/reset-pw")
+        mockMvc.perform(post("/api/users/reset/password")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -206,13 +206,13 @@ public class LoginControllerValidationTest {
             {
                 "loginId": "user1",
                 "name": "유저1",
-                "email": "",
+                "email": "test@gmail.com",
                 "phone": "0101234567="
             }
         """;
 
         //when then
-        mockMvc.perform(post("/api/users/reset-pw")
+        mockMvc.perform(post("/api/users/reset/password")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )

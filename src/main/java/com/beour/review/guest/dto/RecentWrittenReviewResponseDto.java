@@ -11,6 +11,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class RecentWrittenReviewResponseDto {
 
+    private Long reviewId;
     private String spaceName;
     private String reviewerNickName;
     private LocalDateTime reviewCreatedAt;

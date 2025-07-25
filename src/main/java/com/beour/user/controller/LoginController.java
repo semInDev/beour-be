@@ -14,37 +14,36 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/users")
 public class LoginController {
 
     private final LoginService loginService;
 
-    @PostMapping("/find-login-id")
+    @PostMapping("/api/users/find/login-id")
     public ApiResponse<FindLoginIdResponseDto> findLoginId(
         @Valid @RequestBody FindLoginIdRequestDto dto) {
         return ApiResponse.ok(loginService.findLoginId(dto));
     }
 
-    @PostMapping("/reset-pw")
+    @PostMapping("/api/users/reset/password")
     public ApiResponse<ResetPasswordResponseDto> resetPassword(
         @Valid @RequestBody ResetPasswordRequestDto dto) {
-
         return ApiResponse.ok(loginService.resetPassword(dto));
     }
 
-    @PostMapping("/reissue")
+    @PostMapping("/api/token/reissue")
     public ApiResponse<ReissueAccesstokenResponseDto> reissue(HttpServletRequest request,
         HttpServletResponse response) {
         String[] tokens = loginService.reissueRefreshToken(request);
         String newAccessToken = tokens[0];
         String newRefreshToken = tokens[1];
         response.setHeader("Authorization", newAccessToken);
-        response.addCookie(ManageCookie.createCookie("refresh", newRefreshToken));
+//      response.addCookie(ManageCookie.createCookie("refresh", newRefreshToken));
+        boolean isSecure = request.isSecure();
+        ManageCookie.addRefreshCookie(response, "refresh", newRefreshToken, isSecure);
 
         ReissueAccesstokenResponseDto responseDto = new ReissueAccesstokenResponseDto(
             newAccessToken);

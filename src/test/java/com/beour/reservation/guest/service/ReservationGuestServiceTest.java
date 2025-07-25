@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
-import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
 import com.beour.reservation.commons.enums.UsagePurpose;
@@ -13,7 +12,7 @@ import com.beour.reservation.commons.exceptionType.MissMatch;
 import com.beour.reservation.commons.exceptionType.ReservationNotFound;
 import com.beour.reservation.commons.repository.ReservationRepository;
 import com.beour.reservation.guest.dto.ReservationCreateRequest;
-import com.beour.reservation.guest.dto.ReservationListResponseDto;
+import com.beour.reservation.guest.dto.ReservationListPageResponseDto;
 import com.beour.reservation.guest.dto.ReservationResponseDto;
 import com.beour.space.domain.entity.AvailableTime;
 import com.beour.space.domain.entity.Space;
@@ -27,13 +26,13 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -151,50 +150,48 @@ class ReservationGuestServiceTest {
     @DisplayName("공간 예약 - 시간당 가격과 총 가격이 불일치할 경우")
     void create_reservation_not_same_price() {
         //given
-        ReservationCreateRequest request = new ReservationCreateRequest(host.getId(), space.getId(),
-            LocalDate.now().plusDays(1), LocalTime.of(13, 0, 0), LocalTime.of(15, 0, 0), 10000, 2,
+        ReservationCreateRequest request = new ReservationCreateRequest(LocalDate.now().plusDays(1), LocalTime.of(13, 0, 0), LocalTime.of(15, 0, 0), 10000, 2,
             UsagePurpose.BARISTA_TRAINING, "테슽뚜");
 
         //when  then
-        assertThrows(MissMatch.class, () -> reservationGuestService.createReservation(request));
+        assertThrows(MissMatch.class, () -> reservationGuestService.createReservation(space.getId(), request));
     }
 
     @Test
     @DisplayName("공간 예약 - 과거의 날짜")
     void create_reservation_past_date() {
         //given
-        ReservationCreateRequest request = new ReservationCreateRequest(host.getId(), space.getId(),
-            LocalDate.now().minusDays(1), LocalTime.of(13, 0, 0), LocalTime.of(15, 0, 0), 30000, 2,
+        ReservationCreateRequest request = new ReservationCreateRequest(LocalDate.now().minusDays(1), LocalTime.of(13, 0, 0), LocalTime.of(15, 0, 0), 30000, 2,
             UsagePurpose.BARISTA_TRAINING, "테슽뚜");
 
         //when  then
         assertThrows(AvailableTimeNotFound.class,
-            () -> reservationGuestService.createReservation(request));
+            () -> reservationGuestService.createReservation(space.getId(), request));
     }
 
     @Test
     @DisplayName("공간 예약 - 현 시점 이전의 시간")
     void create_reservation_past_time() {
         //given
-        ReservationCreateRequest request = new ReservationCreateRequest(host.getId(), space.getId(),
-            LocalDate.now(), LocalTime.of(17, 0, 0), LocalTime.of(18, 0, 0), 15000, 2,
+        int currentHour = LocalTime.now().getHour();
+        ReservationCreateRequest request = new ReservationCreateRequest(LocalDate.now(), LocalTime.of(currentHour - 1, 0, 0),
+            LocalTime.of(currentHour + 1, 0, 0), 30000, 2,
             UsagePurpose.BARISTA_TRAINING, "테슽뚜");
 
         //when  then
         assertThrows(AvailableTimeNotFound.class,
-            () -> reservationGuestService.createReservation(request));
+            () -> reservationGuestService.createReservation(space.getId(), request));
     }
 
     @Test
     @DisplayName("공간 예약 - 인원 초과")
     void create_reservation_capacity_invalid() {
         //given
-        ReservationCreateRequest request = new ReservationCreateRequest(host.getId(), space.getId(),
-            LocalDate.now().plusDays(1), LocalTime.of(17, 0, 0), LocalTime.of(18, 0, 0), 15000, 10,
+        ReservationCreateRequest request = new ReservationCreateRequest(LocalDate.now().plusDays(1), LocalTime.of(17, 0, 0), LocalTime.of(18, 0, 0), 15000, 10,
             UsagePurpose.BARISTA_TRAINING, "테슽뚜");
 
         //when  then
-        assertThrows(MissMatch.class, () -> reservationGuestService.createReservation(request));
+        assertThrows(MissMatch.class, () -> reservationGuestService.createReservation(space.getId(), request));
     }
 
     @Test
@@ -216,55 +213,39 @@ class ReservationGuestServiceTest {
             .build();
         reservationRepository.save(reservation);
 
-        ReservationCreateRequest request = new ReservationCreateRequest(host.getId(), space.getId(),
-            LocalDate.now().plusDays(1), LocalTime.of(15, 0, 0), LocalTime.of(18, 0, 0), 45000, 2,
+        ReservationCreateRequest request = new ReservationCreateRequest(LocalDate.now().plusDays(1), LocalTime.of(15, 0, 0), LocalTime.of(18, 0, 0), 45000, 2,
             UsagePurpose.BARISTA_TRAINING, "테슽뚜");
 
         //when  then
-        assertThrows(AvailableTimeNotFound.class,
-            () -> reservationGuestService.createReservation(request));
-    }
-
-    @Test
-    @DisplayName("공간 예약 - 없는 호스트")
-    void create_reservation_with_non_existent_host() {
-        //given
-        ReservationCreateRequest request = new ReservationCreateRequest(3L, space.getId(),
-            LocalDate.now().plusDays(1), LocalTime.of(17, 0, 0), LocalTime.of(18, 0, 0), 15000, 10,
-            UsagePurpose.BARISTA_TRAINING, "테슽뚜");
-
-        //when  then
-        assertThrows(UserNotFoundException.class,
-            () -> reservationGuestService.createReservation(request));
+        assertThrows(MissMatch.class,
+            () -> reservationGuestService.createReservation(space.getId(), request));
     }
 
     @Test
     @DisplayName("공간 예약 - 없는 공간")
     void create_reservation_with_non_existent_space() {
         //given
-        ReservationCreateRequest request = new ReservationCreateRequest(host.getId(), 3L,
-            LocalDate.now().plusDays(1), LocalTime.of(17, 0, 0), LocalTime.of(18, 0, 0), 15000, 10,
+        ReservationCreateRequest request = new ReservationCreateRequest(LocalDate.now().plusDays(1), LocalTime.of(17, 0, 0), LocalTime.of(18, 0, 0), 15000, 10,
             UsagePurpose.BARISTA_TRAINING, "테슽뚜");
 
         //when  then
         assertThrows(SpaceNotFoundException.class,
-            () -> reservationGuestService.createReservation(request));
+            () -> reservationGuestService.createReservation(3L, request));
     }
 
     @Test
     @DisplayName("공간 예약 - 성공")
     void success_create_reservation() {
         //given
-        ReservationCreateRequest request = new ReservationCreateRequest(host.getId(), space.getId(),
-            LocalDate.now().plusDays(1), LocalTime.of(17, 0, 0), LocalTime.of(18, 0, 0), 15000, 2,
+        ReservationCreateRequest request = new ReservationCreateRequest(LocalDate.now().plusDays(1), LocalTime.of(17, 0, 0), LocalTime.of(18, 0, 0), 15000, 2,
             UsagePurpose.BARISTA_TRAINING, "테슽뚜");
 
         //when
-        ReservationResponseDto result = reservationGuestService.createReservation(request);
+        ReservationResponseDto result = reservationGuestService.createReservation(space.getId(), request);
 
         //then
         Reservation savedReservation = reservationRepository.findById(result.getId()).orElse(null);
-        assertEquals(request.getSpaceId(), savedReservation.getSpace().getId());
+        assertEquals(space.getId(), savedReservation.getSpace().getId());
         assertEquals(request.getDate(), savedReservation.getDate());
         assertEquals(request.getStartTime(), savedReservation.getStartTime());
         assertEquals(request.getEndTime(), savedReservation.getEndTime());
@@ -273,14 +254,15 @@ class ReservationGuestServiceTest {
 
     @Test
     @DisplayName("예약 현황 조회 - 없음")
-    void get_reservation_list(){
+    void get_reservation_list() {
         //when   //then
-        assertThrows(ReservationNotFound.class, ()-> reservationGuestService.findReservationList());
+        assertThrows(ReservationNotFound.class,
+            () -> reservationGuestService.findReservationList(Pageable.ofSize(20)));
     }
 
     @Test
     @DisplayName("예약 현황 조회 - 과거 예약 잘 걸러지는지")
-    void get_reservation_list_filtering_past_reservation(){
+    void get_reservation_list_filtering_past_reservation() {
         //given
         Reservation reservationPast = Reservation.builder()
             .guest(guest)
@@ -312,19 +294,19 @@ class ReservationGuestServiceTest {
         reservationRepository.save(reservationFuture);
 
         //when
-        List<ReservationListResponseDto> result = reservationGuestService.findReservationList();
+        ReservationListPageResponseDto result = reservationGuestService.findReservationList(Pageable.ofSize(20));
 
         //then
-        assertThat(result).hasSize(1);
-        assertEquals(reservationFuture.getSpace().getName(), result.get(0).getSpaceName());
-        assertEquals(reservationFuture.getDate(), result.get(0).getDate());
-        assertEquals(reservationFuture.getStartTime(), result.get(0).getStartTime());
-        assertEquals(reservationFuture.getEndTime(), result.get(0).getEndTime());
+        assertThat(result.getReservations()).hasSize(1);
+        assertEquals(reservationFuture.getSpace().getName(), result.getReservations().get(0).getSpaceName());
+        assertEquals(reservationFuture.getDate(), result.getReservations().get(0).getDate());
+        assertEquals(reservationFuture.getStartTime(), result.getReservations().get(0).getStartTime());
+        assertEquals(reservationFuture.getEndTime(), result.getReservations().get(0).getEndTime());
     }
 
     @Test
     @DisplayName("예약 현황 조회 - 현 시점의 시간 이전의 시간 잘 걸러지는지")
-    void get_reservation_list_filtering_past_time_reservation(){
+    void get_reservation_list_filtering_past_time_reservation() {
         //given
         int currentTime = LocalTime.now().getHour();
         Reservation reservationPast = Reservation.builder()
@@ -357,19 +339,19 @@ class ReservationGuestServiceTest {
         reservationRepository.save(reservationFuture);
 
         //when
-        List<ReservationListResponseDto> result = reservationGuestService.findReservationList();
+        ReservationListPageResponseDto result = reservationGuestService.findReservationList(Pageable.ofSize(20));
 
         //then
-        assertThat(result).hasSize(1);
-        assertEquals(reservationFuture.getSpace().getName(), result.get(0).getSpaceName());
-        assertEquals(reservationFuture.getDate(), result.get(0).getDate());
-        assertEquals(reservationFuture.getStartTime(), result.get(0).getStartTime());
-        assertEquals(reservationFuture.getEndTime(), result.get(0).getEndTime());
+        assertThat(result.getReservations()).hasSize(1);
+        assertEquals(reservationFuture.getSpace().getName(), result.getReservations().get(0).getSpaceName());
+        assertEquals(reservationFuture.getDate(), result.getReservations().get(0).getDate());
+        assertEquals(reservationFuture.getStartTime(), result.getReservations().get(0).getStartTime());
+        assertEquals(reservationFuture.getEndTime(), result.getReservations().get(0).getEndTime());
     }
 
     @Test
     @DisplayName("지난 예약 조회 - 시간 지나면 예약 사용 완료 상태로 변경")
-    void get_past_reservation_list_change_status(){
+    void get_past_reservation_list_change_status() {
         //given
         Reservation reservationPast = Reservation.builder()
             .guest(guest)
@@ -401,20 +383,20 @@ class ReservationGuestServiceTest {
         reservationRepository.save(reservationFuture);
 
         //when
-        List<ReservationListResponseDto> result = reservationGuestService.findPastReservationList();
+        ReservationListPageResponseDto result = reservationGuestService.findPastReservationList(Pageable.ofSize(20));
 
         //then
-        assertThat(result).hasSize(1);
-        assertEquals(reservationPast.getSpace().getName(), result.get(0).getSpaceName());
-        assertEquals(reservationPast.getDate(), result.get(0).getDate());
-        assertEquals(reservationPast.getStartTime(), result.get(0).getStartTime());
-        assertEquals(reservationPast.getEndTime(), result.get(0).getEndTime());
-        assertEquals(ReservationStatus.COMPLETED, result.get(0).getStatus());
+        assertThat(result.getReservations()).hasSize(1);
+        assertEquals(reservationPast.getSpace().getName(), result.getReservations().get(0).getSpaceName());
+        assertEquals(reservationPast.getDate(), result.getReservations().get(0).getDate());
+        assertEquals(reservationPast.getStartTime(), result.getReservations().get(0).getStartTime());
+        assertEquals(reservationPast.getEndTime(), result.getReservations().get(0).getEndTime());
+        assertEquals(ReservationStatus.COMPLETED, result.getReservations().get(0).getStatus());
     }
 
     @Test
     @DisplayName("지난 예약 조회 - 과거 예약 없을 경우")
-    void get_past_reservation_list_non_existent_past_reservation(){
+    void get_past_reservation_list_non_existent_past_reservation() {
         //given
         Reservation reservationFuture = Reservation.builder()
             .guest(guest)
@@ -432,19 +414,21 @@ class ReservationGuestServiceTest {
         reservationRepository.save(reservationFuture);
 
         //when  //then
-        assertThrows(ReservationNotFound.class, () -> reservationGuestService.findPastReservationList());
+        assertThrows(ReservationNotFound.class,
+            () -> reservationGuestService.findPastReservationList(Pageable.ofSize(20)));
     }
 
     @Test
     @DisplayName("예약 취소 - 해당 예약이 존재하지 않을 경우")
-    void cancel_reservation_with_not_found_reservation(){
+    void cancel_reservation_with_not_found_reservation() {
         //when  //then
-        assertThrows(ReservationNotFound.class, () -> reservationGuestService.cancelReservation(1L));
+        assertThrows(ReservationNotFound.class,
+            () -> reservationGuestService.cancelReservation(1L));
     }
 
     @Test
     @DisplayName("예약 취소 - 예약이 확정되었을 경우")
-    void cancel_reservation_with_reservation_status_accepted(){
+    void cancel_reservation_with_reservation_status_accepted() {
         //given
         Reservation reservationFuture = Reservation.builder()
             .guest(guest)
@@ -462,13 +446,14 @@ class ReservationGuestServiceTest {
         reservationRepository.save(reservationFuture);
 
         //when  //then
-        assertThrows(IllegalStateException.class, () -> reservationGuestService.cancelReservation(1L));
+        assertThrows(MissMatch.class,
+            () -> reservationGuestService.cancelReservation(reservationFuture.getId()));
     }
 
     @Test
     @Transactional
     @DisplayName("예약 취소 - 성공")
-    void success_cancel_reservation(){
+    void success_cancel_reservation() {
         //given
         Reservation reservationFuture = Reservation.builder()
             .guest(guest)

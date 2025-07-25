@@ -6,11 +6,10 @@ import com.beour.global.jwt.JWTUtil;
 import com.beour.global.jwt.LoginFilter;
 import com.beour.token.repository.RefreshTokenRepository;
 import com.beour.user.repository.UserRepository;
-import jakarta.servlet.http.HttpServletRequest;
-import java.util.Collections;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -20,7 +19,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
-import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 @RequiredArgsConstructor
@@ -32,6 +30,7 @@ public class SecurityConfig {
     private final UserRepository userRepository;
     private final JWTUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final CorsConfigurationSource corsConfigurationSource;
 
     @Bean
     public AuthenticationManager authenticationManager() throws Exception {
@@ -50,44 +49,32 @@ public class SecurityConfig {
 
         LoginFilter loginFilter = new LoginFilter(authenticationManager, userRepository, jwtUtil,
             refreshTokenRepository);
-        loginFilter.setFilterProcessesUrl("/api/users/login");
+        loginFilter.setFilterProcessesUrl("/api/login");
 
-        http.cors((cors) -> cors
-            .configurationSource(new CorsConfigurationSource() {
-                @Override
-                public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
-
-                    CorsConfiguration configuration = new CorsConfiguration();
-
-                    configuration.setAllowedOrigins(
-                        Collections.singletonList("http://localhost:3000")
-                    );
-                    configuration.setAllowedMethods(Collections.singletonList("*"));
-                    configuration.setAllowCredentials(true);
-                    configuration.setAllowedHeaders(Collections.singletonList("*"));
-                    configuration.setMaxAge(3600L);
-
-                    configuration.setExposedHeaders(Collections.singletonList("Authorization"));
-
-                    return configuration;
-                }
-            })
-        );
+        http.cors((cors) -> cors.configurationSource(corsConfigurationSource));
 
         http
             .authorizeHttpRequests((auth) -> auth
+                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                    .requestMatchers("/api/users/**").permitAll()
+                    .requestMatchers("/api/signup/**", "/api/login",
+                        "/api/users/find/login-id", "/api/users/reset/password", "/api/token/reissue",
+                        "/api/spaces/keyword", "/api/spaces/filter", "/api/spaces/spacecategory", "/api/spaces/usecategory")
+                    .permitAll()
                     .requestMatchers("/api/spaces/reserve/available-times", "/api/spaces/search/**",
-                        "/api/spaces/new", "/api/reviews/new", "/api/banners").permitAll()
-                    .requestMatchers("/admin").hasRole("ADMIN")
-                    .requestMatchers("/api/spaces").hasRole("HOST")
-                    .requestMatchers("/api/spaces/reserve", "/api/reservation/**")
+                        "/api/spaces/new", "/api/reviews/new", "/api/banners", "/api/spaces/*/available-times").permitAll()
+                    .requestMatchers("/api/spaces/*/reservations", "/api/reservations/current/*", "/api/reservations/past/*","/api/spaces/reserve", "/api/reservation/**", "/api/guest/**",
+                        "/api/spaces/*/likes", "/api/likes")
                     .hasRole("GUEST")
+                    .requestMatchers("/api/spaces", "/api/spaces/my-spaces", "/api/spaces/*",
+                        "/api/spaces/*/*", "/api/reservations/condition",
+                        "/api/host/available-times/spaces", "/api/host/available-times/space/*")
+                    .hasRole("HOST")
                     .requestMatchers("/api/mypage/**").hasAnyRole("HOST", "GUEST")
-                    .requestMatchers("/logout").hasAnyRole("HOST", "GUEST", "ADMIN")
+                    .requestMatchers("/api/logout", "/api/users", "/api/users/me/**")
+                    .hasAnyRole("HOST", "GUEST", "ADMIN")
                     .anyRequest().authenticated()
-//                .anyRequest().permitAll();
+//                    .anyRequest().permitAll()
             );
 
         http

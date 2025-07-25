@@ -1,9 +1,18 @@
 package com.beour.reservation.commons.exceptionType;
 
-public class MissMatch extends RuntimeException{
+import com.beour.global.exception.error.ErrorCode;
 
-    public MissMatch(String message) {
-        super(message);
+public class MissMatch extends RuntimeException {
+
+    private final Integer errorCode;
+
+    public MissMatch(ErrorCode error) {
+        super(error.getMessage());
+        this.errorCode = error.getCode();
+    }
+
+    public Integer getErrorCode(){
+        return this.errorCode;
     }
 
 }

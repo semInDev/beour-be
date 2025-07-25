@@ -54,4 +54,13 @@ public class Review extends BaseTimeEntity {
     public void updateRating(int rating) {
         this.rating = rating;
     }
+
+    public void addImage(ReviewImage image) {
+        if (this.images == null) {
+            this.images = new ArrayList<>();
+        }
+        this.images.add(image);
+        image.assignReview(this);
+    }
+
 }

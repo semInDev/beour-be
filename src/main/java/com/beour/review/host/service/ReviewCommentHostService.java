@@ -1,17 +1,29 @@
 package com.beour.review.host.service;
 
+import com.beour.global.exception.error.errorcode.CommentErrorCode;
+import com.beour.global.exception.error.errorcode.ReviewErrorCode;
+import com.beour.global.exception.error.errorcode.SpaceErrorCode;
+import com.beour.global.exception.error.errorcode.UserErrorCode;
+import com.beour.global.exception.exceptionType.DuplicateException;
+import com.beour.global.exception.exceptionType.ReviewCommentNotFoundException;
+import com.beour.global.exception.exceptionType.ReviewNotFoundException;
+import com.beour.global.exception.exceptionType.UnauthorityException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.review.domain.entity.Review;
 import com.beour.review.domain.entity.ReviewComment;
 import com.beour.review.domain.repository.ReviewCommentRepository;
 import com.beour.review.domain.repository.ReviewRepository;
 import com.beour.review.host.dto.ReviewCommentCreateRequestDto;
+import com.beour.review.host.dto.ReviewCommentPageResponseDto;
 import com.beour.review.host.dto.ReviewCommentResponseDto;
 import com.beour.review.host.dto.ReviewCommentUpdateRequestDto;
+import com.beour.review.host.dto.ReviewCommentablePageResponseDto;
 import com.beour.review.host.dto.ReviewCommentableResponseDto;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,35 +39,48 @@ public class ReviewCommentHostService {
     private final ReviewCommentRepository reviewCommentRepository;
     private final UserRepository userRepository;
 
-    public List<ReviewCommentableResponseDto> getCommentableReviews() {
+    @Transactional(readOnly = true)
+    public ReviewCommentablePageResponseDto getCommentableReviews(Pageable pageable) {
         User host = findUserFromToken();
 
-        // 호스트가 소유한 공간에 대한 리뷰 중 댓글이 없는 리뷰 조회
-        List<Review> commentableReviews = reviewRepository.findAll()
-                .stream()
-                .filter(review -> review.getSpace().getHost().getId().equals(host.getId()))
-                .filter(review -> review.getDeletedAt() == null)
-                .filter(review -> review.getComment() == null)
-                .collect(Collectors.toList());
+        Page<Review> commentableReviewsPage = reviewRepository.findCommentableReviewsByHostId(host.getId(), pageable);
 
-        return commentableReviews.stream()
+        if (commentableReviewsPage.isEmpty()) {
+            throw new IllegalStateException("답글을 작성할 수 있는 리뷰가 없습니다.");
+        }
+
+        List<ReviewCommentableResponseDto> reviews = commentableReviewsPage.getContent()
+                .stream()
                 .map(ReviewCommentableResponseDto::of)
                 .collect(Collectors.toList());
+
+        return new ReviewCommentablePageResponseDto(
+                reviews,
+                commentableReviewsPage.isLast(),
+                commentableReviewsPage.getTotalPages()
+        );
     }
 
-    public List<ReviewCommentResponseDto> getWrittenReviewComments() {
+    @Transactional(readOnly = true)
+    public ReviewCommentPageResponseDto getWrittenReviewComments(Pageable pageable) {
         User host = findUserFromToken();
 
-        // 호스트가 작성한 리뷰 댓글 조회
-        List<ReviewComment> writtenComments = reviewCommentRepository.findAll()
-                .stream()
-                .filter(comment -> comment.getUser().getId().equals(host.getId()))
-                .filter(comment -> comment.getDeletedAt() == null)
-                .collect(Collectors.toList());
+        Page<ReviewComment> writtenCommentsPage = reviewCommentRepository.findWrittenCommentsByHostId(host.getId(), pageable);
 
-        return writtenComments.stream()
+        if (writtenCommentsPage.isEmpty()) {
+            throw new IllegalStateException("작성한 답글이 없습니다.");
+        }
+
+        List<ReviewCommentResponseDto> comments = writtenCommentsPage.getContent()
+                .stream()
                 .map(comment -> ReviewCommentResponseDto.of(comment.getReview(), comment))
                 .collect(Collectors.toList());
+
+        return new ReviewCommentPageResponseDto(
+                comments,
+                writtenCommentsPage.isLast(),
+                writtenCommentsPage.getTotalPages()
+        );
     }
 
     @Transactional
@@ -65,9 +90,8 @@ public class ReviewCommentHostService {
 
         validateHostOwnership(host, review);
 
-        // 이미 댓글이 있는지 확인
         if (review.getComment() != null) {
-            throw new IllegalArgumentException("이미 댓글이 작성된 리뷰입니다.");
+            throw new DuplicateException(CommentErrorCode.COMMENT_ALREADY_EXISTS);
         }
 
         ReviewComment reviewComment = ReviewComment.builder()
@@ -84,9 +108,8 @@ public class ReviewCommentHostService {
         User host = findUserFromToken();
         ReviewComment reviewComment = findReviewCommentById(commentId);
 
-        // 호스트가 해당 댓글의 작성자인지 확인
         if (!reviewComment.getUser().getId().equals(host.getId())) {
-            throw new IllegalArgumentException("댓글 수정 권한이 없습니다.");
+            throw new UnauthorityException(CommentErrorCode.UNAUTHORIZED_COMMENT);
         }
 
         reviewComment.updateContent(requestDto.getContent());
@@ -97,9 +120,8 @@ public class ReviewCommentHostService {
         User host = findUserFromToken();
         ReviewComment reviewComment = findReviewCommentById(commentId);
 
-        // 호스트가 해당 댓글의 작성자인지 확인
         if (!reviewComment.getUser().getId().equals(host.getId())) {
-            throw new IllegalArgumentException("댓글 삭제 권한이 없습니다.");
+            throw new UnauthorityException(CommentErrorCode.UNAUTHORIZED_COMMENT);
         }
 
         reviewComment.softDelete();
@@ -108,22 +130,22 @@ public class ReviewCommentHostService {
     private User findUserFromToken() {
         String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository.findByLoginIdAndDeletedAtIsNull(loginId)
-                .orElseThrow(() -> new UserNotFoundException("해당 유저를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserNotFoundException(UserErrorCode.USER_NOT_FOUND));
     }
 
     private Review findReviewById(Long reviewId) {
         return reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 리뷰입니다."));
+                .orElseThrow(() -> new ReviewNotFoundException(ReviewErrorCode.REVIEW_NOT_FOUND));
     }
 
     private ReviewComment findReviewCommentById(Long commentId) {
         return reviewCommentRepository.findById(commentId)
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 댓글입니다."));
+                .orElseThrow(() -> new ReviewCommentNotFoundException(CommentErrorCode.COMMENT_NOT_FOUND));
     }
 
     private void validateHostOwnership(User host, Review review) {
         if (!review.getSpace().getHost().getId().equals(host.getId())) {
-            throw new IllegalArgumentException("해당 리뷰의 공간 소유자가 아닙니다.");
+            throw new UnauthorityException(SpaceErrorCode.NO_PERMISSION);
         }
     }
 }

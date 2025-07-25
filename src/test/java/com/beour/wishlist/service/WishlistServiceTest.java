@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.beour.global.exception.exceptionType.DuplicateLikesException;
 import com.beour.global.exception.exceptionType.LikesNotFoundException;
+import com.beour.global.exception.exceptionType.SpaceNotFoundException;
 import com.beour.space.domain.entity.Space;
 import com.beour.space.domain.entity.Tag;
 import com.beour.space.domain.repository.SpaceRepository;
@@ -14,6 +15,7 @@ import com.beour.space.domain.enums.SpaceCategory;
 import com.beour.space.domain.enums.UseCategory;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
+import com.beour.wishlist.dto.WishListPageResponseDto;
 import com.beour.wishlist.entity.Like;
 import com.beour.wishlist.repository.LikeRepository;
 import java.util.ArrayList;
@@ -25,6 +27,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -154,27 +158,43 @@ class WishlistServiceTest {
     }
 
     @Test
-    @DisplayName("찜하기 - 성공")
-    void success_add_wishlist() {
+    @Transactional
+    @DisplayName("찜하기 - 같은 공간 찜 삭제 후 다시 찜 등록할 경우")
+    void fail_add_wishlist_same_space_again_likes() {
         //given
         Like like = Like.builder()
             .user(guest)
             .space(space1)
             .build();
+        likeRepository.save(like);
+        like.softDelete();
 
         //when
-        Like saved = likeRepository.save(like);
+        Like saved = wishlistService.addSpaceToWishList(space1.getId());
 
         //then
-        assertEquals(saved.getSpace(), space1);
+        assertEquals(space1.getName(), saved.getSpace().getName());
+        assertEquals(null, saved.getDeletedAt());
         assertEquals(saved.getUser(), guest);
+    }
+
+    @Test
+    @DisplayName("찜하기 - 성공")
+    void success_add_wishlist() {
+        //when
+        Like saved = wishlistService.addSpaceToWishList(space1.getId());
+
+        //then
+        assertEquals(space1.getId(), saved.getSpace().getId());
+        assertEquals(guest.getId(), saved.getUser().getId());
     }
 
     @Test
     @DisplayName("찜목록 조회 - 목록이 비어있을 경우")
     void get_wishlist_empty() {
+        Pageable pageable = PageRequest.of(0, 20);
         //when  then
-        assertThrows(LikesNotFoundException.class, () -> wishlistService.getWishlist());
+        assertThrows(LikesNotFoundException.class, () -> wishlistService.getWishlist(pageable));
     }
 
     @Test
@@ -193,19 +213,18 @@ class WishlistServiceTest {
             .space(space2)
             .build();
         likeRepository.save(like2);
+        Pageable pageable = PageRequest.of(0, 20);
 
         //when
-        List<SpaceListSpaceResponseDto> result = wishlistService.getWishlist();
+        WishListPageResponseDto result = wishlistService.getWishlist(pageable);
 
         //then
-        assertEquals(result.size(), 2);
-        assertEquals(result.get(0).getSpaceName(), "공간1");
-        assertEquals(result.get(1).getSpaceName(), "공간2");
+        assertEquals(result.getSpaces().size(), 2);
+        assertEquals(result.getSpaces().get(0).getSpaceName(), "공간1");
+        assertEquals(result.getSpaces().get(1).getSpaceName(), "공간2");
+        assertEquals(result.getTotalPage(), 1);
+        assertTrue(result.isLast());
     }
-
-    /**
-     * 찜 삭제 없는 공간일 경우 이미 삭제된 공간일 경우 68
-     */
 
     @Test
     @Transactional
@@ -239,7 +258,7 @@ class WishlistServiceTest {
     @DisplayName("찜삭제 - 없는 공간일 경우")
     void delete_wishlist_with_empty_list() {
         //when  //then
-        assertThrows(LikesNotFoundException.class,
+        assertThrows(SpaceNotFoundException.class,
             () -> wishlistService.deleteSpaceFromWishList(space1.getId()));
     }
 
@@ -256,7 +275,7 @@ class WishlistServiceTest {
         wishlistService.deleteSpaceFromWishList(space1.getId());
 
         //when  //then
-        assertThrows(LikesNotFoundException.class,
+        assertThrows(SpaceNotFoundException.class,
             () -> wishlistService.deleteSpaceFromWishList(space1.getId()));
     }
 }

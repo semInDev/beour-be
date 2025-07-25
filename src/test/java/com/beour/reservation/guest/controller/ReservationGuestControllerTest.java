@@ -6,6 +6,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.hamcrest.Matchers.contains;
 
+import com.beour.global.exception.error.errorcode.AvailableTimeErrorCode;
+import com.beour.global.exception.error.errorcode.ReservationErrorCode;
+import com.beour.global.exception.error.errorcode.SpaceErrorCode;
+import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.jwt.JWTUtil;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
@@ -13,10 +17,10 @@ import com.beour.reservation.commons.enums.UsagePurpose;
 import com.beour.reservation.commons.repository.ReservationRepository;
 import com.beour.space.domain.entity.AvailableTime;
 import com.beour.space.domain.entity.Space;
+import com.beour.space.domain.enums.SpaceCategory;
+import com.beour.space.domain.enums.UseCategory;
 import com.beour.space.domain.repository.AvailableTimeRepository;
 import com.beour.space.domain.repository.SpaceRepository;
-import com.beour.space.host.enums.SpaceCategory;
-import com.beour.space.host.enums.UseCategory;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
 import java.time.LocalDate;
@@ -31,7 +35,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -144,7 +147,6 @@ class ReservationGuestControllerTest {
 
     @AfterEach
     void tearDown() {
-        SecurityContextHolder.clearContext();
         reservationRepository.deleteAll();
         availableTimeRepository.deleteAll();
         spaceRepository.deleteAll();
@@ -157,8 +159,6 @@ class ReservationGuestControllerTest {
         //given
         String requestJson = String.format("""
             {
-                "hostId": %d,
-                "spaceId": %d,
                 "date": "%s",
                 "startTime": "13:00:00",
                 "endTime": "14:00:00",
@@ -167,16 +167,16 @@ class ReservationGuestControllerTest {
                 "usagePurpose": "BARISTA_TRAINING",
                 "requestMessage": "요청 사항 테스트"
             }
-            """, host.getId(), space.getId(), LocalDate.now().plusDays(1));
+            """, LocalDate.now().plusDays(1));
 
         //when  then
-        mockMvc.perform(post("/api/spaces/reserve")
+        mockMvc.perform(post("/api/spaces/" + space.getId() + "/reservations")
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.message").value("해당 인원은 예약이 불가합니다."));
+            .andExpect(jsonPath("$.message").value(ReservationErrorCode.INVALID_CAPACITY.getMessage()));
     }
 
     @Test
@@ -185,8 +185,6 @@ class ReservationGuestControllerTest {
         //given
         String requestJson = String.format("""
             {
-                "hostId": %d,
-                "spaceId": %d,
                 "date": "%s",
                 "startTime": "13:00:00",
                 "endTime": "14:00:00",
@@ -195,16 +193,16 @@ class ReservationGuestControllerTest {
                 "usagePurpose": "BARISTA_TRAINING",
                 "requestMessage": "요청 사항 테스트"
             }
-            """, host.getId(), space.getId(), LocalDate.now().plusDays(1));
+            """, LocalDate.now().plusDays(1));
 
         //when  then
-        mockMvc.perform(post("/api/spaces/reserve")
+        mockMvc.perform(post("/api/spaces/" + space.getId() + "/reservations")
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.message").value("해당 가격이 맞지 않습니다."));
+            .andExpect(jsonPath("$.message").value(ReservationErrorCode.INVALID_PRICE.getMessage()));
     }
 
     @Test
@@ -213,8 +211,6 @@ class ReservationGuestControllerTest {
         //given
         String requestJson = String.format("""
             {
-                "hostId": %d,
-                "spaceId": %d,
                 "date": "%s",
                 "startTime": "13:00:00",
                 "endTime": "14:00:00",
@@ -223,16 +219,16 @@ class ReservationGuestControllerTest {
                 "usagePurpose": "BARISTA_TRAINING",
                 "requestMessage": "요청 사항 테스트"
             }
-            """, host.getId(), space.getId(), LocalDate.now().minusDays(1));
+            """, LocalDate.now().minusDays(1));
 
         //when  then
-        mockMvc.perform(post("/api/spaces/reserve")
+        mockMvc.perform(post("/api/spaces/" + space.getId() + "/reservations")
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
             .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.message").value("예약 가능한 시간이 없습니다."));
+            .andExpect(jsonPath("$.message").value(AvailableTimeErrorCode.AVAILABLE_TIME_NOT_FOUND.getMessage()));
     }
 
     @Test
@@ -242,8 +238,6 @@ class ReservationGuestControllerTest {
         int currentHour = LocalTime.now().getHour();
         String requestJson = String.format("""
             {
-                "hostId": %d,
-                "spaceId": %d,
                 "date": "%s",
                 "startTime": "%s",
                 "endTime": "%s",
@@ -252,16 +246,16 @@ class ReservationGuestControllerTest {
                 "usagePurpose": "BARISTA_TRAINING",
                 "requestMessage": "요청 사항 테스트"
             }
-            """, host.getId(), space.getId(), LocalDate.now(), LocalTime.of(currentHour - 1, 0, 0), LocalTime.of(currentHour + 1, 0, 0));
+            """, LocalDate.now(), LocalTime.of(currentHour - 1, 0, 0), LocalTime.of(currentHour + 1, 0, 0));
 
         //when  then
-        mockMvc.perform(post("/api/spaces/reserve")
+        mockMvc.perform(post("/api/spaces/" + space.getId() + "/reservations")
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
             .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.message").value("예약 가능한 시간이 존재하지 않습니다."));
+            .andExpect(jsonPath("$.message").value(AvailableTimeErrorCode.AVAILABLE_TIME_NOT_FOUND.getMessage()));
     }
 
     @Test
@@ -285,8 +279,6 @@ class ReservationGuestControllerTest {
 
         String requestJson = String.format("""
             {
-                "hostId": %d,
-                "spaceId": %d,
                 "date": "%s",
                 "startTime": "15:00:00",
                 "endTime": "17:00:00",
@@ -295,44 +287,16 @@ class ReservationGuestControllerTest {
                 "usagePurpose": "BARISTA_TRAINING",
                 "requestMessage": "요청 사항 테스트"
             }
-            """, host.getId(), space.getId(), LocalDate.now().plusDays(1));
+            """, LocalDate.now().plusDays(1));
 
         //when  then
-        mockMvc.perform(post("/api/spaces/reserve")
+        mockMvc.perform(post("/api/spaces/" + space.getId() + "/reservations")
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
-            .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.message").value("예약이 불가능한 시간입니다."));
-    }
-
-    @Test
-    @DisplayName("예약 등록 - 존재하지 않는 호스트")
-    void create_reservation_not_fount_host() throws Exception {
-        //given
-        String requestJson = String.format("""
-            {
-                "hostId": 100,
-                "spaceId": %d,
-                "date": "%s",
-                "startTime": "15:00:00",
-                "endTime": "17:00:00",
-                "price": 30000,
-                "guestCount": 2,
-                "usagePurpose": "BARISTA_TRAINING",
-                "requestMessage": "요청 사항 테스트"
-            }
-            """, space.getId(), LocalDate.now().plusDays(1));
-
-        //when  then
-        mockMvc.perform(post("/api/spaces/reserve")
-                .header("Authorization", "Bearer " + accessToken)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestJson)
-            )
-            .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.message").value("존재하지 않는 유저입니다."));
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value(AvailableTimeErrorCode.TIME_UNAVAILABLE.getMessage()));
     }
 
     @Test
@@ -341,8 +305,6 @@ class ReservationGuestControllerTest {
         //given
         String requestJson = String.format("""
             {
-                "hostId": %d,
-                "spaceId": 100,
                 "date": "%s",
                 "startTime": "15:00:00",
                 "endTime": "17:00:00",
@@ -351,16 +313,16 @@ class ReservationGuestControllerTest {
                 "usagePurpose": "BARISTA_TRAINING",
                 "requestMessage": "요청 사항 테스트"
             }
-            """, host.getId(), LocalDate.now().plusDays(1));
+            """, LocalDate.now().plusDays(1));
 
         //when  then
-        mockMvc.perform(post("/api/spaces/reserve")
+        mockMvc.perform(post("/api/spaces/" + 100 + "/reservations")
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
             .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.message").value("존재하지 않는 공간입니다."));
+            .andExpect(jsonPath("$.message").value(SpaceErrorCode.SPACE_NOT_FOUND.getMessage()));
     }
 
     @Test
@@ -369,8 +331,6 @@ class ReservationGuestControllerTest {
         //given
         String requestJson = String.format("""
             {
-                "hostId": %d,
-                "spaceId": %d,
                 "date": "%s",
                 "startTime": "15:00:00",
                 "endTime": "17:00:00",
@@ -379,10 +339,10 @@ class ReservationGuestControllerTest {
                 "usagePurpose": "BARISTA_TRAINING",
                 "requestMessage": "요청 사항 테스트"
             }
-            """, host.getId(), space.getId(), LocalDate.now().plusDays(1));
+            """, LocalDate.now().plusDays(1));
 
         //when  then
-        mockMvc.perform(post("/api/spaces/reserve")
+        mockMvc.perform(post("/api/spaces/" + space.getId() + "/reservations")
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
@@ -393,45 +353,28 @@ class ReservationGuestControllerTest {
     @Test
     @DisplayName("이용 가능한 시간 조회 - 과거 날짜로 조회")
     void check_available_time_with_past_date() throws Exception {
-        //given
-        String requestJson = String.format("""
-            {
-                "spaceId": %d,
-                "date": "%s"
-            }
-            """, space.getId(), LocalDate.now().minusDays(1));
-
         //when  then
-        mockMvc.perform(post("/api/spaces/reserve/available-times")
+        mockMvc.perform(get("/api/spaces/"+ space.getId() +"/available-times?date=" + LocalDate.now().minusDays(1))
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestJson)
             )
             .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.message").value("예약 가능한 시간이 없습니다."));
+            .andExpect(jsonPath("$.message").value(AvailableTimeErrorCode.AVAILABLE_TIME_NOT_FOUND.getMessage()));
     }
 
     @Test
     @DisplayName("이용 가능한 시간 조회 - 오늘 날짜로 조회")
     void check_available_time_with_today() throws Exception {
-        //given
-        int currentHour = LocalTime.now().getHour();
-        String requestJson = String.format("""
-            {
-                "spaceId": %d,
-                "date": "%s"
-            }
-            """, space.getId(), LocalDate.now());
         List<String> availableTimes = new ArrayList<>();
+        int currentHour = LocalTime.now().getHour();
         for(int i = currentHour + 1; i <= 22; i++){
             availableTimes.add(String.format("%02d:00:00", i));
         }
 
         //when  then
-        mockMvc.perform(post("/api/spaces/reserve/available-times")
+        mockMvc.perform(get("/api/spaces/"+ space.getId() +"/available-times?date=" + LocalDate.now())
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestJson)
             )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.timeList.length()").value(availableTimes.size()))
@@ -441,22 +384,13 @@ class ReservationGuestControllerTest {
     @Test
     @DisplayName("이용 가능한 시간 조회 - 가능한 시간 없을 경우")
     void check_available_time_not_found() throws Exception {
-        //given
-        String requestJson = String.format("""
-            {
-                "spaceId": %d,
-                "date": "%s"
-            }
-            """, space.getId(), LocalDate.now().plusDays(3));
-
         //when  then
-        mockMvc.perform(post("/api/spaces/reserve/available-times")
+        mockMvc.perform(get("/api/spaces/"+ space.getId() +"/available-times?date=" + LocalDate.now().plusDays(3))
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestJson)
             )
             .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.message").value("예약 가능한 시간이 없습니다."));
+            .andExpect(jsonPath("$.message").value(AvailableTimeErrorCode.AVAILABLE_TIME_NOT_FOUND.getMessage()));
     }
 
     @Test
@@ -478,23 +412,15 @@ class ReservationGuestControllerTest {
             .build();
         reservationRepository.save(reservationPast);
 
-        String requestJson = String.format("""
-            {
-                "spaceId": %d,
-                "date": "%s"
-            }
-            """, space.getId(), LocalDate.now().plusDays(1));
-
         List<String> availableTimes = new ArrayList<>();
         for(int i = 5; i <= 22; i++){
             availableTimes.add(String.format("%02d:00:00", i));
         }
 
         //when  then
-        mockMvc.perform(post("/api/spaces/reserve/available-times")
+        mockMvc.perform(get("/api/spaces/"+ space.getId() +"/available-times?date=" + LocalDate.now().plusDays(1))
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestJson)
             )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.timeList.length()").value(availableTimes.size()))
@@ -522,23 +448,15 @@ class ReservationGuestControllerTest {
         reservationRepository.save(reservation);
         reservation.updateStatus(ReservationStatus.REJECTED);
 
-        String requestJson = String.format("""
-            {
-                "spaceId": %d,
-                "date": "%s"
-            }
-            """, space.getId(), LocalDate.now().plusDays(1));
-
         List<String> availableTimes = new ArrayList<>();
         for(int i = 1; i <= 22; i++){
             availableTimes.add(String.format("%02d:00:00", i));
         }
 
         //when  then
-        mockMvc.perform(post("/api/spaces/reserve/available-times")
+        mockMvc.perform(get("/api/spaces/"+ space.getId() +"/available-times?date=" + LocalDate.now().plusDays(1))
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestJson)
             )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.timeList.length()").value(availableTimes.size()))
@@ -580,35 +498,66 @@ class ReservationGuestControllerTest {
         reservationRepository.save(reservationFuture);
 
         //when  then
-        mockMvc.perform(get("/api/reservation")
+        mockMvc.perform(get("/api/reservations/current")
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.data[0].spaceName").value(reservationFuture.getSpace().getName()))
-            .andExpect(jsonPath("$.data[0].startTime").value(String.format("%02d:00:00", reservationFuture.getStartTime().getHour())))
-            .andExpect(jsonPath("$.data[0].endTime").value(String.format("%02d:00:00", reservationFuture.getEndTime().getHour())));
+            .andExpect(jsonPath("$.data.reservations[0].spaceName").value(reservationFuture.getSpace().getName()))
+            .andExpect(jsonPath("$.data.reservations[0].startTime").value(String.format("%02d:00:00", reservationFuture.getStartTime().getHour())))
+            .andExpect(jsonPath("$.data.reservations[0].endTime").value(String.format("%02d:00:00", reservationFuture.getEndTime().getHour())));
+    }
+
+    @Test
+    @DisplayName("예약 현황 조회 - 진행 중인 예약 있을 경우")
+    void check_reservation_list_with_ing_reservation() throws Exception {
+        //given
+        int currentHour = LocalTime.now().getHour();
+        Reservation reservation = Reservation.builder()
+            .guest(guest)
+            .host(host)
+            .space(space)
+            .status(ReservationStatus.COMPLETED)
+            .usagePurpose(UsagePurpose.BARISTA_TRAINING)
+            .requestMessage("테슽뚜")
+            .date(LocalDate.now())
+            .startTime(LocalTime.of(currentHour - 1, 0, 0))
+            .endTime(LocalTime.of(currentHour + 1, 0, 0))
+            .price(15000)
+            .guestCount(2)
+            .build();
+        reservationRepository.save(reservation);
+
+        //when  then
+        mockMvc.perform(get("/api/reservations/current")
+                .header("Authorization", "Bearer " + accessToken)
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.reservations[0].spaceName").value(reservation.getSpace().getName()))
+            .andExpect(jsonPath("$.data.reservations[0].startTime").value(String.format("%02d:00:00", reservation.getStartTime().getHour())))
+            .andExpect(jsonPath("$.data.reservations[0].endTime").value(String.format("%02d:00:00", reservation.getEndTime().getHour())))
+            .andExpect(jsonPath("$.data.reservations[0].currentUsing").value(true));
     }
 
     @Test
     @DisplayName("예약 현황 조회 - 예약 없을 경우")
     void check_reservation_list_not_found() throws Exception {
         //when  then
-        mockMvc.perform(get("/api/reservation")
+        mockMvc.perform(get("/api/reservations/current")
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.message").value("예약이 없습니다."));
+            .andExpect(jsonPath("$.message").value(ReservationErrorCode.RESERVATION_NOT_FOUND.getMessage()));
     }
 
     @Test
     @DisplayName("지난 예약 현황 조회 - 예약 없을 경우")
     void check_past_reservation_list_not_found() throws Exception {
         //when  then
-        mockMvc.perform(get("/api/reservation/past")
+        mockMvc.perform(get("/api/reservations/past")
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.message").value("예약이 없습니다."));
+            .andExpect(jsonPath("$.message").value(ReservationErrorCode.RESERVATION_NOT_FOUND.getMessage()));
     }
 
     @Test
@@ -631,23 +580,22 @@ class ReservationGuestControllerTest {
         reservationRepository.save(reservationPast);
 
         //when  then
-        mockMvc.perform(get("/api/reservation/past")
+        mockMvc.perform(get("/api/reservations/past")
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.data[0].status").value("COMPLETED"));
+            .andExpect(jsonPath("$.data.reservations[0].status").value("COMPLETED"));
     }
 
     @Test
     @DisplayName("예약 취소 - 존재하지 않는 에약일 경우")
     void cancel_reservation_not_found() throws Exception {
         //when  then
-        mockMvc.perform(delete("/api/reservation/cancel")
-                .param("reservationId", "100")
+        mockMvc.perform(delete("/api/reservations/100")
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.message").value("해당 예약이 존재하지 않습니다."));
+            .andExpect(jsonPath("$.message").value(ReservationErrorCode.RESERVATION_NOT_FOUND.getMessage()));
     }
 
     @Test
@@ -670,12 +618,11 @@ class ReservationGuestControllerTest {
         reservationRepository.save(reservation);
 
         //when  then
-        mockMvc.perform(delete("/api/reservation/cancel")
-                .param("reservationId", String.format("%d", reservation.getId()))
+        mockMvc.perform(delete("/api/reservations/" + reservation.getId())
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.message").value("해당 예약은 취소할 수 없습니다."));
+            .andExpect(jsonPath("$.message").value(ReservationErrorCode.CANNOT_CANCEL_RESERVATION.getMessage()));
     }
 
     @Test
@@ -699,8 +646,7 @@ class ReservationGuestControllerTest {
         reservationRepository.save(reservation);
 
         //when  then
-        mockMvc.perform(delete("/api/reservation/cancel")
-                .param("reservationId", String.format("%d", reservation.getId()))
+        mockMvc.perform(delete("/api/reservations/" + reservation.getId())
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isOk())

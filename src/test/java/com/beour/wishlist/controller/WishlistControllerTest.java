@@ -5,6 +5,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.beour.global.exception.error.errorcode.SpaceErrorCode;
+import com.beour.global.exception.error.errorcode.WishListErrorCode;
 import com.beour.global.jwt.JWTUtil;
 import com.beour.space.domain.entity.Space;
 import com.beour.space.domain.entity.Tag;
@@ -152,20 +154,19 @@ class WishlistControllerTest {
         likeRepository.save(like);
 
         //when  then
-        mockMvc.perform(get("/api/wishlist")
-                .param("spaceId", space1.getId().toString())
+        mockMvc.perform(get("/api/spaces/" + space1.getId() + "/likes")
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isConflict())
-            .andExpect(jsonPath("$.message").value("wishlist에 존재하는 공간입니다."));
+            .andExpect(
+                jsonPath("$.message").value(WishListErrorCode.ALREADY_IN_WISHLIST.getMessage()));
     }
 
     @Test
     @DisplayName("찜 등록 - 성공")
     void success_add_wishlist() throws Exception {
         //when  then
-        mockMvc.perform(get("/api/wishlist")
-                .param("spaceId", space1.getId().toString())
+        mockMvc.perform(get("/api/spaces/" + space1.getId() + "/likes")
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isOk())
@@ -174,19 +175,18 @@ class WishlistControllerTest {
 
     @Test
     @DisplayName("찜 삭제 - 목록에 없는 공간일 경우")
-    void delete_wish_not_exist_space() throws Exception{
+    void delete_wish_not_exist_space() throws Exception {
         //when  then
-        mockMvc.perform(delete("/api/wishlist")
-                .param("spaceId", space1.getId().toString())
+        mockMvc.perform(delete("/api/spaces/" + space1.getId() + "/likes")
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.message").value("찜 목록에 존재하지 않습니다."));
+            .andExpect(jsonPath("$.message").value(SpaceErrorCode.SPACE_NOT_FOUND.getMessage()));
     }
 
     @Test
     @DisplayName("찜 삭제 - 성공")
-    void success_delete_wish() throws Exception{
+    void success_delete_wish() throws Exception {
         //given
         Like like = Like.builder()
             .user(guest)
@@ -195,8 +195,7 @@ class WishlistControllerTest {
         likeRepository.save(like);
 
         //when  then
-        mockMvc.perform(delete("/api/wishlist")
-                .param("spaceId", space1.getId().toString())
+        mockMvc.perform(delete("/api/spaces/" + space1.getId() + "/likes")
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isOk())
@@ -205,18 +204,18 @@ class WishlistControllerTest {
 
     @Test
     @DisplayName("찜 목록 조회 - 아무것도 없을 경우")
-    void get_wishlist_empty() throws Exception{
+    void get_wishlist_empty() throws Exception {
         //when  then
-        mockMvc.perform(get("/api/wishlist/all")
+        mockMvc.perform(get("/api/likes?page=0")
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.message").value("찜 목록이 비어있습니다."));
+            .andExpect(jsonPath("$.message").value(WishListErrorCode.EMPTY_WISHLIST.getMessage()));
     }
 
     @Test
     @DisplayName("찜 목록 조회 - 성공")
-    void success_get_wishlist() throws Exception{
+    void success_get_wishlist() throws Exception {
         //given
         Like like1 = Like.builder()
             .user(guest)
@@ -231,12 +230,14 @@ class WishlistControllerTest {
         likeRepository.save(like2);
 
         //when  then
-        mockMvc.perform(get("/api/wishlist/all")
+        mockMvc.perform(get("/api/likes?page=0")
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.data", hasSize(2)))
-            .andExpect(jsonPath("$.data[0].spaceId").value(space1.getId()))
-            .andExpect(jsonPath("$.data[1].spaceId").value(space2.getId()));
+            .andExpect(jsonPath("$.data.spaces", hasSize(2)))
+            .andExpect(jsonPath("$.data.spaces[0].spaceId").value(space1.getId()))
+            .andExpect(jsonPath("$.data.spaces[1].spaceId").value(space2.getId()))
+            .andExpect(jsonPath("$.data.last").value(true))
+            .andExpect(jsonPath("$.data.totalPage").value(1));
     }
 }

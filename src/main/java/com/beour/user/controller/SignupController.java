@@ -11,32 +11,32 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Validated
 @RequiredArgsConstructor
-@RequestMapping("/api/users")
 @RestController
 public class SignupController {
 
     private final SignupService signupService;
 
-    @PostMapping("/signup")
-    public ApiResponse<String> signup(@Valid @RequestBody SignupRequestDto signUpRequestDto) {
+    @PostMapping("/api/signup")
+    public ApiResponse<String> signup(@RequestBody @Valid SignupRequestDto signUpRequestDto) {
         signupService.create(signUpRequestDto);
         return ApiResponse.ok("회원가입 완료");
     }
 
-    @GetMapping("/signup/check/loginId")
-    public ApiResponse<String> checkDuplicateLoginId(@ValidLoginId @RequestParam("loginId") String loginId) {
+    @GetMapping("/api/signup/check-duplicate/login-id")
+    public ApiResponse<String> checkDuplicateLoginId(
+        @RequestParam("login-id") @ValidLoginId String loginId) {
         signupService.checkLoginIdDuplicate(loginId);
         return ApiResponse.ok("사용 가능한 아이디입니다.");
     }
 
-    @GetMapping("/signup/check/nickname")
-    public ApiResponse<String> checkDuplicateNickName(@ValidNickname @RequestParam("nickname") String nickname) {
+    @GetMapping("/api/signup/check-duplicate/nickname")
+    public ApiResponse<String> checkDuplicateNickName(
+        @RequestParam("nickname") @ValidNickname String nickname) {
         signupService.checkNicknameDuplicate(nickname);
         return ApiResponse.ok("사용 가능한 닉네임입니다.");
     }

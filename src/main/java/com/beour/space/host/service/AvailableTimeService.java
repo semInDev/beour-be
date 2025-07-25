@@ -1,6 +1,9 @@
 package com.beour.space.host.service;
 
+import com.beour.global.exception.error.errorcode.SpaceErrorCode;
+import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
+import com.beour.global.exception.exceptionType.UnauthorityException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
@@ -11,7 +14,6 @@ import com.beour.space.domain.repository.AvailableTimeRepository;
 import com.beour.space.domain.repository.SpaceRepository;
 import com.beour.space.host.dto.AvailableTimeDetailResponseDto;
 import com.beour.space.host.dto.AvailableTimeUpdateRequestDto;
-import com.beour.space.host.dto.HostSpaceListResponseDto;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,27 +32,6 @@ public class AvailableTimeService {
     private final UserRepository userRepository;
     private final AvailableTimeRepository availableTimeRepository;
     private final ReservationRepository reservationRepository;
-
-    @Transactional(readOnly = true)
-    public List<HostSpaceListResponseDto> getHostSpaces() {
-        User host = findUserFromToken();
-
-        List<Space> spaceList = spaceRepository.findByHostAndDeletedAtIsNull(host);
-
-        if (spaceList.isEmpty()) {
-            throw new RuntimeException("해당 호스트가 등록한 공간이 없습니다.");
-        }
-
-        return spaceList.stream()
-                .map(space -> HostSpaceListResponseDto.builder()
-                        .spaceId(space.getId())
-                        .name(space.getName())
-                        .address(space.getAddress())
-                        .maxCapacity(space.getMaxCapacity())
-                        .avgRating(space.getAvgRating())
-                        .build())
-                .collect(Collectors.toList());
-    }
 
     @Transactional(readOnly = true)
     public AvailableTimeDetailResponseDto getAvailableTimeDetail(Long spaceId) {
@@ -114,18 +95,18 @@ public class AvailableTimeService {
         String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
 
         return userRepository.findByLoginIdAndDeletedAtIsNull(loginId).orElseThrow(
-                () -> new UserNotFoundException("해당 유저를 찾을 수 없습니다.")
+                () -> new UserNotFoundException(UserErrorCode.USER_NOT_FOUND)
         );
     }
 
     private Space findSpaceByIdAndValidateOwner(Long spaceId, User host) {
         Space space = spaceRepository.findById(spaceId).orElseThrow(
-                () -> new SpaceNotFoundException("존재하지 않는 공간입니다.")
+                () -> new SpaceNotFoundException(SpaceErrorCode.SPACE_NOT_FOUND)
         );
 
         // 호스트가 해당 공간의 소유자인지 확인
         if (!space.getHost().getId().equals(host.getId())) {
-            throw new IllegalArgumentException("해당 공간의 소유자가 아닙니다.");
+            throw new UnauthorityException(SpaceErrorCode.NO_PERMISSION);
         }
 
         return space;

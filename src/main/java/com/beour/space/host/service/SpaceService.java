@@ -1,6 +1,9 @@
 package com.beour.space.host.service;
 
+import com.beour.global.exception.error.errorcode.SpaceErrorCode;
+import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
+import com.beour.global.exception.exceptionType.UnauthorityException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.review.domain.repository.ReviewRepository;
 import com.beour.space.domain.entity.*;
@@ -59,7 +62,6 @@ public class SpaceService {
                 .notice(dto.getNotice())
                 .locationDescription(dto.getLocationDescription())
                 .refundPolicy(dto.getRefundPolicy())
-                .websiteUrl(dto.getWebsiteUrl())
                 .build();
         descriptionRepository.save(description);
 
@@ -85,7 +87,7 @@ public class SpaceService {
     @Transactional(readOnly = true)
     public SpaceSimpleResponseDto getSimpleSpaceInfo(Long spaceId) {
         Space space = spaceRepository.findByIdAndDeletedAtIsNull(spaceId)
-                .orElseThrow(() -> new SpaceNotFoundException("존재하지 않는 공간입니다."));
+                .orElseThrow(() -> new SpaceNotFoundException(SpaceErrorCode.SPACE_NOT_FOUND));
 
         List<String> tagContents = space.getTags().stream()
                 .map(Tag::getContents)
@@ -103,7 +105,7 @@ public class SpaceService {
     @Transactional(readOnly = true)
     public SpaceDetailResponseDto getDetailedSpaceInfo(Long spaceId) {
         Space space = spaceRepository.findByIdAndDeletedAtIsNull(spaceId)
-                .orElseThrow(() -> new SpaceNotFoundException("존재하지 않는 공간입니다."));
+                .orElseThrow(() -> new SpaceNotFoundException(SpaceErrorCode.SPACE_NOT_FOUND));
 
         Description desc = space.getDescription();
 
@@ -123,7 +125,6 @@ public class SpaceService {
                 .notice(desc.getNotice())
                 .locationDescription(desc.getLocationDescription())
                 .refundPolicy(desc.getRefundPolicy())
-                .websiteUrl(desc.getWebsiteUrl())
                 .tags(space.getTags().stream().map(Tag::getContents).toList())
                 .imageUrls(space.getSpaceImages().stream().map(SpaceImage::getImageUrl).toList())
                 .build();
@@ -134,10 +135,6 @@ public class SpaceService {
         User host = findUserFromToken();
 
         List<Space> spaces = spaceRepository.findByHostAndDeletedAtIsNull(host);
-
-        if (spaces.isEmpty()) {
-            throw new RuntimeException("등록된 공간이 없습니다.");
-        }
 
         return spaces.stream()
                 .map(space -> {
@@ -171,7 +168,7 @@ public class SpaceService {
         Description desc = space.getDescription();
         desc.update(
                 dto.getDescription(), dto.getPriceGuide(), dto.getFacilityNotice(), dto.getNotice(),
-                dto.getLocationDescription(), dto.getRefundPolicy(), dto.getWebsiteUrl()
+                dto.getLocationDescription(), dto.getRefundPolicy()
         );
 
         // 3. Tags 재저장
@@ -226,7 +223,6 @@ public class SpaceService {
             if (dto.getNotice() != null) desc.updateNotice(dto.getNotice());
             if (dto.getLocationDescription() != null) desc.updateLocationDescription(dto.getLocationDescription());
             if (dto.getRefundPolicy() != null) desc.updateRefundPolicy(dto.getRefundPolicy());
-            if (dto.getWebsiteUrl() != null) desc.updateWebsiteUrl(dto.getWebsiteUrl());
         }
     }
 
@@ -284,10 +280,10 @@ public class SpaceService {
     private Space findSpaceByIdAndCheckOwnership(Long spaceId) {
         User currentUser = findUserFromToken();
         Space space = spaceRepository.findByIdAndDeletedAtIsNull(spaceId)
-                .orElseThrow(() -> new SpaceNotFoundException("존재하지 않는 공간입니다."));
+                .orElseThrow(() -> new SpaceNotFoundException(SpaceErrorCode.SPACE_NOT_FOUND));
 
         if (!space.getHost().getId().equals(currentUser.getId())) {
-            throw new IllegalStateException("해당 공간에 대한 권한이 없습니다.");
+            throw new UnauthorityException(SpaceErrorCode.NO_PERMISSION);
         }
 
         return space;
@@ -296,6 +292,6 @@ public class SpaceService {
     private User findUserFromToken() {
         String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository.findByLoginIdAndDeletedAtIsNull(loginId)
-                .orElseThrow(() -> new UserNotFoundException("해당 유저를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserNotFoundException(UserErrorCode.USER_NOT_FOUND));
     }
 }

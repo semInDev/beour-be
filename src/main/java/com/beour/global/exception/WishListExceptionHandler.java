@@ -13,13 +13,13 @@ public class WishListExceptionHandler {
     @ExceptionHandler(DuplicateLikesException.class)
     public ResponseEntity<ErrorResponse> handleDuplicateLikes(DuplicateLikesException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
-            .body(new ErrorResponse(HttpStatus.CONFLICT.value(), "DUPLICATE_LIKES", ex.getMessage()));
+            .body(new ErrorResponse(ex.getErrorCode(), "DUPLICATE_LIKES", ex.getMessage()));
     }
 
 
     @ExceptionHandler(LikesNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleDuplicateLikes(LikesNotFoundException ex) {
+    public ResponseEntity<ErrorResponse> handleLikesNotFound(LikesNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-            .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), "LIKES_NOT_FOUND", ex.getMessage()));
+            .body(new ErrorResponse(ex.getErrorCode(), "LIKES_NOT_FOUND", ex.getMessage()));
     }
 }

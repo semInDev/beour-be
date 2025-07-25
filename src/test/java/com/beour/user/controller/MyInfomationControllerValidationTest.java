@@ -4,6 +4,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.beour.global.exception.error.errorcode.GlobalErrorCode;
 import com.beour.global.jwt.JWTUtil;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
@@ -77,13 +78,13 @@ public class MyInfomationControllerValidationTest {
             """;
 
         //when //then
-        mockMvc.perform(patch("/api/mypage/detail")
+        mockMvc.perform(patch("/api/users/me/detail")
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.message").value("수정할 정보를 입력해주세요."));
+            .andExpect(jsonPath("$.message").value(GlobalErrorCode.NO_INFO_TO_UPDATE.getMessage()));
     }
 
     @Test
@@ -98,7 +99,7 @@ public class MyInfomationControllerValidationTest {
             """;
 
         //when //then
-        mockMvc.perform(patch("/api/mypage/detail")
+        mockMvc.perform(patch("/api/users/me/detail")
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
@@ -119,7 +120,7 @@ public class MyInfomationControllerValidationTest {
             """;
 
         //when //then
-        mockMvc.perform(patch("/api/mypage/detail")
+        mockMvc.perform(patch("/api/users/me/detail")
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
@@ -140,7 +141,7 @@ public class MyInfomationControllerValidationTest {
             """;
 
         //when //then
-        mockMvc.perform(patch("/api/mypage/detail")
+        mockMvc.perform(patch("/api/users/me/detail")
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
@@ -160,7 +161,7 @@ public class MyInfomationControllerValidationTest {
             """;
 
         //when //then
-        mockMvc.perform(patch("/api/mypage/password")
+        mockMvc.perform(patch("/api/users/me/password")
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
@@ -180,7 +181,7 @@ public class MyInfomationControllerValidationTest {
             """;
 
         //when //then
-        mockMvc.perform(patch("/api/mypage/password")
+        mockMvc.perform(patch("/api/users/me/password")
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
@@ -200,7 +201,7 @@ public class MyInfomationControllerValidationTest {
             """;
 
         //when //then
-        mockMvc.perform(patch("/api/mypage/password")
+        mockMvc.perform(patch("/api/users/me/password")
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
@@ -220,7 +221,7 @@ public class MyInfomationControllerValidationTest {
             """;
 
         //when //then
-        mockMvc.perform(patch("/api/mypage/password")
+        mockMvc.perform(patch("/api/users/me/password")
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)

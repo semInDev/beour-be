@@ -1,7 +1,17 @@
 package com.beour.global.exception.exceptionType;
 
-public class UserNotFoundException extends UserException {
-  public UserNotFoundException(String message) {
-    super(message);
-  }
+import com.beour.global.exception.error.ErrorCode;
+
+public class UserNotFoundException extends RuntimeException {
+
+    private final Integer errorCode;
+
+    public UserNotFoundException(ErrorCode errorCode) {
+        super(errorCode.getMessage());
+        this.errorCode = errorCode.getCode();
+    }
+
+    public Integer getErrorCode() {
+        return errorCode;
+    }
 }

@@ -4,6 +4,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,9 +27,8 @@ class SignupControllerTest {
     @Autowired
     private UserRepository userRepository;
 
-
     @BeforeEach
-    void setUp(){
+    void setUp() {
         userRepository.deleteAll();
         User user = User.builder()
             .name("중복테스트")
@@ -48,19 +48,19 @@ class SignupControllerTest {
     void success_signup() throws Exception {
         //given
         String requestJson = """
-            {
-                "name": "test",
-                "nickname": "nicktest",
-                "email": "test@gmail.com",
-                "loginId": "testid",
-                "password": "test1234!",
-                "phone": "01012345678",
-                "role": "GUEST"
-            }
-        """;
+                {
+                    "name": "test",
+                    "nickname": "nicktest",
+                    "email": "test@gmail.com",
+                    "loginId": "testid",
+                    "password": "test1234!",
+                    "phone": "01012345678",
+                    "role": "GUEST"
+                }
+            """;
 
         //when then
-        mockMvc.perform(post("/api/users/signup")
+        mockMvc.perform(post("/api/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -73,24 +73,24 @@ class SignupControllerTest {
     void fail_signup_duplicate_loginId() throws Exception {
         //given
         String requestJson = """
-            {
-                "name": "test",
-                "nickname": "nicktest",
-                "email": "test@gmail.com",
-                "loginId": "duptest",
-                "password": "test1234!",
-                "phone": "01012345678",
-                "role": "GUEST"
-            }
-        """;
+                {
+                    "name": "test",
+                    "nickname": "nicktest",
+                    "email": "test@gmail.com",
+                    "loginId": "duptest",
+                    "password": "test1234!",
+                    "phone": "01012345678",
+                    "role": "GUEST"
+                }
+            """;
 
         //when then
-        mockMvc.perform(post("/api/users/signup")
+        mockMvc.perform(post("/api/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
             .andExpect(status().isConflict())
-            .andExpect(jsonPath("$.message").value("이미 사용중인 아이디입니다."));
+            .andExpect(jsonPath("$.message").value(UserErrorCode.LOGIN_ID_DUPLICATE.getMessage()));
     }
 
     @Test
@@ -98,44 +98,43 @@ class SignupControllerTest {
     void fail_signup_duplicate_nickname() throws Exception {
         //given
         String requestJson = """
-            {
-                "name": "test",
-                "nickname": "duptest",
-                "email": "test@gmail.com",
-                "loginId": "testid",
-                "password": "test1234!",
-                "phone": "01012345678",
-                "role": "GUEST"
-            }
-        """;
+                {
+                    "name": "test",
+                    "nickname": "duptest",
+                    "email": "test@gmail.com",
+                    "loginId": "testid",
+                    "password": "test1234!",
+                    "phone": "01012345678",
+                    "role": "GUEST"
+                }
+            """;
 
         //when then
-        mockMvc.perform(post("/api/users/signup")
+        mockMvc.perform(post("/api/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
             .andExpect(status().isConflict())
-            .andExpect(jsonPath("$.message").value("이미 사용중인 닉네임입니다."));
+            .andExpect(
+                jsonPath("$.message").value(UserErrorCode.NICKNAME_DUPLICATE.getMessage()));
     }
 
     @Test
     @DisplayName("아이디가 중복된다.")
     void duplicate_loginId() throws Exception {
         //when then
-        mockMvc.perform(get("/api/users/signup/check/loginId")
-                .param("loginId", "duptest")
-            )
+        mockMvc.perform(get("/api/signup/check-duplicate/login-id")
+                .param("login-id", "duptest"))
             .andExpect(status().isConflict())
-            .andExpect(jsonPath("$.message").value("이미 사용중인 아이디입니다."));
+            .andExpect(jsonPath("$.message").value(UserErrorCode.LOGIN_ID_DUPLICATE.getMessage()));
     }
 
     @Test
     @DisplayName("아이디를 사용할 수 있다.(중복X)")
     void not_duplicate_loginId() throws Exception {
         //when then
-        mockMvc.perform(get("/api/users/signup/check/loginId")
-                .param("loginId", "testId")
-            )
+        mockMvc.perform(get("/api/signup/check-duplicate/login-id")
+                .param("login-id", "testId"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data").value("사용 가능한 아이디입니다."));
     }
@@ -144,24 +143,20 @@ class SignupControllerTest {
     @DisplayName("닉네임이 중복된다.")
     void duplicate_nickname() throws Exception {
         //when then
-        mockMvc.perform(get("/api/users/signup/check/nickname")
-                .param("nickname", "duptest")
-            )
+        mockMvc.perform(get("/api/signup/check-duplicate/nickname")
+                .param("nickname", "duptest"))
             .andExpect(status().isConflict())
-            .andExpect(jsonPath("$.message").value("이미 사용중인 닉네임입니다."));
+            .andExpect(
+                jsonPath("$.message").value(UserErrorCode.NICKNAME_DUPLICATE.getMessage()));
     }
 
     @Test
     @DisplayName("닉네임을 사용할 수 있다.(중복X)")
     void not_duplicate_nickname() throws Exception {
         //when then
-        mockMvc.perform(get("/api/users/signup/check/nickname")
-                .param("nickname", "testnick")
-            )
+        mockMvc.perform(get("/api/signup/check-duplicate/nickname")
+                .param("nickname", "testnick"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data").value("사용 가능한 닉네임입니다."));
     }
-
-
-
 }

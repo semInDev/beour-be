@@ -16,20 +16,29 @@ public class SearchSpaceResponseDto {
     private String spaceName;
     private String thumbnailUrl;
     private int price;
-    private String description;
+    private String address;
+    private int maxCapacity;
+    private Double average;
+    private Long reviewCount;
     private List<String> tags;
+    private boolean likes;
 
     @Builder
-    private SearchSpaceResponseDto(Long spaceId, String spaceName, String thumbnailUrl, int price, String description, List<String> tags){
+    private SearchSpaceResponseDto(Long spaceId, String spaceName, String thumbnailUrl, int price,
+        String address, int maxCapacity, Double average, Long reviewCount, List<String> tags, boolean likes) {
         this.spaceId = spaceId;
         this.spaceName = spaceName;
         this.thumbnailUrl = thumbnailUrl;
         this.price = price;
-        this.description = description;
+        this.address = address;
+        this.maxCapacity = maxCapacity;
+        this.average = average;
+        this.reviewCount = reviewCount;
         this.tags = tags;
+        this.likes = likes;
     }
 
-    public static SearchSpaceResponseDto of(Space space){
+    public static SearchSpaceResponseDto of(Space space, Long reviewCount) {
         List<String> tagList = space.getTags().stream()
             .map(Tag::getContents)
             .collect(Collectors.toList());
@@ -39,8 +48,42 @@ public class SearchSpaceResponseDto {
             .spaceName(space.getName())
             .thumbnailUrl(space.getThumbnailUrl())
             .price(space.getPricePerHour())
-            .description(space.getDescription().getDescription())
+            .address(abstractAddress(space.getAddress()))
+            .maxCapacity(space.getMaxCapacity())
+            .average(space.getAvgRating())
+            .reviewCount(reviewCount)
             .tags(tagList)
             .build();
+    }
+
+    public static SearchSpaceResponseDto oftmp(Space space, Long reviewCount, boolean likes) {
+        List<String> tagList = space.getTags().stream()
+            .map(Tag::getContents)
+            .collect(Collectors.toList());
+
+        return SearchSpaceResponseDto.builder()
+            .spaceId(space.getId())
+            .spaceName(space.getName())
+            .thumbnailUrl(space.getThumbnailUrl())
+            .price(space.getPricePerHour())
+            .address(abstractAddress(space.getAddress()))
+            .maxCapacity(space.getMaxCapacity())
+            .average(space.getAvgRating())
+            .reviewCount(reviewCount)
+            .tags(tagList)
+            .likes(likes)
+            .build();
+    }
+
+    private static String abstractAddress(String address) {
+        String[] splitAddress = address.split(" ");
+
+        if (splitAddress[0].contains("특별시")) {
+            splitAddress[0] = splitAddress[0].replace("특별시", "시");
+        } else if (splitAddress[1].contains("광역시")) {
+            splitAddress[0] = splitAddress[0].replace("광역시", "시");
+        }
+
+        return splitAddress[0] + " " + splitAddress[1];
     }
 }
