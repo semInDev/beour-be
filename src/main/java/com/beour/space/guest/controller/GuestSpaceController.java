@@ -2,7 +2,7 @@ package com.beour.space.guest.controller;
 
 import com.beour.global.response.ApiResponse;
 import com.beour.space.guest.dto.FilteringSearchRequestDto;
-import com.beour.space.guest.dto.NearbySpaceResponse;
+import com.beour.space.guest.dto.NearbySpacePageResponseDto;
 import com.beour.space.guest.dto.RecentCreatedSpcaceListResponseDto;
 import com.beour.space.guest.dto.SearchSpacePageResponseDto;
 import com.beour.space.guest.service.GuestSpaceSearchService;
@@ -31,41 +31,42 @@ public class GuestSpaceController {
     private final GuestSpaceSearchService guestSpaceSearchService;
 
     @GetMapping("/nearby")
-    public ResponseEntity<List<NearbySpaceResponse>> getNearbySpaces(
-        @RequestParam double latitude,
-        @RequestParam double longitude,
-        @RequestParam double radiusKm,
-        @RequestParam long userId
+    public ResponseEntity<NearbySpacePageResponseDto> getNearbySpaces(
+            @RequestParam double latitude,
+            @RequestParam double longitude,
+            @RequestParam double radiusKm,
+            @RequestParam long userId,
+            @PageableDefault(size = 20) Pageable pageable
     ) {
-        List<NearbySpaceResponse> response = guestSpaceService.findNearbySpaces(latitude, longitude,
-            radiusKm, userId);
+        NearbySpacePageResponseDto response = guestSpaceService.findNearbySpaces(
+                latitude, longitude, radiusKm, userId, pageable);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/keyword")
     public ApiResponse<SearchSpacePageResponseDto> searchSpaces(
-        @RequestParam(value = "keyword") String request,
-        @PageableDefault(size = 20) Pageable pageable) {
+            @RequestParam(value = "keyword") String request,
+            @PageableDefault(size = 20) Pageable pageable) {
         return ApiResponse.ok(guestSpaceSearchService.search(request, pageable));
     }
 
     @PostMapping("/filter")
     public ApiResponse<SearchSpacePageResponseDto> searchSpacesWithFiltering(
-        @RequestBody FilteringSearchRequestDto requestDto, @PageableDefault(size = 20) Pageable pageable) {
+            @RequestBody FilteringSearchRequestDto requestDto, @PageableDefault(size = 20) Pageable pageable) {
         return ApiResponse.ok(guestSpaceSearchService.searchWithFiltering(requestDto, pageable));
     }
 
     @GetMapping("/spacecategory")
     public ApiResponse<SearchSpacePageResponseDto> searchWithSpaceCategory(
-        @RequestParam(value = "spacecategory") SpaceCategory request,
-        @PageableDefault(size = 20) Pageable pageable) {
+            @RequestParam(value = "spacecategory") SpaceCategory request,
+            @PageableDefault(size = 20) Pageable pageable) {
 
         return ApiResponse.ok(guestSpaceSearchService.searchSpaceWithSpaceCategory(request, pageable));
     }
 
     @GetMapping("/usecategory")
     public ApiResponse<SearchSpacePageResponseDto> searchWithUseCategory(
-        @RequestParam(value = "usecategory") UseCategory request, @PageableDefault(size = 20) Pageable pageable) {
+            @RequestParam(value = "usecategory") UseCategory request, @PageableDefault(size = 20) Pageable pageable) {
 
         return ApiResponse.ok(guestSpaceSearchService.searchSpaceWithUseCategory(request, pageable));
     }

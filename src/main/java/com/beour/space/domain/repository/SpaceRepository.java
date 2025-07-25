@@ -28,6 +28,25 @@ public interface SpaceRepository extends JpaRepository<Space, Long> {
         @Param("radius") double radiusInMeters);
 
     @Query(value = """
+        SELECT *
+        FROM space s
+        WHERE s.deleted_at IS NULL
+          AND ST_Distance_Sphere(POINT(s.longitude, s.latitude), POINT(:longitude, :latitude)) <= :radius
+        ORDER BY ST_Distance_Sphere(POINT(s.longitude, s.latitude), POINT(:longitude, :latitude)) ASC
+        """,
+            countQuery = """
+        SELECT COUNT(*)
+        FROM space s
+        WHERE s.deleted_at IS NULL
+          AND ST_Distance_Sphere(POINT(s.longitude, s.latitude), POINT(:longitude, :latitude)) <= :radius
+        """,
+            nativeQuery = true)
+    Page<Space> findAllWithinDistanceWithPaging(@Param("latitude") double latitude,
+                                                @Param("longitude") double longitude,
+                                                @Param("radius") double radiusInMeters,
+                                                Pageable pageable);
+
+    @Query(value = """
         SELECT DISTINCT s.*
         FROM space s
         LEFT JOIN description d ON s.id = d.space_id
