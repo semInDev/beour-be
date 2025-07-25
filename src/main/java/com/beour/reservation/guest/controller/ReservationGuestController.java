@@ -41,7 +41,7 @@ public class ReservationGuestController {
         return ApiResponse.ok(checkAvailableTimeService.findAvailableTime(spaceId, date));
     }
 
-    @GetMapping("/api/reservations")
+    @GetMapping("/api/reservations/current")
     public ApiResponse<ReservationListPageResponseDto> checkReservationList(
         @PageableDefault(size = 20) Pageable pageable) {
         return ApiResponse.ok(reservationGuestService.findReservationList(pageable));

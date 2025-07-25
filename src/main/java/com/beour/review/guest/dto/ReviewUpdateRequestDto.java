@@ -7,8 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -21,5 +19,5 @@ public class ReviewUpdateRequestDto {
     @NotBlank(message = "리뷰 내용은 비어 있을 수 없습니다.")
     private String content;
 
-    private List<String> imageUrls;
+    // imageUrls 필드 제거 - 파일 업로드로 대체
 }

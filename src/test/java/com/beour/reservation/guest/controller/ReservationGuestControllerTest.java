@@ -498,7 +498,7 @@ class ReservationGuestControllerTest {
         reservationRepository.save(reservationFuture);
 
         //when  then
-        mockMvc.perform(get("/api/reservations")
+        mockMvc.perform(get("/api/reservations/current")
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isOk())
@@ -528,7 +528,7 @@ class ReservationGuestControllerTest {
         reservationRepository.save(reservation);
 
         //when  then
-        mockMvc.perform(get("/api/reservations")
+        mockMvc.perform(get("/api/reservations/current")
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isOk())
@@ -542,7 +542,7 @@ class ReservationGuestControllerTest {
     @DisplayName("예약 현황 조회 - 예약 없을 경우")
     void check_reservation_list_not_found() throws Exception {
         //when  then
-        mockMvc.perform(get("/api/reservations")
+        mockMvc.perform(get("/api/reservations/current")
                 .header("Authorization", "Bearer " + accessToken)
             )
             .andExpect(status().isNotFound())
