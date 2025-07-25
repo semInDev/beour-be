@@ -27,39 +27,44 @@ public class ReviewGuestController {
 
     @GetMapping("/api/users/me/reviewable-reservations")
     public ApiResponse<ReviewableReservationPageResponseDto> getReviewableReservations(
-            @PageableDefault(size = 10, sort = "id") Pageable pageable) {
+        @PageableDefault(size = 10, sort = "id") Pageable pageable) {
         return ApiResponse.ok(reviewGuestService.getReviewableReservations(pageable));
     }
 
     @GetMapping("/api/users/me/reviews")
     public ApiResponse<WrittenReviewPageResponseDto> getWrittenReviews(
-            @PageableDefault(size = 10, sort = "createdAt") Pageable pageable) {
+        @PageableDefault(size = 10, sort = "createdAt") Pageable pageable) {
         return ApiResponse.ok(reviewGuestService.getWrittenReviews(pageable));
     }
 
     // 예약 정보 조회 (리뷰 작성을 위한)
     @GetMapping("/api/reviews/reservations/{reservationId}")
-    public ApiResponse<ReviewForReservationResponseDto> getReservationForReview(@PathVariable(value = "reservationId") Long reservationId) {
+    public ApiResponse<ReviewForReservationResponseDto> getReservationForReview(
+        @PathVariable(value = "reservationId") Long reservationId) {
         return ApiResponse.ok(reviewGuestService.getReservationForReview(reservationId));
     }
 
     @PostMapping("/api/users/me/reviews")
-    public ApiResponse<String> createReview(@RequestPart @Valid ReviewRequestDto requestDto,
-                                            @RequestPart(required = false) List<MultipartFile> images) throws IOException {
+    public ApiResponse<String> createReview(
+        @RequestPart("requestDto") @Valid ReviewRequestDto requestDto,
+        @RequestPart(name = "images", required = false) List<MultipartFile> images)
+        throws IOException {
         reviewGuestService.createReview(requestDto, images);
         return ApiResponse.ok("Review가 저장되었습니다.");
     }
 
     // 리뷰 상세 조회
     @GetMapping("/api/users/me/reviews/{reviewId}")
-    public ApiResponse<ReviewDetailResponseDto> getReviewDetail(@PathVariable(value = "reviewId") Long reviewId) {
+    public ApiResponse<ReviewDetailResponseDto> getReviewDetail(
+        @PathVariable(value = "reviewId") Long reviewId) {
         return ApiResponse.ok(reviewGuestService.getReviewDetail(reviewId));
     }
 
     @PatchMapping("/api/users/me/reviews/{reviewId}")
     public ApiResponse<String> updateReview(@PathVariable(value = "reviewId") Long reviewId,
-                                            @RequestPart @Valid ReviewUpdateRequestDto requestDto,
-                                            @RequestPart(required = false) List<MultipartFile> images) throws IOException {
+        @RequestPart("requestDto") @Valid ReviewUpdateRequestDto requestDto,
+        @RequestPart(name = "images", required = false) List<MultipartFile> images)
+        throws IOException {
         reviewGuestService.updateReview(reviewId, requestDto, images);
         return ApiResponse.ok("Review가 수정되었습니다.");
     }
@@ -71,7 +76,7 @@ public class ReviewGuestController {
     }
 
     @GetMapping("/api/reviews/new")
-    public ApiResponse<List<RecentWrittenReviewResponseDto>> getNewReviews(){
+    public ApiResponse<List<RecentWrittenReviewResponseDto>> getNewReviews() {
         return ApiResponse.ok(reviewGuestService.getRecentWrittenReviews());
     }
 }
