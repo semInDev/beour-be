@@ -5,11 +5,14 @@ import com.beour.global.exception.exceptionType.SpaceNotFoundException;
 import com.beour.space.domain.entity.Space;
 import com.beour.space.domain.entity.Tag;
 import com.beour.space.domain.repository.SpaceRepository;
+import com.beour.space.guest.dto.NearbySpacePageResponseDto;
 import com.beour.space.guest.dto.NearbySpaceResponse;
 import com.beour.space.guest.dto.RecentCreatedSpcaceListResponseDto;
 import com.beour.wishlist.repository.LikeRepository;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,17 +25,19 @@ public class GuestSpaceService {
     private final LikeRepository likeRepository;
 
     @Transactional(readOnly = true)
-    public List<NearbySpaceResponse> findNearbySpaces(double userLatitude, double userLongitude, double radiusKm, Long userId) {
+    public NearbySpacePageResponseDto findNearbySpaces(double userLatitude, double userLongitude,
+                                                       double radiusKm, Long userId, Pageable pageable) {
         double radiusMeters = radiusKm * 1000;
 
-        List<Space> spaces = spaceRepository.findAllWithinDistance(userLatitude, userLongitude, radiusMeters);
+        Page<Space> spacePage = spaceRepository.findAllWithinDistanceWithPaging(
+                userLatitude, userLongitude, radiusMeters, pageable);
 
-        return spaces.stream().map(space -> {
-                    List<String> tags = space.getTags().stream()
-                            .map(Tag::getContents)
-                            .toList();
+        List<NearbySpaceResponse> spaces = spacePage.getContent().stream().map(space -> {
+            List<String> tags = space.getTags().stream()
+                    .map(Tag::getContents)
+                    .toList();
 
-                    boolean liked = likeRepository.existsByUserIdAndSpaceId(userId, space.getId());
+            boolean liked = likeRepository.existsByUserIdAndSpaceId(userId, space.getId());
 
                     return NearbySpaceResponse.builder()
                             .spaceId(space.getId())
@@ -48,6 +53,8 @@ public class GuestSpaceService {
                             .tags(tags)
                             .build();
                 }).toList();
+
+        return new NearbySpacePageResponseDto(spaces, spacePage.isLast(), spacePage.getTotalPages());
     }
 
     public List<RecentCreatedSpcaceListResponseDto> getRecentCreatedSpace(){
