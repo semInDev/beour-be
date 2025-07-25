@@ -1,7 +1,7 @@
 package com.beour.space.host.controller;
 
 import com.beour.global.response.ApiResponse;
-import com.beour.space.host.dto.HostMySpaceListResponseDto;
+import com.beour.space.host.dto.HostMySpaceListPageResponseDto;
 import com.beour.space.host.dto.SpaceDetailResponseDto;
 import com.beour.space.host.dto.SpaceRegisterRequestDto;
 import com.beour.space.host.dto.SpaceUpdateRequestDto;
@@ -9,8 +9,12 @@ import com.beour.space.host.dto.SpaceSimpleResponseDto;
 import com.beour.space.host.service.SpaceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -20,9 +24,13 @@ public class SpaceController {
 
     private final SpaceService spaceService;
 
-    @PostMapping
-    public ApiResponse<String> registerSpace(@Valid @RequestBody SpaceRegisterRequestDto dto) {
-        Long id = spaceService.registerSpace(dto);
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<String> registerSpace(
+            @Valid @RequestPart("space") SpaceRegisterRequestDto dto,
+            @RequestPart(value = "thumbnailFile", required = false) MultipartFile thumbnailFile,
+            @RequestPart(value = "imageFiles", required = false) List<MultipartFile> imageFiles) throws IOException {
+
+        Long id = spaceService.registerSpace(dto, thumbnailFile, imageFiles);
         return ApiResponse.ok("공간이 등록되었습니다. ID: " + id);
     }
 
@@ -36,15 +44,14 @@ public class SpaceController {
         return ApiResponse.ok(spaceService.getDetailedSpaceInfo(id));
     }
 
-    @GetMapping("/my-spaces")
-    public ApiResponse<List<HostMySpaceListResponseDto>> getMySpaces() {
-        return ApiResponse.ok(spaceService.getMySpaces());
-    }
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<String> updateSpace(
+            @PathVariable Long id,
+            @Valid @RequestPart("space") SpaceUpdateRequestDto dto,
+            @RequestPart(value = "thumbnailFile", required = false) MultipartFile thumbnailFile,
+            @RequestPart(value = "imageFiles", required = false) List<MultipartFile> imageFiles) throws IOException {
 
-    @PutMapping("/{id}")
-    public ApiResponse<String> updateSpace(@PathVariable Long id,
-                                           @Valid @RequestBody SpaceUpdateRequestDto dto) {
-        spaceService.updateSpace(id, dto);
+        spaceService.updateSpace(id, dto, thumbnailFile, imageFiles);
         return ApiResponse.ok("공간이 성공적으로 수정되었습니다.");
     }
 
