@@ -67,6 +67,8 @@ public interface SpaceRepository extends JpaRepository<Space, Long> {
 
     Page<Space> findByUseCategory(UseCategory useCategory, Pageable pageable);
 
+    Page<Space> findByHostAndDeletedAtIsNull(User host, Pageable pageable);
+
     List<Space> findTop5ByDeletedAtIsNullOrderByCreatedAtDesc();
 
 

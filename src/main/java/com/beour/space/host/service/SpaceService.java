@@ -5,6 +5,7 @@ import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
 import com.beour.global.exception.exceptionType.UnauthorityException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
+import com.beour.global.file.ImageUploader;
 import com.beour.review.domain.repository.ReviewRepository;
 import com.beour.space.domain.entity.*;
 import com.beour.space.domain.repository.*;
@@ -12,10 +13,15 @@ import com.beour.space.host.dto.*;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,11 +36,18 @@ public class SpaceService {
     private final UserRepository userRepository;
     private final ReviewRepository reviewRepository;
     private final KakaoMapService kakaoMapService;
+    private final ImageUploader imageUploader;
 
     @Transactional
-    public Long registerSpace(SpaceRegisterRequestDto dto) {
+    public Long registerSpace(SpaceRegisterRequestDto dto, MultipartFile thumbnailFile, List<MultipartFile> imageFiles) throws IOException {
         User host = findUserFromToken();
         double[] latitudeAndLongitude = kakaoMapService.getLatitudeAndLongitude(dto.getAddress());
+
+        // 썸네일 이미지 업로드
+        String thumbnailUrl = null;
+        if (thumbnailFile != null && !thumbnailFile.isEmpty()) {
+            thumbnailUrl = imageUploader.upload(thumbnailFile);
+        }
 
         // 1. Space
         Space space = Space.builder()
@@ -46,7 +59,7 @@ public class SpaceService {
                 .address(dto.getAddress())
                 .detailAddress(dto.getDetailAddress())
                 .pricePerHour(dto.getPricePerHour())
-                .thumbnailUrl(dto.getThumbnailUrl())
+                .thumbnailUrl(thumbnailUrl)
                 .latitude(latitudeAndLongitude[0])
                 .longitude(latitudeAndLongitude[1])
                 .avgRating(0.0)
@@ -73,12 +86,22 @@ public class SpaceService {
             tagRepository.saveAll(tags);
         }
 
-        // 4. SpaceImages
-        if (dto.getImageUrls() != null && !dto.getImageUrls().isEmpty()) {
-            List<SpaceImage> images = dto.getImageUrls().stream()
-                    .map(url -> SpaceImage.builder().space(space).imageUrl(url).build())
-                    .toList();
-            spaceImageRepository.saveAll(images);
+        // 4. SpaceImages - 다중 파일 업로드
+        if (imageFiles != null && !imageFiles.isEmpty()) {
+            List<String> imageUrls = new ArrayList<>();
+            for (MultipartFile file : imageFiles) {
+                if (!file.isEmpty()) {
+                    String imageUrl = imageUploader.upload(file);
+                    imageUrls.add(imageUrl);
+                }
+            }
+
+            if (!imageUrls.isEmpty()) {
+                List<SpaceImage> images = imageUrls.stream()
+                        .map(url -> SpaceImage.builder().space(space).imageUrl(url).build())
+                        .toList();
+                spaceImageRepository.saveAll(images);
+            }
         }
 
         return space.getId();
@@ -131,12 +154,16 @@ public class SpaceService {
     }
 
     @Transactional(readOnly = true)
-    public List<HostMySpaceListResponseDto> getMySpaces() {
+    public HostMySpaceListPageResponseDto getMySpaces(Pageable pageable) {
         User host = findUserFromToken();
 
-        List<Space> spaces = spaceRepository.findByHostAndDeletedAtIsNull(host);
+        Page<Space> spacePage = spaceRepository.findByHostAndDeletedAtIsNull(host, pageable);
 
-        return spaces.stream()
+        if (spacePage.isEmpty()) {
+            throw new IllegalStateException("조회된 공간이 없습니다.");
+        }
+
+        List<HostMySpaceListResponseDto> spaces = spacePage.getContent().stream()
                 .map(space -> {
                     long reviewCount = getReviewCountBySpaceId(space.getId());
                     return HostMySpaceListResponseDto.of(
@@ -150,18 +177,30 @@ public class SpaceService {
                     );
                 })
                 .collect(Collectors.toList());
+
+        return new HostMySpaceListPageResponseDto(
+                spaces,
+                spacePage.isLast(),
+                spacePage.getTotalPages()
+        );
     }
 
     @Transactional
-    public void updateSpace(Long spaceId, SpaceUpdateRequestDto dto) {
+    public void updateSpace(Long spaceId, SpaceUpdateRequestDto dto, MultipartFile thumbnailFile, List<MultipartFile> imageFiles) throws IOException {
         Space space = findSpaceByIdAndCheckOwnership(spaceId);
         double[] latitudeAndLongitude = kakaoMapService.getLatitudeAndLongitude(dto.getAddress());
+
+        // 썸네일 이미지 업로드 (새 파일이 있는 경우에만)
+        String thumbnailUrl = space.getThumbnailUrl(); // 기존 URL 유지
+        if (thumbnailFile != null && !thumbnailFile.isEmpty()) {
+            thumbnailUrl = imageUploader.upload(thumbnailFile);
+        }
 
         // 1. Space 수정
         space.update(
                 dto.getName(), dto.getAddress(), dto.getDetailAddress(), dto.getPricePerHour(),
                 dto.getMaxCapacity(), dto.getSpaceCategory(), dto.getUseCategory(),
-                dto.getThumbnailUrl(), latitudeAndLongitude[0], latitudeAndLongitude[1]
+                thumbnailUrl, latitudeAndLongitude[0], latitudeAndLongitude[1]
         );
 
         // 2. Description 수정
@@ -182,11 +221,22 @@ public class SpaceService {
             }
         }
 
-        // 4. Images 재저장
-        if (dto.getImageUrls() != null) {
+        // 4. Images 재저장 (새 파일들이 있는 경우에만)
+        if (imageFiles != null && !imageFiles.isEmpty()) {
+            // 기존 이미지들 삭제
             spaceImageRepository.deleteBySpace(space);
-            if (!dto.getImageUrls().isEmpty()) {
-                List<SpaceImage> images = dto.getImageUrls().stream()
+
+            // 새 이미지들 업로드 및 저장
+            List<String> imageUrls = new ArrayList<>();
+            for (MultipartFile file : imageFiles) {
+                if (!file.isEmpty()) {
+                    String imageUrl = imageUploader.upload(file);
+                    imageUrls.add(imageUrl);
+                }
+            }
+
+            if (!imageUrls.isEmpty()) {
+                List<SpaceImage> images = imageUrls.stream()
                         .map(url -> SpaceImage.builder().space(space).imageUrl(url).build())
                         .toList();
                 spaceImageRepository.saveAll(images);
@@ -208,7 +258,6 @@ public class SpaceService {
         if (dto.getMaxCapacity() != 0) space.updateMaxCapacity(dto.getMaxCapacity());
         if (dto.getSpaceCategory() != null) space.updateSpaceCategory(dto.getSpaceCategory());
         if (dto.getUseCategory() != null) space.updateUseCategory(dto.getUseCategory());
-        if (dto.getThumbnailUrl() != null) space.updateThumbnailUrl(dto.getThumbnailUrl());
     }
 
     @Transactional
@@ -244,16 +293,8 @@ public class SpaceService {
     @Transactional
     public void updateSpaceImages(Long id, SpaceUpdateRequestDto dto) {
         Space space = findSpaceByIdAndCheckOwnership(id);
-
-        if (dto.getImageUrls() != null) {
-            spaceImageRepository.deleteBySpace(space);
-            if (!dto.getImageUrls().isEmpty()) {
-                List<SpaceImage> newImages = dto.getImageUrls().stream()
-                        .map(url -> new SpaceImage(space, url))
-                        .toList();
-                spaceImageRepository.saveAll(newImages);
-            }
-        }
+        // 이 메서드는 이제 multipart file 업로드 방식으로 대체되었으므로
+        // 필요에 따라 제거하거나 다른 용도로 사용할 수 있습니다.
     }
 
     @Transactional
