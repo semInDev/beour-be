@@ -14,11 +14,10 @@ public class AvailableTimeController {
 
     private final AvailableTimeService availableTimeService;
 
-    // ReservationGuestController.checkAvailableTimes() API와 겹침
-/*    @GetMapping("/{spaceId}/available-times")
+    @GetMapping("/{spaceId}/available-times")
     public ApiResponse<AvailableTimeDetailResponseDto> getAvailableTimeDetail(@PathVariable Long spaceId) {
         return ApiResponse.ok(availableTimeService.getAvailableTimeDetail(spaceId));
-    }*/
+    }
 
     @PatchMapping("/{spaceId}/available-times")
     public ApiResponse<String> updateAvailableTimes(@PathVariable Long spaceId,
