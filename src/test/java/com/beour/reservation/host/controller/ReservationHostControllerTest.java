@@ -144,7 +144,7 @@ class ReservationHostControllerTest {
     @DisplayName("호스트 공간 목록 조회 - 성공")
     void getHostSpaces_success() throws Exception {
         //when then
-        mockMvc.perform(get("/api/host/spaces")
+        mockMvc.perform(get("/api/users/me/spaces-name")
                         .header("Authorization", "Bearer " + hostAccessToken)
                 )
                 .andExpect(status().isOk())
@@ -162,7 +162,7 @@ class ReservationHostControllerTest {
         spaceRepository.deleteAll();
 
         //when then
-        mockMvc.perform(get("/api/host/spaces")
+        mockMvc.perform(get("/api/users/me/spaces-name")
                         .header("Authorization", "Bearer " + hostAccessToken)
                 )
                 .andExpect(status().isNotFound())
@@ -173,7 +173,7 @@ class ReservationHostControllerTest {
     @DisplayName("호스트 공간 목록 조회 - 게스트 권한으로 접근")
     void getHostSpaces_guestAccess() throws Exception {
         //when then
-        mockMvc.perform(get("/api/host/spaces")
+        mockMvc.perform(get("/api/users/me/spaces-name")
                         .header("Authorization", "Bearer " + guestAccessToken)
                 )
                 .andExpect(status().isNotFound())

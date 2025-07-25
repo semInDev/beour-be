@@ -22,7 +22,7 @@ public class ReservationHostController {
 
     private final ReservationHostService reservationHostService;
 
-    @GetMapping("/api/host/spaces")
+    @GetMapping("/api/users/me/spaces-name")
     public ApiResponse<List<HostSpaceListResponseDto>> getHostSpaces() {
         return ApiResponse.ok(reservationHostService.getHostSpaces());
     }
