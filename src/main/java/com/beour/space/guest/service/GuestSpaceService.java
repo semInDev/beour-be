@@ -39,6 +39,10 @@ public class GuestSpaceService {
         Page<Space> spacePage = spaceRepository.findAllWithinDistanceWithPaging(
             userLatitude, userLongitude, radiusMeters, pageable);
 
+        if(spacePage.getContent().isEmpty()){
+            throw new SpaceNotFoundException(SpaceErrorCode.SPACE_NOT_FOUND);
+        }
+
         List<NearbySpaceResponse> spaces = spacePage.getContent().stream().map(space -> {
             List<String> tags = space.getTags().stream()
                 .map(Tag::getContents)
