@@ -60,15 +60,24 @@ public class GuestSpaceSearchService {
         Integer minPrice = requestDto.getMinPrice() == 0 ? null : requestDto.getMinPrice();
         Integer maxPrice = requestDto.getMaxPrice() == 0 ? null : requestDto.getMaxPrice();
         Integer minCapacity = requestDto.getMinCapacity() == 0 ? null : requestDto.getMinCapacity();
-        List<SpaceCategory> spaceCategories =
-            requestDto.getSpaceCategories().isEmpty() ? null : requestDto.getSpaceCategories();
-        List<UseCategory> useCategories =
-            requestDto.getUseCategories().isEmpty() ? null : requestDto.getUseCategories();
+
+        List<String> spaceCategories = requestDto.getSpaceCategories().isEmpty()
+            ? null
+            : requestDto.getSpaceCategories().stream()
+                .map(Enum::name)
+                .toList();
+
+        List<String> useCategories = requestDto.getUseCategories().isEmpty()
+            ? null
+            : requestDto.getUseCategories().stream()
+                .map(Enum::name)
+                .toList();
 
         LocalDate date = requestDto.getDate();
 
         Page<Space> result = spaceRepository.searchWithFiltering(
-            keyword, minPrice, maxPrice, address, minCapacity, spaceCategories, useCategories, date,pageable
+            keyword, minPrice, maxPrice, address, minCapacity, spaceCategories, useCategories, date,
+            pageable
         );
 
         if (result.isEmpty()) {

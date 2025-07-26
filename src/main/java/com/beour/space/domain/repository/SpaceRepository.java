@@ -34,30 +34,30 @@ public interface SpaceRepository extends JpaRepository<Space, Long> {
           AND ST_Distance_Sphere(POINT(s.longitude, s.latitude), POINT(:longitude, :latitude)) <= :radius
         ORDER BY ST_Distance_Sphere(POINT(s.longitude, s.latitude), POINT(:longitude, :latitude)) ASC
         """,
-            countQuery = """
-        SELECT COUNT(*)
-        FROM space s
-        WHERE s.deleted_at IS NULL
-          AND ST_Distance_Sphere(POINT(s.longitude, s.latitude), POINT(:longitude, :latitude)) <= :radius
-        """,
-            nativeQuery = true)
+        countQuery = """
+            SELECT COUNT(*)
+            FROM space s
+            WHERE s.deleted_at IS NULL
+              AND ST_Distance_Sphere(POINT(s.longitude, s.latitude), POINT(:longitude, :latitude)) <= :radius
+            """,
+        nativeQuery = true)
     Page<Space> findAllWithinDistanceWithPaging(@Param("latitude") double latitude,
-                                                @Param("longitude") double longitude,
-                                                @Param("radius") double radiusInMeters,
-                                                Pageable pageable);
+        @Param("longitude") double longitude,
+        @Param("radius") double radiusInMeters,
+        Pageable pageable);
 
     @Query(value = """
         SELECT DISTINCT s.*
         FROM space s
         LEFT JOIN description d ON s.id = d.space_id
         LEFT JOIN tag t ON s.id = t.space_id
-        WHERE d.description LIKE %:keyword%
+        WHERE s.name LIKE %:keyword%
+           OR d.description LIKE %:keyword%
            OR d.price_guide LIKE %:keyword%
            OR d.facility_notice LIKE %:keyword%
            OR d.notice LIKE %:keyword%
            OR d.location_description LIKE %:keyword%
            OR d.refund_policy LIKE %:keyword%
-           OR d.website_url LIKE %:keyword%
            OR t.contents LIKE %:keyword%
            OR s.address LIKE %:keyword%
         """, nativeQuery = true)
@@ -71,7 +71,6 @@ public interface SpaceRepository extends JpaRepository<Space, Long> {
 
     List<Space> findTop5ByDeletedAtIsNullOrderByCreatedAtDesc();
 
-
     Optional<Space> findByIdAndDeletedAtIsNull(Long id);
 
     List<Space> findByHostAndDeletedAtIsNull(User host);
@@ -82,15 +81,17 @@ public interface SpaceRepository extends JpaRepository<Space, Long> {
         LEFT JOIN description d ON s.id = d.space_id
         LEFT JOIN tag t ON s.id = t.space_id
         WHERE (
-            d.description LIKE %:keyword%
-            OR d.price_guide LIKE %:keyword%
-            OR d.facility_notice LIKE %:keyword%
-            OR d.notice LIKE %:keyword%
-            OR d.location_description LIKE %:keyword%
-            OR d.refund_policy LIKE %:keyword%
-            OR d.website_url LIKE %:keyword%
-            OR t.contents LIKE %:keyword%
-            OR s.address LIKE %:keyword%
+            :keyword IS NULL OR (
+                s.name LIKE %:keyword%
+                OR d.description LIKE %:keyword%
+                OR d.price_guide LIKE %:keyword%
+                OR d.facility_notice LIKE %:keyword%
+                OR d.notice LIKE %:keyword%
+                OR d.location_description LIKE %:keyword%
+                OR d.refund_policy LIKE %:keyword%
+                OR t.contents LIKE %:keyword%
+                OR s.address LIKE %:keyword%
+            )
         )
         AND (:minPrice IS NULL OR s.price_per_hour >= :minPrice)
         AND (:maxPrice IS NULL OR s.price_per_hour <= :maxPrice)
@@ -106,33 +107,35 @@ public interface SpaceRepository extends JpaRepository<Space, Long> {
         )
         """,
         countQuery = """
-            SELECT COUNT(DISTINCT s.id)
-            FROM space s
-            LEFT JOIN description d ON s.id = d.space_id
-            LEFT JOIN tag t ON s.id = t.space_id
-            WHERE (
-                d.description LIKE %:keyword%
-                OR d.price_guide LIKE %:keyword%
-                OR d.facility_notice LIKE %:keyword%
-                OR d.notice LIKE %:keyword%
-                OR d.location_description LIKE %:keyword%
-                OR d.refund_policy LIKE %:keyword%
-                OR d.website_url LIKE %:keyword%
-                OR t.contents LIKE %:keyword%
-                OR s.address LIKE %:keyword%
-            )
-            AND (:minPrice IS NULL OR s.price_per_hour >= :minPrice)
-            AND (:maxPrice IS NULL OR s.price_per_hour <= :maxPrice)
-            AND (:address IS NULL OR s.address LIKE %:address%)
-            AND (:minCapacity IS NULL OR s.max_capacity >= :minCapacity)
-            AND (:spaceCategories IS NULL OR s.space_category IN (:spaceCategories))
-            AND (:useCategories IS NULL OR s.use_category IN (:useCategories))
-            AND (
-                :date IS NULL OR EXISTS (
-                    SELECT 1 FROM available_time at
-                    WHERE at.space_id = s.id AND at.date = :date AND at.deleted_at IS NULL
+                SELECT COUNT(DISTINCT s.id)
+                FROM space s
+                LEFT JOIN description d ON s.id = d.space_id
+                LEFT JOIN tag t ON s.id = t.space_id
+                WHERE (
+                    :keyword IS NULL OR (
+                        s.name LIKE %:keyword%
+                        OR d.description LIKE %:keyword%
+                        OR d.price_guide LIKE %:keyword%
+                        OR d.facility_notice LIKE %:keyword%
+                        OR d.notice LIKE %:keyword%
+                        OR d.location_description LIKE %:keyword%
+                        OR d.refund_policy LIKE %:keyword%
+                        OR t.contents LIKE %:keyword%
+                        OR s.address LIKE %:keyword%
+                    )
                 )
-            )
+                AND (:minPrice IS NULL OR s.price_per_hour >= :minPrice)
+                AND (:maxPrice IS NULL OR s.price_per_hour <= :maxPrice)
+                AND (:address IS NULL OR s.address LIKE %:address%)
+                AND (:minCapacity IS NULL OR s.max_capacity >= :minCapacity)
+                AND (:spaceCategories IS NULL OR s.space_category IN (:spaceCategories))
+                AND (:useCategories IS NULL OR s.use_category IN (:useCategories))
+                AND (
+                    :date IS NULL OR EXISTS (
+                        SELECT 1 FROM available_time at
+                        WHERE at.space_id = s.id AND at.date = :date AND at.deleted_at IS NULL
+                    )
+                )
             """,
         nativeQuery = true)
     Page<Space> searchWithFiltering(
@@ -141,8 +144,8 @@ public interface SpaceRepository extends JpaRepository<Space, Long> {
         @Param("maxPrice") Integer maxPrice,
         @Param("address") String address,
         @Param("minCapacity") Integer minCapacity,
-        @Param("spaceCategories") List<SpaceCategory> spaceCategories,
-        @Param("useCategories") List<UseCategory> useCategories,
+        @Param("spaceCategories") List<String> spaceCategories,
+        @Param("useCategories") List<String> useCategories,
         @Param("date") LocalDate date,
         Pageable pageable
     );
