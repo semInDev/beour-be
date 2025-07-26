@@ -55,26 +55,61 @@ public class SecurityConfig {
 
         http
             .authorizeHttpRequests((auth) -> auth
-                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                    .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                    .requestMatchers("/api/signup/**", "/api/login",
-                        "/api/users/find/login-id", "/api/users/reset/password", "/api/token/reissue",
-                        "/api/spaces/keyword", "/api/spaces/filter", "/api/spaces/spacecategory", "/api/spaces/usecategory")
-                    .permitAll()
-                    .requestMatchers("/api/spaces/reserve/available-times/date", "/api/spaces/search/**",
-                        "/api/spaces/new", "/api/reviews/new", "/api/banners", "/api/spaces/*/available-times").permitAll()
-                    .requestMatchers("/api/spaces/*/reservations", "/api/reservations/current/*", "/api/reservations/past/*","/api/spaces/reserve", "/api/reservation/**", "/api/guest/**",
-                        "/api/spaces/*/likes", "/api/likes")
-                    .hasRole("GUEST")
-                    .requestMatchers("/api/spaces", "/api/spaces/my-spaces", "/api/spaces/*",
-                        "/api/spaces/*/*", "/api/reservations/condition",
-                        "/api/host/available-times/spaces", "/api/host/available-times/space/*")
-                    .hasRole("HOST")
-                    .requestMatchers("/api/mypage/**").hasAnyRole("HOST", "GUEST")
-                    .requestMatchers("/api/logout", "/api/users", "/api/users/me/**")
-                    .hasAnyRole("HOST", "GUEST", "ADMIN")
-                    .anyRequest().authenticated()
-//                    .anyRequest().permitAll()
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+
+                // all - 로그인, 회원가입 등
+                .requestMatchers("/api/signup", "/api/signup/check-duplicate/login-id",
+                    "/api/signup/check-duplicate/nickname", "/api/login",
+                    "/api/users/find/login-id", "/api/users/reset/password")
+                .permitAll()
+
+                // all - 공간 검색 및 이용가능 시간
+                .requestMatchers("/api/spaces/*/available-times/date", "/api/reviews/new",
+                    "/api/spaces/nearby", "/api/spaces/keyword", "/api/spaces/filter",
+                    "/api/spaces/spacecategory", "/api/spaces/usecategory", "/api/spaces/new")
+                .permitAll()
+
+                //host - 공간 예약
+                .requestMatchers("/api/reservations/condition", "/api/reservations/*/accept",
+                    "/api/reservations/*/reject", "/api/users/me/spaces-name", "/api/reservations",
+                    "/api/spaces/reservations").hasRole("HOST")
+
+                //host - 공간 예약
+                .requestMatchers("/api/reservations/condition", "/api/reservations/*/accept",
+                    "/api/reservations/*/reject", "/api/users/me/spaces-name", "/api/reservations",
+                    "/api/spaces/reservations").hasRole("HOST")
+
+                //host - 공간
+                .requestMatchers("/api/spaces", "/api/spaces/*/simple", "/api/spaces/*",
+                    "/api/spaces/*/basic", "/api/spaces/*/description", "/api/spaces/*/tags",
+                    "/api/spaces/*/images", "/api/spaces/*/available-times").hasRole("HOST")
+
+                // host - 댓글
+                .requestMatchers("/api/users/me/commentable-reviews",
+                    "/api/users/me/review-comments", "/api/users/me/review-comments/*")
+                .hasRole("HOST")
+
+                // guest - 예약
+                .requestMatchers("/api/spaces/*/reservations", "/api/reservations/current",
+                    "/api/reservations/past", "/api/reservations/*").hasRole("GUEST")
+
+                // guest - 리뷰
+                .requestMatchers("/api/users/me/reviewable-reservations", "/api/users/me/reviews",
+                    "/api/reviews/reservations/*", "/api/users/me/reviews/*").hasRole("GUEST")
+
+                // guest - 찜
+                .requestMatchers("/api/likes","/api/spaces/*/likes").hasRole("GUEST")
+
+                //admin
+                .requestMatchers("/api/banners", "/admin/banner/list").hasRole("ADMIN")
+
+                //guest, host, admin
+                .requestMatchers("/api/token/reissue", "api/users", "api/users/me",
+                    "api/users/me/detail", "api/users/me/password", "/api/logout")
+                .hasAnyRole("HOST", "GUEST", "ADMIN")
+
+                .anyRequest().authenticated()
             );
 
         http
