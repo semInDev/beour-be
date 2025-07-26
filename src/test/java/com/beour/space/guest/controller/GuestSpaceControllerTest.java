@@ -4,6 +4,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.beour.global.exception.error.errorcode.SpaceErrorCode;
 import com.beour.global.jwt.JWTUtil;
 import com.beour.space.domain.entity.Space;
 import com.beour.space.domain.enums.SpaceCategory;
@@ -154,12 +155,6 @@ class GuestSpaceControllerTest {
         userRepository.deleteAll();
     }
 
-
-    /**
-     * 근처 장소 검색
-     * - 성공
-     * - 근처 장소 없을경우...?
-     */
     @Test
     @DisplayName("근처 장소 검색 - 성공")
     void success_nearby() throws Exception {
@@ -172,6 +167,20 @@ class GuestSpaceControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.spaces.length()").value(1))
             .andExpect(jsonPath("$.data.spaces[0].spaceId").value(resultSpace.getId()))
+        ;
+    }
+
+    @Test
+    @DisplayName("근처 장소 검색 - 해당 공간 없을 경우")
+    void nearby_space_not_found() throws Exception {
+        //when  then
+        mockMvc.perform(get("/api/spaces/nearby")
+                .param("latitude", "0.0")
+                .param("longitude", "0.0")
+                .param("radiusKm", "1")
+            )
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.message").value(SpaceErrorCode.SPACE_NOT_FOUND.getMessage()))
         ;
     }
 
