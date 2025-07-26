@@ -1,7 +1,7 @@
 package com.beour.global.exception;
 
 import com.beour.global.response.ErrorResponse;
-import com.beour.reservation.commons.exceptionType.ReservationNotFound;
+import com.beour.global.exception.exceptionType.ReservationNotFound;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
