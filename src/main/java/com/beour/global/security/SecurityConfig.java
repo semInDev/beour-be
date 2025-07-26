@@ -58,7 +58,7 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                     .requestMatchers("/api/signup/**", "/api/login",
-                        "/api/users/find/login-id", "/api/users/reset/password", "/api/token/reissue",
+                        "/api/users/find/login-id", "/api/users/reset/password", "/api/token/reissue", "/api/spaces/nearby",
                         "/api/spaces/keyword", "/api/spaces/filter", "/api/spaces/spacecategory", "/api/spaces/usecategory")
                     .permitAll()
                     .requestMatchers("/api/spaces/reserve/available-times/date", "/api/spaces/search/**",

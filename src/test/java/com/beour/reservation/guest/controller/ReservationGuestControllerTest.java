@@ -9,7 +9,6 @@ import static org.hamcrest.Matchers.contains;
 import com.beour.global.exception.error.errorcode.AvailableTimeErrorCode;
 import com.beour.global.exception.error.errorcode.ReservationErrorCode;
 import com.beour.global.exception.error.errorcode.SpaceErrorCode;
-import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.jwt.JWTUtil;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;

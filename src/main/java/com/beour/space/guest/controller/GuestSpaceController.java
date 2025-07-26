@@ -31,16 +31,15 @@ public class GuestSpaceController {
     private final GuestSpaceSearchService guestSpaceSearchService;
 
     @GetMapping("/nearby")
-    public ResponseEntity<NearbySpacePageResponseDto> getNearbySpaces(
-            @RequestParam double latitude,
-            @RequestParam double longitude,
-            @RequestParam double radiusKm,
-            @RequestParam long userId,
+    public ApiResponse<NearbySpacePageResponseDto> getNearbySpaces(
+            @RequestParam("latitude") double latitude,
+            @RequestParam("longitude") double longitude,
+            @RequestParam("radiusKm") double radiusKm,
             @PageableDefault(size = 20) Pageable pageable
     ) {
         NearbySpacePageResponseDto response = guestSpaceService.findNearbySpaces(
-                latitude, longitude, radiusKm, userId, pageable);
-        return ResponseEntity.ok(response);
+                latitude, longitude, radiusKm, pageable);
+        return ApiResponse.ok(response);
     }
 
     @GetMapping("/keyword")
