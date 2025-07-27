@@ -83,7 +83,7 @@
 
 <!--해당 url 수정시 변경-->
 ## 📄 API 명세
-👉 [Wiki에서 확인하기]([https://google.github.io/styleguide/javaguide.html](https://github.com/beour-team/beour-be/wiki#-api-%EB%AA%85%EC%84%B8%EC%B6%94%EA%B0%80-%EC%98%88%EC%A0%95))
+👉 [Wiki에서 확인하기](https://github.com/beour-team/beour-be/wiki#-api-%EB%AA%85%EC%84%B8%EC%B6%94%EA%B0%80-%EC%98%88%EC%A0%95))
 
 
 <br>
