@@ -58,7 +58,7 @@
 <br>
 
 ## 📁 프로젝트 구조
->자세한 폴더별 설명은 [Wiki - 폴더 구조](https://github.com/99hyeon/beour-be/wiki#-%ED%8F%B4%EB%8D%94-%EA%B5%AC%EC%A1%B0) 를 참고해주세요.
+>자세한 폴더별 설명은 [Wiki - 폴더 구조](https://github.com/beour-team/beour-be/wiki#-%ED%8F%B4%EB%8D%94-%EA%B5%AC%EC%A1%B0) 를 참고해주세요.
 ```text
 📦 src
  ┣ 📂main
@@ -83,14 +83,14 @@
 
 <!--해당 url 수정시 변경-->
 ## 📄 API 명세
-👉 [Wiki에서 확인하기](https://github.com/99hyeon/beour-be/wiki#-api-%EB%AA%85%EC%84%B8%EC%B6%94%EA%B0%80-%EC%98%88%EC%A0%95)
+👉 [Wiki에서 확인하기]([https://google.github.io/styleguide/javaguide.html](https://github.com/beour-team/beour-be/wiki#-api-%EB%AA%85%EC%84%B8%EC%B6%94%EA%B0%80-%EC%98%88%EC%A0%95))
 
 
 <br>
 
-<!--해당 url 수정시 변경-->
+
 ## 📝 커밋 컨벤션
-👉 [Wiki에서 확인하기](https://github.com/99hyeon/beour-be/wiki/Commit-Convention)
+👉 [Wiki에서 확인하기](https://github.com/beour-team/beour-be/wiki/Commit-Convention)
 
 <br>
 
