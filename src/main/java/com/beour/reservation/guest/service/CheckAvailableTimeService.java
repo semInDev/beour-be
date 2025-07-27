@@ -3,7 +3,7 @@ package com.beour.reservation.guest.service;
 import com.beour.global.exception.error.errorcode.AvailableTimeErrorCode;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
-import com.beour.reservation.commons.exceptionType.AvailableTimeNotFound;
+import com.beour.global.exception.exceptionType.AvailableTimeNotFound;
 import com.beour.reservation.commons.repository.ReservationRepository;
 import com.beour.reservation.guest.dto.SpaceAvailableTimeResponseDto;
 import com.beour.space.domain.entity.AvailableTime;

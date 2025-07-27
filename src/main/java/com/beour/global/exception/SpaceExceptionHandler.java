@@ -2,7 +2,7 @@ package com.beour.global.exception;
 
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
 import com.beour.global.response.ErrorResponse;
-import com.beour.reservation.commons.exceptionType.AvailableTimeNotFound;
+import com.beour.global.exception.exceptionType.AvailableTimeNotFound;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
