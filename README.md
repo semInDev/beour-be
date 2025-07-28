@@ -1,268 +1,131 @@
-# beour-be
+# 🏠 BE:OUR Backend
 비어 있는 순간을 수익으로 채울 수 있게 하는 B2C플랫폼, BE:OUR 백엔드 레포지토리
 
 <br>
 
-# ERD
-```
-[User] (사용자)
-- id (PK)
-- name
-- nickname: unique
-- email
-- loginId: unique
-- password
-- phone
-- role(GUEST / HOST / ADMIN)
-- created_at
-- updated_at
-- deleted_at
+## 🛠️ 기술 스택
 
-[Space]
-- id (PK)
-- host_id (FK → User)
-- name
-- space_category (CAFE / RESTAURANT / COOKING / LEATHER / COSTUME / ART)
-- use_category (MEETING / COOKING / BARISTA / FLEA_MARKET / FILMING / ETC)
-- max_capacity
-- address
-- detail_address
-- price_per_hour
-- thumbnail_url
-- latitude
-- longitude
-- avg_rating
-- created_at
-- updated_at
-- deleted_at
+| 구분 | 사용 기술 |
+|------------------|---------------------------------------------------|
+| Language         | Java 17                                           |
+| Framework        | Spring Boot 3.x, Spring Security, Spring Data JPA |
+| DB               | MySQL                                             |
+| Cache            | Redis                                             |
+| Build Tool       | Gradle                                            |
+| Query            | JPA                                               |
+| Version Control  | Git / GitHub                                      |
+| Test             | JUnit 5, Mockito                                  |
+| CI/CD            | GitHub Actions                                    |
+| Infra            | AWS EC2, S3, Route5S                              |
 
-[Like] → 찜 기능
-- id (PK)
-- user_id (FK → User) 
-- space_id (FK → Space) → user_id, space_id 조합 unique 제약
+<br>
 
-[Description]
-- id (PK)
-- space_id (FK)
-- description
-- price_guide
-- facility_notice
-- notice
-- location_description
-- refund_policy
-- website_url
+## 🧩 주요 기능
 
-[Tag]
-- id (PK)
-- space_id (FK)
-- contents
+#### 🔸 인증/인가
+- JWT 기반 로그인 및 회원가입
+- Access/Refresh Token 관리
+- Refresh Token 쿠키 저장 (`SameSite=None; Secure; HttpOnly`)
+- Role 기반 권한 분리 (GUEST / HOST)
 
-[Available_times]
-- id (PK)
-- space_id (FK)
-- date
-- start_time
-- end_time
-- deleted_at
+#### 🔸 유저
+- 내 정보 조회/수정/비밀번호 변경
+- 회원 탈퇴
 
-[SpaceImage]
-- id (PK)
-- space_id (FK)
-- image_url
-- deleted_at
+#### 🔸 공간
+- 키워드/필터 기반 검색
+- 거리 기반 정렬 (ST_Distance_Sphere)
+- 공간 등록, 수정, 삭제
+- 공간 상세 조회
 
-[Reservation]
-- id (PK)
-- space_id (FK → Space)
-- user_id (FK → User)
-- host_id (FK → User)
-- status (PENDING / ACCEPTED / REJECTED / COMPLETED)
-- date
-- start_time
-- end_time
-- price
-- guest_count
-- created_at
-- updated_at
-- deleted_at
+#### 🔸 예약
+- 날짜별 예약 가능 시간 조회
+- 공간 예약 생성, 승인/거절, 취소
+- 현재/과거 예약 내역 확인
 
-[Review]
-- id (PK)
-- reservation_id (FK → Reservation)
-- space_id (FK → Space)
-- user_id (FK → User)
-- rating (1~5)
-- content
-- created_at
-- updated_at
-- deleted_at
+#### 🔸 리뷰
+- 리뷰 작성, 조회, 수정, 삭제
+- 리뷰 가능한 예약 목록 제공
 
-[reviewImage]
-- id (PK)
-- review_id (FK)
-- image_url
-- deleted_at
+#### 🔸 댓글
+- 댓글 작성, 조회, 수정, 삭제
+- 댓글 가능한 리뷰 목록 제공
 
-[ReviewComment]
-- id (PK)
-- review_id (FK → Review)
-- host_id (FK → User)
-- content
-- created_at
-- updated_at
-- deleted_at
+#### 🔸 좋아요
+- 공간 찜하기, 찜 해제
+- 찜한 공간 조회
 
-[Banner]
-- id (PK)
-- image_url
-- link_url
-- title
-- is_active
-- display_order
-- start_date
-- end_date
-- created_at
-- updated_at
-- deleted_at
+<br>
 
-```
+## 📁 프로젝트 구조
+>자세한 폴더별 설명은 [Wiki - 폴더 구조](https://github.com/beour-team/beour-be/wiki#-%ED%8F%B4%EB%8D%94-%EA%B5%AC%EC%A1%B0) 를 참고해주세요.
+```text
+📦 src
+ ┣ 📂main
+ ┃ ┣ 📂java/com.beour
+ ┃ ┃ ┣ 📂global        # 전역 설정 및 공통 모듈 (CORS, JWT, 예외처리 등)
+ ┃ ┃ ┣ 📂user          # 사용자 도메인 (회원가입, 로그인, 내 정보 등)
+ ┃ ┃ ┣ 📂space         # 공간 도메인 (공간 등록, 검색, 상세조회 등)
+ ┃ ┃ ┣ 📂reservation   # 예약 도메인 (예약 생성, 승인/거절, 조회 등)
+ ┃ ┃ ┣ 📂review        # 리뷰 도메인 (작성, 수정, 삭제 등)
+ ┃ ┃ ┣ 📂wishlist      # 찜하기 기능
+ ┃ ┃ ┣ 📂banner        # 배너 관리
+ ┃ ┃ ┗ 📂token         # 토큰 재발급 도메인
+ ┃ ┃  
+ ┃ ┣ 📂resources
+ ┃ ┃ ┗ 📜application.yml  # 전역 환경 설정 파일
+ ┣ 📂test
+ ┃ ┗ 📂...             # 각 도메인별 테스트 코드
 
-# 커밋 컨벤션
-
-### **Commit Message Format**
-
-```
-[#이슈번호] <type> : <subject>   - subject line
-
-<body>                          - message body
-
-<footer>                        - message footer
-```
-
-**Subject line**
-
-- **필수**
-- 변경 사항에 대한 간단한 설명
-- 현재 시제로 작성(ex. “추가”, “수정”, “구현”)
-- 마침표 `.`  사용 안 함
-- 최대 70자
-
-**Message body**
-
-- 선택 사항
-- 수정 이유와 전후 비교 설명
-- 현재 시제로 작성
-- 70자 이상일 경우 줄바꿈
-
-**Message footer**
-
-- 해당 커밋에 관련된 이슈 번호 명시 - 관련 이슈 자동 연결
-- 하위 호환이 깨지는 변경이 있을 경우 명시
-- 공동 작업자 있을 경우 작성자 추가
-- 문서 링크, 배포 주의사항이 있을 경우 명시
-
-💡**type 종류**
-
-| 타입 | 설명 |
-| --- | --- |
-| `feat` | 새로운 기능 추가 |
-| `fix` | 버그 수정 |
-| `!HOTFIX` | 긴급 수정 사항 |
-| `refactor` | 코드 리팩토링 (기능 변경 X) |
-| `style` | 코드 스타일, 포맷 변경 (기능 영향 X) |
-| `docs` | 문서 수정 (README 등) |
-| `comment` | 코드 주석 추가/수정 |
-| `test` | 테스트 코드 추가/수정 |
-| `rename` | 파일 또는 폴더명 변경 |
-| `move` | 파일 또는 폴더 이동 |
-| `remove` | 파일 삭제 |
-| `chore` | 빌드 설정, 의존성 변경 등 기타 작업 |
-| `!BREAKING CHANGE` | 하위 호환이 깨지는 주요 변경사항 |
-
-**📌footer 주요 키워드**
-
-**`Closes`, `Fixes` , `Resolves`** : 해당 이슈 자동으로 닫음
-
-**`Related to`, `Refs`** : 관련은 있지만 이슈를 닫지는 않음
-
-`BREAKING CHANGE` : 중요한 변경사항 강조
-
-`Co-authored-by` : 공동 작업자 명시
-
-💡**Commit Message 예시**
-
-```
-[#23] feat: 공간 찜하기 기능 구현
-
-- 찜 버튼 클릭 시 서버로 공간 ID 전달
-- 사용자가 찜한 공간 리스트 조회 가능
-
-Closes #23
-```
-
-```
-[#10] fix: 비밀번호 검증 오류 수정
-
-- 비밀번호 길이 조건 로직 버그 수정
-- 유효성 메시지 개선
-
-BREAKING CHANGE: 프론트에 전달되는 메시지 포맷이 변경됨
 ```
 
 <br>
 
-# 브랜치 전략
+<!--해당 url 수정시 변경-->
+## 📄 API 명세
+👉 [Wiki에서 확인하기](https://github.com/beour-team/beour-be/wiki#-api-%EB%AA%85%EC%84%B8%EC%B6%94%EA%B0%80-%EC%98%88%EC%A0%95)
 
-**📁 브랜치 구조**
 
-```
-main
-│
-├── develop
-│   ├── feat/login
-│   ├── fix/token-error
-│   ├── chore/init-env
-│   └── ...
-```
+<br>
 
-**브랜치 설명**
 
-| 브랜치 | 설명 |
-| --- | --- |
-| `main`  | 실제 서비스 운영용 (항상 안정된 코드 유지) |
-| `develop` | 개발 통합 브랜치 (기능 통합, 리뷰 기준) |
-| `feat/*` | 새로운 기능 개발 (예: feat/login) |
-| `fix/*` | 버그 수정 (예: fix/password-check) |
-| `refactor/*` | 코드 리팩토링 |
-| `style/*` | 코드 포맷/스타일 변경 |
-| `test/*` | 테스트 코드 작성/수정 |
-| `chore/*` | 설정/빌드 관련 잡일 |
-| `hotfix/*` | 운영 중 긴급 수정 시 사용 |
+## 📝 커밋 컨벤션
+👉 [Wiki에서 확인하기](https://github.com/beour-team/beour-be/wiki/Commit-Convention)
 
-**브랜치 네이밍 규칙**
+<br>
 
-| Prefix | 사용 예 | 의미 |
-| --- | --- | --- |
-| `feat/` | feat/reservation | 기능 추가 |
-| `fix/` | fix/token-refresh | 버그 수정 |
-| `refactor/` | refactor/user-service | 리팩토링 |
-| `style/` | style/header-format | 코드 스타일 변경 |
-| `test/` | test/login-api | 테스트 코드 작성 |
-| `chore/` | chore/prettier-config | 설정 관련 변경 |
-| `hotfix/` | hotfix/auth-bug | 긴급 수정 |
+## 🌐 배포 주소 (수정 필요)
+서버: 
 
-**🔁 브랜치 작업 흐름**
+Swagger: 
 
-1. `develop` 브랜치에서 작업 브랜치 생성
-2. 기능 구현 후 커밋 및 푸시
-3. GitHub에 Pull Request 생성 (base: develop ← compare: feat/login)
-4. 팀원 리뷰 → merge
-5. 전체 기능 완료 후 develop → main으로 PR 작성 및 배포
+프론트엔드: 
 
-```
-feat/login ─┐
-            ├──> develop ───┐
-fix/bugfix ─┘               │
-                            └──> main (배포)
-```
+<br>
 
+
+## 백엔드 멤버 소개
+<table  width="100%">
+  <tr>
+    <td  align="center">
+      <img  src="https://avatars.githubusercontent.com/u/176730442?v=4"  width="100px;"  alt=""/>
+    </td>
+    <td  align="center">
+      <img  src="https://avatars.githubusercontent.com/u/114418850?v=4"  width="100px;"  alt=""/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+        <strong>기획/BE(PM)</strong>
+        <a href="https://github.com/seminjjang">
+          <div>프제<br>(박세민)</div>
+        </a>
+    </td>
+        <td align="center">
+          <strong>BE</strong>
+        <a href="https://github.com/99hyeon">
+          <div>바울<br>(박서현)</div>
+        </a>
+    </td>
+  </tr>
+</table>
