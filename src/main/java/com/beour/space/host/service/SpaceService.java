@@ -142,6 +142,7 @@ public class SpaceService {
                 .spaceCategory(space.getSpaceCategory())
                 .useCategory(space.getUseCategory())
                 .avgRating(space.getAvgRating())
+                .thumbnailUrl(space.getThumbnailUrl())
                 .description(desc.getDescription())
                 .priceGuide(desc.getPriceGuide())
                 .facilityNotice(desc.getFacilityNotice())
