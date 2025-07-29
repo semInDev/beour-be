@@ -35,18 +35,18 @@ public class SpaceController {
     }
 
     @GetMapping("/{id}/simple")
-    public ApiResponse<SpaceSimpleResponseDto> getSimpleInfo(@PathVariable Long id) {
+    public ApiResponse<SpaceSimpleResponseDto> getSimpleInfo(@PathVariable(value = "id") Long id) {
         return ApiResponse.ok(spaceService.getSimpleSpaceInfo(id));
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<SpaceDetailResponseDto> getDetailInfo(@PathVariable Long id) {
+    public ApiResponse<SpaceDetailResponseDto> getDetailInfo(@PathVariable(value = "id") Long id) {
         return ApiResponse.ok(spaceService.getDetailedSpaceInfo(id));
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<String> updateSpace(
-            @PathVariable Long id,
+            @PathVariable(value = "id") Long id,
             @Valid @RequestPart("space") SpaceUpdateRequestDto dto,
             @RequestPart(value = "thumbnailFile", required = false) MultipartFile thumbnailFile,
             @RequestPart(value = "imageFiles", required = false) List<MultipartFile> imageFiles) throws IOException {
@@ -56,35 +56,35 @@ public class SpaceController {
     }
 
     @PatchMapping("/{id}/basic")
-    public ApiResponse<String> updateSpaceBasic(@PathVariable Long id,
+    public ApiResponse<String> updateSpaceBasic(@PathVariable(value = "id") Long id,
                                                 @Valid @RequestBody SpaceUpdateRequestDto dto) {
         spaceService.updateSpaceBasic(id, dto);
         return ApiResponse.ok("공간 기본 정보가 성공적으로 수정되었습니다.");
     }
 
     @PatchMapping("/{id}/description")
-    public ApiResponse<String> updateSpaceDescription(@PathVariable Long id,
+    public ApiResponse<String> updateSpaceDescription(@PathVariable(value = "id") Long id,
                                                       @Valid @RequestBody SpaceUpdateRequestDto dto) {
         spaceService.updateSpaceDescription(id, dto);
         return ApiResponse.ok("공간 설명이 성공적으로 수정되었습니다.");
     }
 
     @PatchMapping("/{id}/tags")
-    public ApiResponse<String> updateTags(@PathVariable Long id,
+    public ApiResponse<String> updateTags(@PathVariable(value = "id") Long id,
                                           @Valid @RequestBody SpaceUpdateRequestDto dto) {
         spaceService.updateTags(id, dto);
         return ApiResponse.ok("태그가 성공적으로 수정되었습니다.");
     }
 
     @PatchMapping("/{id}/images")
-    public ApiResponse<String> updateSpaceImages(@PathVariable Long id,
+    public ApiResponse<String> updateSpaceImages(@PathVariable(value = "id") Long id,
                                                  @Valid @RequestBody SpaceUpdateRequestDto dto) {
         spaceService.updateSpaceImages(id, dto);
         return ApiResponse.ok("공간 이미지가 성공적으로 수정되었습니다.");
     }
 
     @DeleteMapping("/{id}")
-    public ApiResponse<String> deleteSpace(@PathVariable Long id) {
+    public ApiResponse<String> deleteSpace(@PathVariable(value = "id") Long id) {
         spaceService.deleteSpace(id);
         return ApiResponse.ok("공간이 성공적으로 삭제되었습니다.");
     }

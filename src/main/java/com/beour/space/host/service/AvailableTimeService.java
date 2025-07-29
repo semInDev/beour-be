@@ -49,8 +49,7 @@ public class AvailableTimeService {
                 .collect(Collectors.toList());
 
         // 수정 불가능한 시간들 (예약 상태가 PENDING 또는 ACCEPTED인 것들)
-        List<Reservation> reservedSlots = reservationRepository.findBySpaceIdAndDateAndDeletedAtIsNull(spaceId, null)
-                .stream()
+        List<Reservation> reservedSlots = reservationRepository.findBySpaceIdAndDeletedAtIsNull(spaceId).stream()
                 .filter(reservation -> reservation.getStatus() == ReservationStatus.PENDING
                         || reservation.getStatus() == ReservationStatus.ACCEPTED)
                 .collect(Collectors.toList());

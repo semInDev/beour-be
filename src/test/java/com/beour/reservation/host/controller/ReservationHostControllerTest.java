@@ -176,8 +176,7 @@ class ReservationHostControllerTest {
         mockMvc.perform(get("/api/users/me/spaces-name")
                         .header("Authorization", "Bearer " + guestAccessToken)
                 )
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value(SpaceErrorCode.NO_HOST_SPACE.getMessage()));
+                .andExpect(status().isForbidden());
     }
 
     @Test

@@ -5,7 +5,7 @@ import com.beour.global.exception.exceptionType.InputInvalidFormatException;
 import com.beour.global.exception.exceptionType.ReviewCommentNotFoundException;
 import com.beour.global.exception.exceptionType.UnauthorityException;
 import com.beour.global.response.ErrorResponse;
-import com.beour.reservation.commons.exceptionType.MissMatch;
+import com.beour.global.exception.exceptionType.MissMatch;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -82,7 +82,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UnauthorityException.class)
     public ResponseEntity<ErrorResponse> invalidFormat(UnauthorityException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-            .body(new ErrorResponse(ex.getErrorCode(), "UNAUTHORIZED_ERROR", ex.getMessage()));
+                .body(new ErrorResponse(ex.getErrorCode(), "UNAUTHORIZED_ERROR", ex.getMessage()));
     }
 
     @ExceptionHandler(DuplicateException.class)

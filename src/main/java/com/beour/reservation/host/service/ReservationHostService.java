@@ -8,7 +8,7 @@ import com.beour.global.exception.exceptionType.UnauthorityException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
-import com.beour.reservation.commons.exceptionType.ReservationNotFound;
+import com.beour.global.exception.exceptionType.ReservationNotFound;
 import com.beour.reservation.commons.repository.ReservationRepository;
 import com.beour.reservation.host.dto.HostReservationListPageResponseDto;
 import com.beour.reservation.host.dto.HostReservationListResponseDto;
