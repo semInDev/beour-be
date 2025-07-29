@@ -22,6 +22,7 @@ public class SpaceDetailResponseDto {
     private SpaceCategory spaceCategory;
     private UseCategory useCategory;
     private Double avgRating;
+    private String thumbnailUrl;
 
     // Description
     private String description;
