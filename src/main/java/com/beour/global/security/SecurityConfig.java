@@ -96,7 +96,7 @@ public class SecurityConfig {
                     "/api/reviews/reservations/*", "/api/users/me/reviews/*").hasRole("GUEST")
 
                 // guest - 찜
-                .requestMatchers("/api/likes","/api/spaces/*/likes").hasRole("GUEST")
+                .requestMatchers("/api/likes", "/api/spaces/*/likes").hasRole("GUEST")
 
                 //admin
                 .requestMatchers("/api/banners", "/admin/banner/list").hasRole("ADMIN")
@@ -110,12 +110,12 @@ public class SecurityConfig {
             );
 
         http.exceptionHandling(exception -> exception
-                .authenticationEntryPoint((request, response, authException) -> {
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
-                })
-                .accessDeniedHandler((request, response, accessDeniedException) -> {
-                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden");
-                })
+            .authenticationEntryPoint((request, response, authException) -> {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+            })
+            .accessDeniedHandler((request, response, accessDeniedException) -> {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden");
+            })
         );
 
         http
