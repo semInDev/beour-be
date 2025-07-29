@@ -328,7 +328,7 @@ class SpaceControllerTest {
                         })
                         .with(user(host2.getLoginId()).roles("HOST"))
                         .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(status().isForbidden())
+                .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value(SpaceErrorCode.NO_PERMISSION.getMessage()));
     }
 
@@ -428,7 +428,7 @@ class SpaceControllerTest {
         // when & then (host2가 host1의 공간을 삭제하려고 시도)
         mockMvc.perform(delete("/api/spaces/{id}", space1.getId())
                         .with(user(host2.getLoginId()).roles("HOST")))
-                .andExpect(status().isForbidden())
+                .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value(SpaceErrorCode.NO_PERMISSION.getMessage()));
     }
 

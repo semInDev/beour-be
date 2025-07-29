@@ -77,11 +77,6 @@ public class SecurityConfig {
                     "/api/reservations/*/reject", "/api/users/me/spaces-name", "/api/reservations",
                     "/api/spaces/reservations").hasRole("HOST")
 
-                //host - 공간 예약
-                .requestMatchers("/api/reservations/condition", "/api/reservations/*/accept",
-                    "/api/reservations/*/reject", "/api/users/me/spaces-name", "/api/reservations",
-                    "/api/spaces/reservations").hasRole("HOST")
-
                 //host - 공간
                 .requestMatchers("/api/spaces", "/api/spaces/*/simple", "/api/spaces/*",
                     "/api/spaces/*/basic", "/api/spaces/*/description", "/api/spaces/*/tags",
@@ -101,7 +96,7 @@ public class SecurityConfig {
                     "/api/reviews/reservations/*", "/api/users/me/reviews/*").hasRole("GUEST")
 
                 // guest - 찜
-                .requestMatchers("/api/likes","/api/spaces/*/likes").hasRole("GUEST")
+                .requestMatchers("/api/likes", "/api/spaces/*/likes").hasRole("GUEST")
 
                 //admin
                 .requestMatchers("/api/banners", "/admin/banner/list").hasRole("ADMIN")
@@ -115,12 +110,12 @@ public class SecurityConfig {
             );
 
         http.exceptionHandling(exception -> exception
-                .authenticationEntryPoint((request, response, authException) -> {
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
-                })
-                .accessDeniedHandler((request, response, accessDeniedException) -> {
-                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden");
-                })
+            .authenticationEntryPoint((request, response, authException) -> {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+            })
+            .accessDeniedHandler((request, response, accessDeniedException) -> {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden");
+            })
         );
 
         http

@@ -15,12 +15,12 @@ public class AvailableTimeController {
     private final AvailableTimeService availableTimeService;
 
     @GetMapping("/{spaceId}/available-times")
-    public ApiResponse<AvailableTimeDetailResponseDto> getAvailableTimeDetail(@PathVariable Long spaceId) {
+    public ApiResponse<AvailableTimeDetailResponseDto> getAvailableTimeDetail(@PathVariable(value = "spaceId") Long spaceId) {
         return ApiResponse.ok(availableTimeService.getAvailableTimeDetail(spaceId));
     }
 
     @PatchMapping("/{spaceId}/available-times")
-    public ApiResponse<String> updateAvailableTimes(@PathVariable Long spaceId,
+    public ApiResponse<String> updateAvailableTimes(@PathVariable(value = "spaceId") Long spaceId,
                                                     @RequestBody AvailableTimeUpdateRequestDto requestDto) {
         availableTimeService.updateAvailableTimes(spaceId, requestDto);
         return ApiResponse.ok("대여 가능 시간을 성공적으로 업데이트 했습니다.");
