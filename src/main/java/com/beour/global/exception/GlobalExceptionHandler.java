@@ -82,7 +82,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UnauthorityException.class)
     public ResponseEntity<ErrorResponse> invalidFormat(UnauthorityException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-            .body(new ErrorResponse(ex.getErrorCode(), "UNAUTHORIZED_ERROR", ex.getMessage()));
+                .body(new ErrorResponse(ex.getErrorCode(), "UNAUTHORIZED_ERROR", ex.getMessage()));
     }
 
     @ExceptionHandler(DuplicateException.class)
