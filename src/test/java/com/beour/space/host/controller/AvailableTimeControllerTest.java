@@ -188,7 +188,7 @@ class AvailableTimeControllerTest {
 
     @Test
     @DisplayName("가능한 시간 조회 - 성공")
-    @WithMockUser(username = "host")
+    @WithMockUser(username = "host", roles = "HOST")
     void success_getAvailableTimeDetail() throws Exception {
         // when & then
         mockMvc.perform(get("/api/spaces/{spaceId}/available-times", hostSpace.getId()))
@@ -206,7 +206,7 @@ class AvailableTimeControllerTest {
 
     @Test
     @DisplayName("가능한 시간 조회 - 존재하지 않는 공간")
-    @WithMockUser(username = "host")
+    @WithMockUser(username = "host", roles = "HOST")
     void getAvailableTimeDetail_space_not_found() throws Exception {
         // given
         Long nonExistentSpaceId = 999L;
@@ -219,7 +219,7 @@ class AvailableTimeControllerTest {
 
     @Test
     @DisplayName("가능한 시간 조회 - 권한 없음 (다른 호스트의 공간)")
-    @WithMockUser(username = "host")
+    @WithMockUser(username = "host", roles = "HOST")
     void getAvailableTimeDetail_no_permission() throws Exception {
         // when & then
         mockMvc.perform(get("/api/spaces/{spaceId}/available-times", otherHostSpace.getId()))
@@ -237,7 +237,7 @@ class AvailableTimeControllerTest {
 
     @Test
     @DisplayName("가능한 시간 수정 - 성공")
-    @WithMockUser(username = "host")
+    @WithMockUser(username = "host", roles = "HOST")
     void success_updateAvailableTimes() throws Exception {
         // given
         String requestJson = """
@@ -270,7 +270,7 @@ class AvailableTimeControllerTest {
 
     @Test
     @DisplayName("가능한 시간 수정 - 존재하지 않는 공간")
-    @WithMockUser(username = "host")
+    @WithMockUser(username = "host", roles = "HOST")
     void updateAvailableTimes_space_not_found() throws Exception {
         // given
         Long nonExistentSpaceId = 999L;
@@ -296,7 +296,7 @@ class AvailableTimeControllerTest {
 
     @Test
     @DisplayName("가능한 시간 수정 - 권한 없음 (다른 호스트의 공간)")
-    @WithMockUser(username = "host")
+    @WithMockUser(username = "host", roles = "HOST")
     void updateAvailableTimes_no_permission() throws Exception {
         // given
         String requestJson = """
@@ -344,7 +344,7 @@ class AvailableTimeControllerTest {
 
     @Test
     @DisplayName("가능한 시간 수정 - 잘못된 JSON 형식")
-    @WithMockUser(username = "host")
+    @WithMockUser(username = "host", roles = "HOST")
     void updateAvailableTimes_invalid_json() throws Exception {
         // given
         String invalidJson = """
@@ -368,7 +368,7 @@ class AvailableTimeControllerTest {
 
     @Test
     @DisplayName("가능한 시간 수정 - 빈 시간 목록으로 업데이트")
-    @WithMockUser(username = "host")
+    @WithMockUser(username = "host", roles = "HOST")
     void success_updateAvailableTimes_empty_list() throws Exception {
         // given
         String requestJson = """

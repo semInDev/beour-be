@@ -80,9 +80,9 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(UnauthorityException.class)
-    public ResponseEntity<ErrorResponse> invalidFormat(UnauthorityException ex) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-            .body(new ErrorResponse(ex.getErrorCode(), "UNAUTHORIZED_ERROR", ex.getMessage()));
+    public ResponseEntity<ErrorResponse> handleUnauthorityException(UnauthorityException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)  // 403으로 변경
+                .body(new ErrorResponse(ex.getErrorCode(), "FORBIDDEN_ERROR", ex.getMessage()));
     }
 
     @ExceptionHandler(DuplicateException.class)

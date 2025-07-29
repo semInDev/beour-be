@@ -54,6 +54,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     List<Reservation> findByHostIdAndDateAndSpaceIdAndDeletedAtIsNull(Long hostId, LocalDate date, Long spaceId);
     List<Reservation> findByHostIdAndDateAndStatusAndDeletedAtIsNull(Long hostId, LocalDate date, ReservationStatus status);
     List<Reservation> findByHostIdAndDateAndSpaceIdAndStatusAndDeletedAtIsNull(Long hostId, LocalDate date, Long spaceId, ReservationStatus status);
+    List<Reservation> findBySpaceIdAndDeletedAtIsNull(Long spaceId);
 
     // 페이징을 위한 새로운 메서드들 추가
     Page<Reservation> findByHostIdAndDateAndDeletedAtIsNullOrderByStartTime(Long hostId, LocalDate date, Pageable pageable);
