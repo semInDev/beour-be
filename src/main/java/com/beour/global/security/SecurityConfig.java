@@ -77,11 +77,6 @@ public class SecurityConfig {
                     "/api/reservations/*/reject", "/api/users/me/spaces-name", "/api/reservations",
                     "/api/spaces/reservations").hasRole("HOST")
 
-                //host - 공간 예약
-                .requestMatchers("/api/reservations/condition", "/api/reservations/*/accept",
-                    "/api/reservations/*/reject", "/api/users/me/spaces-name", "/api/reservations",
-                    "/api/spaces/reservations").hasRole("HOST")
-
                 //host - 공간
                 .requestMatchers("/api/spaces", "/api/spaces/*/simple", "/api/spaces/*",
                     "/api/spaces/*/basic", "/api/spaces/*/description", "/api/spaces/*/tags",
