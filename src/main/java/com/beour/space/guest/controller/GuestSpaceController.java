@@ -35,7 +35,7 @@ public class GuestSpaceController {
             @RequestParam("latitude") double latitude,
             @RequestParam("longitude") double longitude,
             @RequestParam("radiusKm") double radiusKm,
-            @PageableDefault(size = 20) Pageable pageable
+            @PageableDefault(size = 10) Pageable pageable
     ) {
         NearbySpacePageResponseDto response = guestSpaceService.findNearbySpaces(
                 latitude, longitude, radiusKm, pageable);
@@ -45,27 +45,27 @@ public class GuestSpaceController {
     @GetMapping("/keyword")
     public ApiResponse<SearchSpacePageResponseDto> searchSpaces(
             @RequestParam(value = "keyword") String request,
-            @PageableDefault(size = 20) Pageable pageable) {
+            @PageableDefault(size = 10) Pageable pageable) {
         return ApiResponse.ok(guestSpaceSearchService.search(request, pageable));
     }
 
     @PostMapping("/filter")
     public ApiResponse<SearchSpacePageResponseDto> searchSpacesWithFiltering(
-            @RequestBody FilteringSearchRequestDto requestDto, @PageableDefault(size = 20) Pageable pageable) {
+            @RequestBody FilteringSearchRequestDto requestDto, @PageableDefault(size = 10) Pageable pageable) {
         return ApiResponse.ok(guestSpaceSearchService.searchWithFiltering(requestDto, pageable));
     }
 
     @GetMapping("/spacecategory")
     public ApiResponse<SearchSpacePageResponseDto> searchWithSpaceCategory(
             @RequestParam(value = "spacecategory") SpaceCategory request,
-            @PageableDefault(size = 20) Pageable pageable) {
+            @PageableDefault(size = 10) Pageable pageable) {
 
         return ApiResponse.ok(guestSpaceSearchService.searchSpaceWithSpaceCategory(request, pageable));
     }
 
     @GetMapping("/usecategory")
     public ApiResponse<SearchSpacePageResponseDto> searchWithUseCategory(
-            @RequestParam(value = "usecategory") UseCategory request, @PageableDefault(size = 20) Pageable pageable) {
+            @RequestParam(value = "usecategory") UseCategory request, @PageableDefault(size = 10) Pageable pageable) {
 
         return ApiResponse.ok(guestSpaceSearchService.searchSpaceWithUseCategory(request, pageable));
     }
