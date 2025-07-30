@@ -38,7 +38,7 @@ public class WishlistController {
     }
 
     @GetMapping("/api/likes")
-    public ApiResponse<WishListPageResponseDto> getWishlist(@PageableDefault(size = 20) Pageable pageable){
+    public ApiResponse<WishListPageResponseDto> getWishlist(@PageableDefault(size = 10) Pageable pageable){
         return ApiResponse.ok(wishlistService.getWishlist(pageable));
     }
 }

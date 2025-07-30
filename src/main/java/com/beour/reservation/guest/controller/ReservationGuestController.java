@@ -43,13 +43,13 @@ public class ReservationGuestController {
 
     @GetMapping("/api/reservations/current")
     public ApiResponse<ReservationListPageResponseDto> checkReservationList(
-        @PageableDefault(size = 20) Pageable pageable) {
+        @PageableDefault(size = 10) Pageable pageable) {
         return ApiResponse.ok(reservationGuestService.findReservationList(pageable));
     }
 
     @GetMapping("/api/reservations/past")
     public ApiResponse<ReservationListPageResponseDto> checkPastReservationList(
-        @PageableDefault(size = 20) Pageable pageable) {
+        @PageableDefault(size = 10) Pageable pageable) {
         return ApiResponse.ok(reservationGuestService.findPastReservationList(pageable));
     }
 
