@@ -32,7 +32,7 @@ public class JWTExceptionHandler {
 
     @ExceptionHandler(TokenExpiredException.class)
     public ResponseEntity<ErrorResponse> handleTokenExpired(TokenExpiredException ex) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+        return ResponseEntity.status(ex.getErrorCode())
             .body(new ErrorResponse(ex.getErrorCode(), "TOKEN_EXPIRED", ex.getMessage()));
     }
 
