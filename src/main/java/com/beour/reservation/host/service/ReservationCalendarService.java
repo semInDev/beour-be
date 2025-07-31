@@ -6,18 +6,20 @@ import com.beour.global.exception.error.errorcode.UserErrorCode;
 import com.beour.global.exception.exceptionType.SpaceNotFoundException;
 import com.beour.global.exception.exceptionType.UnauthorityException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
-import com.beour.reservation.commons.exceptionType.MissMatch;
+import com.beour.global.exception.exceptionType.MissMatch;
+import com.beour.reservation.host.dto.CalendarReservationPageResponseDto;
 import com.beour.reservation.host.dto.CalendarReservationResponseDto;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
-import com.beour.reservation.commons.exceptionType.ReservationNotFound;
+import com.beour.global.exception.exceptionType.ReservationNotFound;
 import com.beour.reservation.commons.repository.ReservationRepository;
 import com.beour.space.domain.entity.Space;
 import com.beour.space.domain.repository.SpaceRepository;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
-import java.util.MissingFormatArgumentException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,24 +37,24 @@ public class ReservationCalendarService {
     private final SpaceRepository spaceRepository;
 
     @Transactional(readOnly = true)
-    public List<CalendarReservationResponseDto> getHostCalendarReservations(LocalDate date, Long spaceId) {
+    public CalendarReservationPageResponseDto getHostCalendarReservations(LocalDate date, Long spaceId, Pageable pageable) {
         User host = findUserFromToken();
-        List<Reservation> reservationList = getReservationListDependingOnSpaceId(host, date, spaceId, null);
-        return convertToCalendarResponseDto(reservationList);
+        Page<Reservation> reservationPage = getReservationPageDependingOnSpaceId(host, date, spaceId, null, pageable);
+        return convertToCalendarPageResponseDto(reservationPage);
     }
 
     @Transactional(readOnly = true)
-    public List<CalendarReservationResponseDto> getHostPendingReservations(LocalDate date, Long spaceId) {
+    public CalendarReservationPageResponseDto getHostPendingReservations(LocalDate date, Long spaceId, Pageable pageable) {
         User host = findUserFromToken();
-        List<Reservation> reservationList = getReservationListDependingOnSpaceId(host, date, spaceId, ReservationStatus.PENDING);
-        return convertToCalendarResponseDto(reservationList);
+        Page<Reservation> reservationPage = getReservationPageDependingOnSpaceId(host, date, spaceId, ReservationStatus.PENDING, pageable);
+        return convertToCalendarPageResponseDto(reservationPage);
     }
 
     @Transactional(readOnly = true)
-    public List<CalendarReservationResponseDto> getHostAcceptedReservations(LocalDate date, Long spaceId) {
+    public CalendarReservationPageResponseDto getHostAcceptedReservations(LocalDate date, Long spaceId, Pageable pageable) {
         User host = findUserFromToken();
-        List<Reservation> reservationList = getReservationListDependingOnSpaceId(host, date, spaceId, ReservationStatus.ACCEPTED);
-        return convertToCalendarResponseDto(reservationList);
+        Page<Reservation> reservationPage = getReservationPageDependingOnSpaceId(host, date, spaceId, ReservationStatus.ACCEPTED, pageable);
+        return convertToCalendarPageResponseDto(reservationPage);
     }
 
     @Transactional
@@ -83,7 +85,7 @@ public class ReservationCalendarService {
 
         // 예약의 공간과 입력받은 공간이 일치하는지 확인
         if (!reservation.getSpace().getId().equals(spaceId)) {
-            throw new MissMatch( ReservationErrorCode.SPACE_MISMATCH);
+            throw new MissMatch(ReservationErrorCode.SPACE_MISMATCH);
         }
 
         // 예약의 호스트와 현재 사용자가 일치하는지 확인
@@ -94,26 +96,26 @@ public class ReservationCalendarService {
         return reservation;
     }
 
-    private List<Reservation> getReservationListDependingOnSpaceId(User host, LocalDate date, Long spaceId, ReservationStatus status) {
+    private Page<Reservation> getReservationPageDependingOnSpaceId(User host, LocalDate date, Long spaceId, ReservationStatus status, Pageable pageable) {
         if (spaceId != null) {
             validateSpaceOwnership(host, spaceId);
             if (status != null) {
-                return reservationRepository.findByHostIdAndDateAndSpaceIdAndStatusAndDeletedAtIsNull(
-                        host.getId(), date, spaceId, status
+                return reservationRepository.findByHostIdAndDateAndSpaceIdAndStatusAndDeletedAtIsNullOrderByStartTime(
+                        host.getId(), date, spaceId, status, pageable
                 );
             } else {
-                return reservationRepository.findByHostIdAndDateAndSpaceIdAndDeletedAtIsNull(
-                        host.getId(), date, spaceId
+                return reservationRepository.findByHostIdAndDateAndSpaceIdAndDeletedAtIsNullOrderByStartTime(
+                        host.getId(), date, spaceId, pageable
                 );
             }
         } else {
             if (status != null) {
-                return reservationRepository.findByHostIdAndDateAndStatusAndDeletedAtIsNull(
-                        host.getId(), date, status
+                return reservationRepository.findByHostIdAndDateAndStatusAndDeletedAtIsNullOrderByStartTime(
+                        host.getId(), date, status, pageable
                 );
             } else {
-                return reservationRepository.findByHostIdAndDateAndDeletedAtIsNull(
-                        host.getId(), date
+                return reservationRepository.findByHostIdAndDateAndDeletedAtIsNullOrderByStartTime(
+                        host.getId(), date, pageable
                 );
             }
         }
@@ -129,12 +131,17 @@ public class ReservationCalendarService {
         }
     }
 
-    private List<CalendarReservationResponseDto> convertToCalendarResponseDto(List<Reservation> reservationList) {
+    private CalendarReservationPageResponseDto convertToCalendarPageResponseDto(Page<Reservation> reservationPage) {
         List<CalendarReservationResponseDto> responseDtoList = new ArrayList<>();
-        for (Reservation reservation : reservationList) {
+        for (Reservation reservation : reservationPage.getContent()) {
             responseDtoList.add(CalendarReservationResponseDto.of(reservation));
         }
-        return responseDtoList;
+
+        return new CalendarReservationPageResponseDto(
+                responseDtoList,
+                reservationPage.isLast(),
+                reservationPage.getTotalPages()
+        );
     }
 
     private User findUserFromToken() {

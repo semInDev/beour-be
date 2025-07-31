@@ -44,6 +44,7 @@ class LoginControllerTest {
     private BCryptPasswordEncoder passwordEncoder;
     @Autowired
     private JWTUtil jwtUtil;
+    private String accessToken;
 
     @BeforeEach
     void setUp() {
@@ -58,6 +59,13 @@ class LoginControllerTest {
             .role("GUEST")
             .build();
         userRepository.save(user);
+
+        accessToken = jwtUtil.createJwt(
+            "access",
+            user.getLoginId(),
+            "ROLE_" + user.getRole(),
+            1000L * 60 * 30 // 30분
+        );
 
         User deleteUser = User.builder()
             .name("탈퇴유저")
@@ -85,7 +93,7 @@ class LoginControllerTest {
             """;
 
         //when then
-        mockMvc.perform(post("/api/users/find/loginId")
+        mockMvc.perform(post("/api/users/find/login-id")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -107,7 +115,7 @@ class LoginControllerTest {
             """;
 
         //when then
-        mockMvc.perform(post("/api/users/find/loginId")
+        mockMvc.perform(post("/api/users/find/login-id")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -129,7 +137,7 @@ class LoginControllerTest {
             """;
 
         //when then
-        mockMvc.perform(post("/api/users/find/loginId")
+        mockMvc.perform(post("/api/users/find/login-id")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
             )
@@ -315,7 +323,8 @@ class LoginControllerTest {
         Cookie cookie = new Cookie("refresh", refreshToken);
 
         //when  then
-        mockMvc.perform(post("/api/token/reissue").cookie(cookie))
+        mockMvc.perform(post("/api/token/reissue").cookie(cookie)
+                .header("Authorization", "Bearer " + accessToken))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.accessToken").exists())
             .andExpect(cookie().exists("refresh"))
@@ -326,7 +335,7 @@ class LoginControllerTest {
     @DisplayName("토큰 재발급 - refresh 토큰 없음")
     void reissue_refresh_token_not_found() throws Exception {
         //when  then
-        mockMvc.perform(post("/api/token/reissue"))
+        mockMvc.perform(post("/api/token/reissue").header("Authorization", "Bearer " + accessToken))
             .andExpect(status().isNotFound())
             .andExpect(
                 jsonPath("$.message").value(UserErrorCode.REFRESH_TOKEN_NOT_FOUND.getMessage()));
@@ -350,7 +359,8 @@ class LoginControllerTest {
         Cookie cookie = new Cookie("refresh", refreshToken);
 
         //when  then
-        mockMvc.perform(post("/api/token/reissue").cookie(cookie))
+        mockMvc.perform(post("/api/token/reissue").cookie(cookie)
+                .header("Authorization", "Bearer " + accessToken))
             .andExpect(status().isNotFound())
             .andExpect(
                 jsonPath("$.message").value(UserErrorCode.REFRESH_TOKEN_NOT_FOUND.getMessage()));
@@ -375,7 +385,8 @@ class LoginControllerTest {
         Cookie cookie = new Cookie("refresh", refreshToken);
 
         //when  then
-        mockMvc.perform(post("/api/token/reissue").cookie(cookie))
+        mockMvc.perform(post("/api/token/reissue").cookie(cookie)
+                .header("Authorization", "Bearer " + accessToken))
             .andExpect(status().isUnauthorized())
             .andExpect(
                 jsonPath("$.message").value(UserErrorCode.REFRESH_TOKEN_EXPIRED.getMessage()));

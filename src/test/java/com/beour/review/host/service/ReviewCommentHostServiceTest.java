@@ -16,8 +16,10 @@ import com.beour.review.domain.entity.ReviewComment;
 import com.beour.review.domain.repository.ReviewCommentRepository;
 import com.beour.review.domain.repository.ReviewRepository;
 import com.beour.review.host.dto.ReviewCommentCreateRequestDto;
+import com.beour.review.host.dto.ReviewCommentPageResponseDto;
 import com.beour.review.host.dto.ReviewCommentResponseDto;
 import com.beour.review.host.dto.ReviewCommentUpdateRequestDto;
+import com.beour.review.host.dto.ReviewCommentablePageResponseDto;
 import com.beour.review.host.dto.ReviewCommentableResponseDto;
 import com.beour.space.domain.entity.Space;
 import com.beour.space.domain.enums.SpaceCategory;
@@ -36,6 +38,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -216,30 +220,34 @@ class ReviewCommentHostServiceTest {
                 host.getLoginId(), null, Collections.emptyList());
         SecurityContextHolder.getContext().setAuthentication(auth);
 
+        Pageable pageable = PageRequest.of(0, 10);
+
         // when
-        List<ReviewCommentableResponseDto> result = reviewCommentHostService.getCommentableReviews();
+        ReviewCommentablePageResponseDto result = reviewCommentHostService.getCommentableReviews(pageable);
 
         // then
-        assertEquals(1, result.size());
-        assertEquals(review.getId(), result.get(0).getReviewId());
-        assertEquals(guest.getNickname(), result.get(0).getGuestNickname());
-        assertEquals(review.getRating(), result.get(0).getReviewRating());
-        assertEquals(space.getName(), result.get(0).getSpaceName());
+        assertEquals(1, result.getReviews().size());
+        assertEquals(review.getId(), result.getReviews().get(0).getReviewId());
+        assertEquals(guest.getNickname(), result.getReviews().get(0).getGuestNickname());
+        assertEquals(review.getRating(), result.getReviews().get(0).getReviewRating());
+        assertEquals(space.getName(), result.getReviews().get(0).getSpaceName());
+        assertTrue(result.isLast());
+        assertEquals(1, result.getTotalPage());
     }
 
     @Test
-    @DisplayName("댓글 작성 가능한 리뷰 조회 - 다른 호스트의 공간 제외")
-    void getCommentableReviews_excludeOtherHostSpace() {
+    @DisplayName("댓글 작성 가능한 리뷰 조회 - 빈 결과")
+    void getCommentableReviews_emptyResult() {
         // given
         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                 anotherHost.getLoginId(), null, Collections.emptyList());
         SecurityContextHolder.getContext().setAuthentication(auth);
 
-        // when
-        List<ReviewCommentableResponseDto> result = reviewCommentHostService.getCommentableReviews();
+        Pageable pageable = PageRequest.of(0, 10);
 
-        // then
-        assertEquals(0, result.size());
+        // when & then
+        assertThrows(IllegalStateException.class,
+                () -> reviewCommentHostService.getCommentableReviews(pageable));
     }
 
     @Test
@@ -250,31 +258,35 @@ class ReviewCommentHostServiceTest {
                 host.getLoginId(), null, Collections.emptyList());
         SecurityContextHolder.getContext().setAuthentication(auth);
 
+        Pageable pageable = PageRequest.of(0, 10);
+
         // when
-        List<ReviewCommentResponseDto> result = reviewCommentHostService.getWrittenReviewComments();
+        ReviewCommentPageResponseDto result = reviewCommentHostService.getWrittenReviewComments(pageable);
 
         // then
-        assertEquals(1, result.size());
-        assertEquals(guest.getNickname(), result.get(0).getGuestNickname());
-        assertEquals(reviewWithComment.getRating(), result.get(0).getReviewRating());
-        assertEquals(space.getName(), result.get(0).getSpaceName());
-        assertEquals(host.getNickname(), result.get(0).getHostNickname());
-        assertEquals(reviewComment.getContent(), result.get(0).getReviewCommentContent());
+        assertEquals(1, result.getReviewComments().size());
+        assertEquals(guest.getNickname(), result.getReviewComments().get(0).getGuestNickname());
+        assertEquals(reviewWithComment.getRating(), result.getReviewComments().get(0).getReviewRating());
+        assertEquals(space.getName(), result.getReviewComments().get(0).getSpaceName());
+        assertEquals(host.getNickname(), result.getReviewComments().get(0).getHostNickname());
+        assertEquals(reviewComment.getContent(), result.getReviewComments().get(0).getReviewCommentContent());
+        assertTrue(result.isLast());
+        assertEquals(1, result.getTotalPage());
     }
 
     @Test
-    @DisplayName("작성된 댓글 조회 - 다른 호스트의 댓글 제외")
-    void getWrittenReviewComments_excludeOtherHostComments() {
+    @DisplayName("작성된 댓글 조회 - 빈 결과")
+    void getWrittenReviewComments_emptyResult() {
         // given
         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                 anotherHost.getLoginId(), null, Collections.emptyList());
         SecurityContextHolder.getContext().setAuthentication(auth);
 
-        // when
-        List<ReviewCommentResponseDto> result = reviewCommentHostService.getWrittenReviewComments();
+        Pageable pageable = PageRequest.of(0, 10);
 
-        // then
-        assertEquals(0, result.size());
+        // when & then
+        assertThrows(IllegalStateException.class,
+                () -> reviewCommentHostService.getWrittenReviewComments(pageable));
     }
 
     @Test
@@ -458,8 +470,10 @@ class ReviewCommentHostServiceTest {
                 "nonexistent", null, Collections.emptyList());
         SecurityContextHolder.getContext().setAuthentication(auth);
 
+        Pageable pageable = PageRequest.of(0, 10);
+
         // when & then
         assertThrows(UserNotFoundException.class,
-                () -> reviewCommentHostService.getCommentableReviews());
+                () -> reviewCommentHostService.getCommentableReviews(pageable));
     }
 }

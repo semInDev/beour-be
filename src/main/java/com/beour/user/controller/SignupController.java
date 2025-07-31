@@ -27,9 +27,9 @@ public class SignupController {
         return ApiResponse.ok("회원가입 완료");
     }
 
-    @GetMapping("/api/signup/check-duplicate/loginId")
+    @GetMapping("/api/signup/check-duplicate/login-id")
     public ApiResponse<String> checkDuplicateLoginId(
-        @RequestParam("loginId") @ValidLoginId String loginId) {
+        @RequestParam("login-id") @ValidLoginId String loginId) {
         signupService.checkLoginIdDuplicate(loginId);
         return ApiResponse.ok("사용 가능한 아이디입니다.");
     }

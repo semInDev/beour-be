@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ImageUploaderTest {
 
     @Autowired
@@ -24,16 +25,24 @@ class ImageUploaderTest {
 
     @Value("${file.path}")
     private String filePath;
+
     @Value("${file.url}")
     private String fileUrl;
 
+    @BeforeAll
+    void setUp() throws IOException {
+        Files.createDirectories(Paths.get(filePath));
+    }
+
     @AfterEach
     void cleanUp() throws IOException {
-        //test로 생성된 모든 파일 삭제
-        Files.walk(Paths.get(filePath))
-            .map(Path::toFile)
-            .filter(File::isFile)
-            .forEach(File::delete);
+        Path uploadDir = Paths.get(filePath);
+        if (Files.exists(uploadDir)) {
+            Files.walk(uploadDir)
+                    .map(Path::toFile)
+                    .filter(File::isFile)
+                    .forEach(File::delete);
+        }
     }
 
     @Test
@@ -41,10 +50,10 @@ class ImageUploaderTest {
     void success_upload() throws IOException {
         // given
         MockMultipartFile mockFile = new MockMultipartFile(
-            "image",
-            "sample.png",
-            "image/png",
-            "mock image content".getBytes()
+                "image",
+                "sample.png",
+                "image/png",
+                "mock image content".getBytes()
         );
 
         // when
@@ -63,13 +72,12 @@ class ImageUploaderTest {
     void upload_emptyFile() {
         // given
         MockMultipartFile emptyFile = new MockMultipartFile(
-            "image",
-            "empty.png",
-            "image/png",
-            new byte[0]
+                "image",
+                "empty.png",
+                "image/png",
+                new byte[0]
         );
 
         assertThrows(ImageFileInvalidException.class, () -> imageUploader.upload(emptyFile));
     }
-
 }

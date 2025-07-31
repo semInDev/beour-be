@@ -14,7 +14,6 @@ import com.beour.space.domain.repository.AvailableTimeRepository;
 import com.beour.space.domain.repository.SpaceRepository;
 import com.beour.space.host.dto.AvailableTimeDetailResponseDto;
 import com.beour.space.host.dto.AvailableTimeUpdateRequestDto;
-import com.beour.space.host.dto.HostSpaceListResponseDto;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -35,27 +34,6 @@ public class AvailableTimeService {
     private final ReservationRepository reservationRepository;
 
     @Transactional(readOnly = true)
-    public List<HostSpaceListResponseDto> getHostSpaces() {
-        User host = findUserFromToken();
-
-        List<Space> spaceList = spaceRepository.findByHostAndDeletedAtIsNull(host);
-
-        if (spaceList.isEmpty()) {
-            throw new SpaceNotFoundException(SpaceErrorCode.NO_HOST_SPACE);
-        }
-
-        return spaceList.stream()
-                .map(space -> HostSpaceListResponseDto.builder()
-                        .spaceId(space.getId())
-                        .name(space.getName())
-                        .address(space.getAddress())
-                        .maxCapacity(space.getMaxCapacity())
-                        .avgRating(space.getAvgRating())
-                        .build())
-                .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
     public AvailableTimeDetailResponseDto getAvailableTimeDetail(Long spaceId) {
         User host = findUserFromToken();
         Space space = findSpaceByIdAndValidateOwner(spaceId, host);
@@ -71,8 +49,7 @@ public class AvailableTimeService {
                 .collect(Collectors.toList());
 
         // 수정 불가능한 시간들 (예약 상태가 PENDING 또는 ACCEPTED인 것들)
-        List<Reservation> reservedSlots = reservationRepository.findBySpaceIdAndDateAndDeletedAtIsNull(spaceId, null)
-                .stream()
+        List<Reservation> reservedSlots = reservationRepository.findBySpaceIdAndDeletedAtIsNull(spaceId).stream()
                 .filter(reservation -> reservation.getStatus() == ReservationStatus.PENDING
                         || reservation.getStatus() == ReservationStatus.ACCEPTED)
                 .collect(Collectors.toList());

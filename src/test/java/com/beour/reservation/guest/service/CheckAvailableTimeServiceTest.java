@@ -5,9 +5,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
 import com.beour.reservation.commons.enums.UsagePurpose;
-import com.beour.reservation.commons.exceptionType.AvailableTimeNotFound;
+import com.beour.global.exception.exceptionType.AvailableTimeNotFound;
 import com.beour.reservation.commons.repository.ReservationRepository;
-import com.beour.reservation.guest.dto.CheckAvailableTimesRequestDto;
 import com.beour.reservation.guest.dto.SpaceAvailableTimeResponseDto;
 import com.beour.space.domain.entity.AvailableTime;
 import com.beour.space.domain.entity.Space;
@@ -148,31 +147,22 @@ class CheckAvailableTimeServiceTest {
     @Test
     @DisplayName("시간, 날짜 유효성 조회 - 과거 날짜로 조회")
     void past_date_checkReservationAvailableDateAndGetAvailableTime(){
-        //given
-        CheckAvailableTimesRequestDto requestDto = new CheckAvailableTimesRequestDto(space.getId(), LocalDate.now().minusDays(1));
-
         //when  //then
-        assertThrows(AvailableTimeNotFound.class, () -> checkAvailableTimeService.checkReservationAvailableDateAndGetAvailableTime(requestDto));
+        assertThrows(AvailableTimeNotFound.class, () -> checkAvailableTimeService.checkReservationAvailableDateAndGetAvailableTime(space.getId(), LocalDate.now().minusDays(1)));
     }
 
     @Test
     @DisplayName("시간, 날짜 유효성 조회 - 가능한 시간 없을 경우")
     void non_existent_available_time_checkReservationAvailableDateAndGetAvailableTime(){
-        //given
-        CheckAvailableTimesRequestDto requestDto = new CheckAvailableTimesRequestDto(space.getId(), LocalDate.now().plusDays(2));
-
         //when  //then
-        assertThrows(AvailableTimeNotFound.class, () -> checkAvailableTimeService.checkReservationAvailableDateAndGetAvailableTime(requestDto));
+        assertThrows(AvailableTimeNotFound.class, () -> checkAvailableTimeService.checkReservationAvailableDateAndGetAvailableTime(space.getId(), LocalDate.now().plusDays(2)));
     }
 
     @Test
     @DisplayName("시간, 날짜 유효성 조회 - 시간 있을 경우")
     void exist_available_time_checkReservationAvailableDateAndGetAvailableTime(){
-        //given
-        CheckAvailableTimesRequestDto requestDto = new CheckAvailableTimesRequestDto(space.getId(), LocalDate.now().plusDays(1));
-
         //when
-        AvailableTime availableTime = checkAvailableTimeService.checkReservationAvailableDateAndGetAvailableTime(requestDto);
+        AvailableTime availableTime = checkAvailableTimeService.checkReservationAvailableDateAndGetAvailableTime(space.getId(), LocalDate.now().plusDays(1));
 
         //then
         assertEquals(availableTimeNext.getSpace().getId(), availableTime.getSpace().getId());
@@ -184,35 +174,29 @@ class CheckAvailableTimeServiceTest {
     @Test
     @DisplayName("예약 가능한 시간 조회 - 과거 날짜로 조회")
     void past_date_findAvailableTime(){
-        //given
-        CheckAvailableTimesRequestDto requestDto = new CheckAvailableTimesRequestDto(space.getId(), LocalDate.now().minusDays(1));
-
         //when  //then
-        assertThrows(AvailableTimeNotFound.class, () -> checkAvailableTimeService.findAvailableTime(requestDto));
+        assertThrows(AvailableTimeNotFound.class, () -> checkAvailableTimeService.findAvailableTime(
+            space.getId(), LocalDate.now().minusDays(1)));
     }
 
     @Test
     @DisplayName("예약 가능한 시간 조회 - 가능한 시간 없을 경우")
     void non_existent_available_time_findAvailableTime(){
-        //given
-        CheckAvailableTimesRequestDto requestDto = new CheckAvailableTimesRequestDto(space.getId(), LocalDate.now().plusDays(2));
-
         //when  //then
-        assertThrows(AvailableTimeNotFound.class, () -> checkAvailableTimeService.findAvailableTime(requestDto));
+        assertThrows(AvailableTimeNotFound.class, () -> checkAvailableTimeService.findAvailableTime(space.getId(), LocalDate.now().plusDays(2)));
     }
 
     @Test
     @DisplayName("예약 가능한 시간 조회 - 오늘 날짜일 경우 현재 이후의 시간만 조회")
     void get_available_time_after_current(){
         //given
-        CheckAvailableTimesRequestDto requestDto = new CheckAvailableTimesRequestDto(space.getId(), LocalDate.now());
         List<LocalTime> expectedHours = new ArrayList<>();
         for(int i = LocalTime.now().getHour() + 1; i < 23; i++){
             expectedHours.add(LocalTime.of(i, 0, 0));
         }
 
         //when
-        SpaceAvailableTimeResponseDto result = checkAvailableTimeService.findAvailableTime(requestDto);
+        SpaceAvailableTimeResponseDto result = checkAvailableTimeService.findAvailableTime(space.getId(), LocalDate.now());
 
         //then
         assertEquals(expectedHours.size(), result.getTimeList().size());
@@ -237,7 +221,6 @@ class CheckAvailableTimeServiceTest {
             .guestCount(2)
             .build();
         reservationRepository.save(reservation);
-        CheckAvailableTimesRequestDto requestDto = new CheckAvailableTimesRequestDto(space.getId(), LocalDate.now().plusDays(1));
         List<LocalTime> expectedHours = new ArrayList<>();
         for(int i = 1; i < 12; i++){
             expectedHours.add(LocalTime.of(i, 0, 0));
@@ -248,7 +231,7 @@ class CheckAvailableTimeServiceTest {
 
 
         //when
-        SpaceAvailableTimeResponseDto result = checkAvailableTimeService.findAvailableTime(requestDto);
+        SpaceAvailableTimeResponseDto result = checkAvailableTimeService.findAvailableTime(space.getId(), LocalDate.now().plusDays(1));
 
         //then
         assertEquals(expectedHours.size(), result.getTimeList().size());
@@ -273,20 +256,16 @@ class CheckAvailableTimeServiceTest {
             .guestCount(2)
             .build();
         reservationRepository.save(reservation);
-        CheckAvailableTimesRequestDto requestDto = new CheckAvailableTimesRequestDto(space.getId(), LocalDate.now().plusDays(1));
         List<LocalTime> expectedHours = new ArrayList<>();
         for(int i = 1; i < 23; i++){
             expectedHours.add(LocalTime.of(i, 0, 0));
         }
 
         //when
-        SpaceAvailableTimeResponseDto result = checkAvailableTimeService.findAvailableTime(requestDto);
+        SpaceAvailableTimeResponseDto result = checkAvailableTimeService.findAvailableTime(space.getId(), LocalDate.now().plusDays(1));
 
         //then
         assertEquals(expectedHours.size(), result.getTimeList().size());
         assertIterableEquals(expectedHours, result.getTimeList());
     }
-
-
-
 }

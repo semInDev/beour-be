@@ -22,6 +22,7 @@ public class SpaceDetailResponseDto {
     private SpaceCategory spaceCategory;
     private UseCategory useCategory;
     private Double avgRating;
+    private String thumbnailUrl;
 
     // Description
     private String description;
@@ -30,7 +31,6 @@ public class SpaceDetailResponseDto {
     private String notice;
     private String locationDescription;
     private String refundPolicy;
-    private String websiteUrl;
 
     private List<String> tags;
     private List<AvailableTimeDto> availableTimes;

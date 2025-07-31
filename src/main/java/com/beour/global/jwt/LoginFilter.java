@@ -39,6 +39,9 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request,
         HttpServletResponse response) {
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            return null; // 또는 그냥 return
+        }
 
         try {
             LoginDto loginDto = new ObjectMapper().readValue(request.getInputStream(),
@@ -91,7 +94,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         response.setHeader("Authorization", access);
-        response.addCookie(ManageCookie.createCookie("refresh", refresh));
+//      response.addCookie(ManageCookie.createCookie("refresh", refresh));
+
+        boolean isSecure = request.isSecure();
+        ManageCookie.addRefreshCookie(response, "refresh", refresh, isSecure);
 
         Map<String, Object> body = Map.of(
             "code", 200,

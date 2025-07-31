@@ -32,8 +32,6 @@ public class SpaceRegisterRequestDto {
     @Min(1)
     private int pricePerHour;
 
-    private String thumbnailUrl;
-
     // 2. Description
     @NotBlank(message = "공간 설명은 필수입니다.")
     private String description;
@@ -49,11 +47,6 @@ public class SpaceRegisterRequestDto {
     @NotBlank(message = "환불 정책은 필수입니다.")
     private String refundPolicy;
 
-    private String websiteUrl;
-
     // 3. Tags
     private List<String> tags;
-
-    // 4. SpaceImages
-    private List<String> imageUrls;
 }

@@ -8,12 +8,12 @@ import com.beour.global.exception.exceptionType.SpaceNotFoundException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
-import com.beour.reservation.commons.exceptionType.AvailableTimeNotFound;
-import com.beour.reservation.commons.exceptionType.MissMatch;
-import com.beour.reservation.commons.exceptionType.ReservationNotFound;
+import com.beour.global.exception.exceptionType.AvailableTimeNotFound;
+import com.beour.global.exception.exceptionType.MissMatch;
+import com.beour.global.exception.exceptionType.ReservationNotFound;
 import com.beour.reservation.commons.repository.ReservationRepository;
-import com.beour.reservation.guest.dto.CheckAvailableTimesRequestDto;
 import com.beour.reservation.guest.dto.ReservationCreateRequest;
+import com.beour.reservation.guest.dto.ReservationListPageResponseDto;
 import com.beour.reservation.guest.dto.ReservationListResponseDto;
 import com.beour.reservation.guest.dto.ReservationResponseDto;
 import com.beour.review.domain.entity.Review;
@@ -28,6 +28,8 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,13 +44,14 @@ public class ReservationGuestService {
     private final CheckAvailableTimeService checkAvailableTimeService;
     private final ReviewRepository reviewRepository;
 
-    public ReservationResponseDto createReservation(ReservationCreateRequest requestDto) {
+    public ReservationResponseDto createReservation(Long spaceId,
+        ReservationCreateRequest requestDto) {
         User guest = findUserFromToken();
-        User host = userRepository.findById(requestDto.getHostId()).orElseThrow(
-            () -> new UserNotFoundException(UserErrorCode.USER_NOT_FOUND)
-        );
-        Space space = spaceRepository.findById(requestDto.getSpaceId()).orElseThrow(
+        Space space = spaceRepository.findById(spaceId).orElseThrow(
             () -> new SpaceNotFoundException(SpaceErrorCode.SPACE_NOT_FOUND)
+        );
+        User host = userRepository.findById(space.getHost().getId()).orElseThrow(
+            () -> new UserNotFoundException(UserErrorCode.USER_NOT_FOUND)
         );
 
         checkReservationAvailable(requestDto, space);
@@ -67,14 +70,16 @@ public class ReservationGuestService {
             .requestMessage(requestDto.getRequestMessage())
             .build();
 
-        return ReservationResponseDto.of(reservationRepository.save(reservation));
+        return ReservationResponseDto.builder()
+            .id(reservationRepository.save(reservation).getId())
+            .build();
     }
 
     private void checkReservationAvailable(ReservationCreateRequest requestDto, Space space) {
         checkPriceCorrect(requestDto, space);
         checkValidCapacity(requestDto, space);
-        checkReservationAvailableDate(requestDto);
-        checkReservationAvailableTime(requestDto);
+        checkReservationAvailableDate(requestDto, space);
+        checkReservationAvailableTime(requestDto, space);
     }
 
     private static void checkValidCapacity(ReservationCreateRequest requestDto, Space space) {
@@ -90,10 +95,9 @@ public class ReservationGuestService {
         }
     }
 
-    private void checkReservationAvailableDate(ReservationCreateRequest requestDto) {
+    private void checkReservationAvailableDate(ReservationCreateRequest requestDto, Space space) {
         AvailableTime availableTime = checkAvailableTimeService.checkReservationAvailableDateAndGetAvailableTime(
-            new CheckAvailableTimesRequestDto(
-                requestDto.getSpaceId(), requestDto.getDate()));
+            space.getId(), requestDto.getDate());
 
         if (requestDto.getDate().equals(LocalDate.now()) && requestDto.getStartTime()
             .isBefore(LocalTime.now())) {
@@ -107,9 +111,9 @@ public class ReservationGuestService {
         }
     }
 
-    private void checkReservationAvailableTime(ReservationCreateRequest requestDto) {
+    private void checkReservationAvailableTime(ReservationCreateRequest requestDto, Space space) {
         List<Reservation> reservationList = reservationRepository.findBySpaceIdAndDateAndDeletedAtIsNull(
-            requestDto.getSpaceId(), requestDto.getDate());
+            space.getId(), requestDto.getDate());
 
         LocalTime startTime = requestDto.getStartTime();
         while (startTime.isBefore(requestDto.getEndTime())) {
@@ -128,10 +132,10 @@ public class ReservationGuestService {
         }
     }
 
-    public List<ReservationListResponseDto> findReservationList() {
+    public ReservationListPageResponseDto findReservationList(Pageable pageable) {
         User guest = findUserFromToken();
-        List<Reservation> reservationList = reservationRepository.findUpcomingReservationsByGuest(
-            guest.getId(), LocalDate.now(), LocalTime.now());
+        Page<Reservation> reservationList = reservationRepository.findUpcomingReservationsByGuest(
+            guest.getId(), LocalDate.now(), LocalTime.now(), pageable);
 
         checkEmptyReservation(reservationList);
 
@@ -140,14 +144,15 @@ public class ReservationGuestService {
             responseDtoList.add(ReservationListResponseDto.of(reservation));
         }
 
-        return responseDtoList;
+        return new ReservationListPageResponseDto(responseDtoList, reservationList.isLast(),
+            reservationList.getTotalPages());
     }
 
     @Transactional
-    public List<ReservationListResponseDto> findPastReservationList() {
+    public ReservationListPageResponseDto findPastReservationList(Pageable pageable) {
         User user = findUserFromToken();
-        List<Reservation> reservationList = reservationRepository.findPastReservationsByGuest(
-            user.getId(), LocalDate.now(), LocalTime.now());
+        Page<Reservation> reservationList = reservationRepository.findPastReservationsByGuest(
+            user.getId(), LocalDate.now(), LocalTime.now(), pageable);
 
         checkEmptyReservation(reservationList);
 
@@ -165,11 +170,12 @@ public class ReservationGuestService {
             responseDtoList.add(ReservationListResponseDto.of(reservation, reviewId));
         }
 
-        return responseDtoList;
+        return new ReservationListPageResponseDto(responseDtoList, reservationList.isLast(),
+            reservationList.getTotalPages());
     }
 
-    private static void checkEmptyReservation(List<Reservation> reservationList) {
-        if (reservationList.isEmpty()) {
+    private static void checkEmptyReservation(Page<Reservation> reservationList) {
+        if (reservationList.getContent().isEmpty()) {
             throw new ReservationNotFound(ReservationErrorCode.RESERVATION_NOT_FOUND);
         }
     }

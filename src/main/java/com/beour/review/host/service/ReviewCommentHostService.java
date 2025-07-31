@@ -14,12 +14,16 @@ import com.beour.review.domain.entity.ReviewComment;
 import com.beour.review.domain.repository.ReviewCommentRepository;
 import com.beour.review.domain.repository.ReviewRepository;
 import com.beour.review.host.dto.ReviewCommentCreateRequestDto;
+import com.beour.review.host.dto.ReviewCommentPageResponseDto;
 import com.beour.review.host.dto.ReviewCommentResponseDto;
 import com.beour.review.host.dto.ReviewCommentUpdateRequestDto;
+import com.beour.review.host.dto.ReviewCommentablePageResponseDto;
 import com.beour.review.host.dto.ReviewCommentableResponseDto;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,34 +40,47 @@ public class ReviewCommentHostService {
     private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
-    public List<ReviewCommentableResponseDto> getCommentableReviews() {
+    public ReviewCommentablePageResponseDto getCommentableReviews(Pageable pageable) {
         User host = findUserFromToken();
 
-        List<Review> commentableReviews = reviewRepository.findAll()
-                .stream()
-                .filter(review -> review.getSpace().getHost().getId().equals(host.getId()))
-                .filter(review -> review.getDeletedAt() == null)
-                .filter(review -> review.getComment() == null)
-                .toList();
+        Page<Review> commentableReviewsPage = reviewRepository.findCommentableReviewsByHostId(host.getId(), pageable);
 
-        return commentableReviews.stream()
+        if (commentableReviewsPage.isEmpty()) {
+            throw new IllegalStateException("답글을 작성할 수 있는 리뷰가 없습니다.");
+        }
+
+        List<ReviewCommentableResponseDto> reviews = commentableReviewsPage.getContent()
+                .stream()
                 .map(ReviewCommentableResponseDto::of)
-                .toList();
+                .collect(Collectors.toList());
+
+        return new ReviewCommentablePageResponseDto(
+                reviews,
+                commentableReviewsPage.isLast(),
+                commentableReviewsPage.getTotalPages()
+        );
     }
 
     @Transactional(readOnly = true)
-    public List<ReviewCommentResponseDto> getWrittenReviewComments() {
+    public ReviewCommentPageResponseDto getWrittenReviewComments(Pageable pageable) {
         User host = findUserFromToken();
 
-        List<ReviewComment> writtenComments = reviewCommentRepository.findAll()
-                .stream()
-                .filter(comment -> comment.getUser().getId().equals(host.getId()))
-                .filter(comment -> comment.getDeletedAt() == null)
-                .collect(Collectors.toList());
+        Page<ReviewComment> writtenCommentsPage = reviewCommentRepository.findWrittenCommentsByHostId(host.getId(), pageable);
 
-        return writtenComments.stream()
+        if (writtenCommentsPage.isEmpty()) {
+            throw new IllegalStateException("작성한 답글이 없습니다.");
+        }
+
+        List<ReviewCommentResponseDto> comments = writtenCommentsPage.getContent()
+                .stream()
                 .map(comment -> ReviewCommentResponseDto.of(comment.getReview(), comment))
                 .collect(Collectors.toList());
+
+        return new ReviewCommentPageResponseDto(
+                comments,
+                writtenCommentsPage.isLast(),
+                writtenCommentsPage.getTotalPages()
+        );
     }
 
     @Transactional

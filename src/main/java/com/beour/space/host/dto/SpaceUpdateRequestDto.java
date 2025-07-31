@@ -33,8 +33,6 @@ public class SpaceUpdateRequestDto {
     @Min(1)
     private int pricePerHour;
 
-    private String thumbnailUrl;
-
     // Description
     @NotBlank(message = "공간 설명은 필수입니다.")
     private String description;
@@ -50,9 +48,5 @@ public class SpaceUpdateRequestDto {
     @NotBlank(message = "환불 정책은 필수입니다.")
     private String refundPolicy;
 
-    private String websiteUrl;
-
-    // tags, imageUrls
     private List<String> tags;
-    private List<String> imageUrls;
 }

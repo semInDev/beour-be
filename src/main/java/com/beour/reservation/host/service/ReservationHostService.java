@@ -8,8 +8,9 @@ import com.beour.global.exception.exceptionType.UnauthorityException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
-import com.beour.reservation.commons.exceptionType.ReservationNotFound;
+import com.beour.global.exception.exceptionType.ReservationNotFound;
 import com.beour.reservation.commons.repository.ReservationRepository;
+import com.beour.reservation.host.dto.HostReservationListPageResponseDto;
 import com.beour.reservation.host.dto.HostReservationListResponseDto;
 import com.beour.reservation.host.dto.HostSpaceListResponseDto;
 import com.beour.space.domain.entity.Space;
@@ -17,6 +18,8 @@ import com.beour.space.domain.repository.SpaceRepository;
 import com.beour.user.entity.User;
 import com.beour.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,16 +55,16 @@ public class ReservationHostService {
     }
 
     @Transactional(readOnly = true)
-    public List<HostReservationListResponseDto> getHostReservationsByDate(LocalDate date) {
+    public HostReservationListPageResponseDto getHostReservationsByDate(LocalDate date, Pageable pageable) {
         User host = findUserFromToken();
 
-        List<Reservation> reservationList = reservationRepository.findByHostIdAndDateAndDeletedAtIsNull(
-                host.getId(), date);
+        Page<Reservation> reservationPage = reservationRepository.findByHostIdAndDateAndDeletedAtIsNullOrderByStartTime(
+                host.getId(), date, pageable);
 
-        return filterAcceptedReservationsAndConvert(reservationList);
+        return filterAcceptedReservationsAndConvert(reservationPage);
     }
 
-    public List<HostReservationListResponseDto> getHostReservationsByDateAndSpace(LocalDate date, Long spaceId) {
+    public HostReservationListPageResponseDto getHostReservationsByDateAndSpace(LocalDate date, Long spaceId, Pageable pageable) {
         User host = findUserFromToken();
 
         Space space = spaceRepository.findById(spaceId).orElseThrow(
@@ -73,14 +76,14 @@ public class ReservationHostService {
             throw new UnauthorityException(SpaceErrorCode.NO_PERMISSION);
         }
 
-        List<Reservation> reservationList = reservationRepository.findByHostIdAndDateAndSpaceIdAndDeletedAtIsNull(
-                host.getId(), date, spaceId);
+        Page<Reservation> reservationPage = reservationRepository.findByHostIdAndDateAndSpaceIdAndDeletedAtIsNullOrderByStartTime(
+                host.getId(), date, spaceId, pageable);
 
-        return filterAcceptedReservationsAndConvert(reservationList);
+        return filterAcceptedReservationsAndConvert(reservationPage);
     }
 
-    private List<HostReservationListResponseDto> filterAcceptedReservationsAndConvert(List<Reservation> reservationList) {
-        List<Reservation> acceptedReservations = reservationList.stream()
+    private HostReservationListPageResponseDto filterAcceptedReservationsAndConvert(Page<Reservation> reservationPage) {
+        List<Reservation> acceptedReservations = reservationPage.getContent().stream()
                 .filter(reservation -> reservation.getStatus() == ReservationStatus.ACCEPTED)
                 .collect(Collectors.toList());
 
@@ -88,9 +91,15 @@ public class ReservationHostService {
             throw new ReservationNotFound(ReservationErrorCode.RESERVATION_NOT_FOUND);
         }
 
-        return acceptedReservations.stream()
+        List<HostReservationListResponseDto> responseDtoList = acceptedReservations.stream()
                 .map(HostReservationListResponseDto::of)
                 .collect(Collectors.toList());
+
+        return new HostReservationListPageResponseDto(
+                responseDtoList,
+                reservationPage.isLast(),
+                reservationPage.getTotalPages()
+        );
     }
 
     private User findUserFromToken() {

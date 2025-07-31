@@ -17,35 +17,35 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
+@RequestMapping("/api/users")
 @RestController
-@RequestMapping("/api/mypage")
 public class MyInfomationController {
 
     private final MyInformationService myInformationService;
 
-    @GetMapping
+    @GetMapping("/me")
     public ApiResponse<UserInformationSimpleResponseDto> readInformation(){
         return ApiResponse.ok(myInformationService.getUserInformationSimple());
     }
 
-    @GetMapping("/detail")
+    @GetMapping("/me/detail")
     public ApiResponse<UserInformationDetailResponseDto> readDetailInformation(){
         return ApiResponse.ok(myInformationService.getUserInformationDetail());
     }
 
-    @PatchMapping("/detail")
+    @PatchMapping("/me/detail")
     public ApiResponse<UpdateUserInfoResponseDto> updateUserInformation(@Valid @RequestBody UpdateUserInfoRequestDto requestDto){
         return ApiResponse.ok(myInformationService.updateUserInfo(requestDto));
     }
 
-    @PatchMapping("/password")
+    @PatchMapping("/me/password")
     public ApiResponse<String> updatePassword(@Valid @RequestBody ChangePasswordRequestDto requestDto){
         myInformationService.updatePassword(requestDto);
 
         return ApiResponse.ok("비밀번호 변경이 완료되었습니다.");
     }
 
-    @DeleteMapping("/withdraw")
+    @DeleteMapping
     public ApiResponse<String> userWithdraw(){
         myInformationService.deleteUser();
 

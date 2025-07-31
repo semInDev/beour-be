@@ -116,15 +116,15 @@ class SignupControllerTest {
             )
             .andExpect(status().isConflict())
             .andExpect(
-                jsonPath("$.message").value(UserErrorCode.NICKNAME_ID_DUPLICATE.getMessage()));
+                jsonPath("$.message").value(UserErrorCode.NICKNAME_DUPLICATE.getMessage()));
     }
 
     @Test
     @DisplayName("아이디가 중복된다.")
     void duplicate_loginId() throws Exception {
         //when then
-        mockMvc.perform(get("/api/signup/check-duplicate/loginId")
-                .param("loginId", "duptest"))
+        mockMvc.perform(get("/api/signup/check-duplicate/login-id")
+                .param("login-id", "duptest"))
             .andExpect(status().isConflict())
             .andExpect(jsonPath("$.message").value(UserErrorCode.LOGIN_ID_DUPLICATE.getMessage()));
     }
@@ -133,8 +133,8 @@ class SignupControllerTest {
     @DisplayName("아이디를 사용할 수 있다.(중복X)")
     void not_duplicate_loginId() throws Exception {
         //when then
-        mockMvc.perform(get("/api/signup/check-duplicate/loginId")
-                .param("loginId", "testId"))
+        mockMvc.perform(get("/api/signup/check-duplicate/login-id")
+                .param("login-id", "testId"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data").value("사용 가능한 아이디입니다."));
     }
@@ -147,7 +147,7 @@ class SignupControllerTest {
                 .param("nickname", "duptest"))
             .andExpect(status().isConflict())
             .andExpect(
-                jsonPath("$.message").value(UserErrorCode.NICKNAME_ID_DUPLICATE.getMessage()));
+                jsonPath("$.message").value(UserErrorCode.NICKNAME_DUPLICATE.getMessage()));
     }
 
     @Test
