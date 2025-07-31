@@ -387,8 +387,8 @@ class LoginControllerTest {
         //when  then
         mockMvc.perform(post("/api/token/reissue").cookie(cookie)
                 .header("Authorization", "Bearer " + accessToken))
-            .andExpect(status().isUnauthorized())
-            .andExpect(
-                jsonPath("$.message").value(UserErrorCode.REFRESH_TOKEN_EXPIRED.getMessage()));
+            .andExpect(jsonPath("$.code").value(UserErrorCode.REFRESH_TOKEN_EXPIRED.getCode()))
+            .andExpect(jsonPath("$.message").value(UserErrorCode.REFRESH_TOKEN_EXPIRED.getMessage()))
+        ;
     }
 }
