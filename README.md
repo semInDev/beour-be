@@ -5,18 +5,16 @@
 
 ## 🛠️ 기술 스택
 
-| 구분 | 사용 기술 |
-|------------------|---------------------------------------------------|
-| Language         | Java 17                                           |
-| Framework        | Spring Boot 3.x, Spring Security, Spring Data JPA |
-| DB               | MySQL                                             |
-| Cache            | Redis                                             |
+| 분류      | 기술                                                       |
+|-----------|------------------------------------------------------------|
+| Language  | Java 17                                                    |
+| Framework | Spring Boot 3.4.5, Spring Security, Spring Data JPA             |
+| DB        | MySQL                                                      |
+| Auth      | JWT (Access/Refresh), Cookie 기반 인증                    |
 | Build Tool       | Gradle                                            |
-| Query            | JPA                                               |
+| Infra     | AWS EC2(Docker container: Spring Boot, MySQL), Nginx, AWS S3, CloudFront, Route53     |
+| CI/CD     | GitHub Actions, Docker, Discord webhooks                 |
 | Version Control  | Git / GitHub                                      |
-| Test             | JUnit 5, Mockito                                  |
-| CI/CD            | GitHub Actions                                    |
-| Infra            | AWS EC2, S3, Route5S                              |
 
 <br>
 
@@ -94,12 +92,10 @@
 
 <br>
 
-## 🌐 배포 주소 (수정 필요)
-서버: 
-
-Swagger: 
-
-프론트엔드: 
+## 🌐 배포 주소
+공식 사이트 주소: https://frontend.beour.store/  <br>
+서버: https://beour.store/ <br>
+Swagger: https://beour.store/swagger-ui/index.html
 
 <br>
 
