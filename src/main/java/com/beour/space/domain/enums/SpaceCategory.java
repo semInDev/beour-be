@@ -3,6 +3,8 @@ package com.beour.space.domain.enums;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Arrays;
+
 @Getter
 @RequiredArgsConstructor
 public enum SpaceCategory {
@@ -15,4 +17,11 @@ public enum SpaceCategory {
     ETC("기타");
 
     private final String displayName;
+
+    public static SpaceCategory fromDisplayName(String displayName) {
+        return Arrays.stream(SpaceCategory.values())
+                .filter(c -> c.getDisplayName().equals(displayName))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("잘못된 공간 유형: " + displayName));
+    }
 }
