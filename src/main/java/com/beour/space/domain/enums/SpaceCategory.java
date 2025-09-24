@@ -1,5 +1,7 @@
 package com.beour.space.domain.enums;
 
+import com.beour.global.exception.error.errorcode.SpaceErrorCode;
+import com.beour.global.exception.exceptionType.InvalidCategoryException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -22,6 +24,9 @@ public enum SpaceCategory {
         return Arrays.stream(SpaceCategory.values())
                 .filter(c -> c.getDisplayName().equals(displayName))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("잘못된 공간 유형: " + displayName));
+                .orElseThrow(() -> new InvalidCategoryException(
+                        SpaceErrorCode.INVALID_SPACE_CATEGORY,
+                        "INVALID_SPACE_CATEGORY"
+                ));
     }
 }

@@ -1,5 +1,7 @@
 package com.beour.space.domain.enums;
 
+import com.beour.global.exception.error.errorcode.SpaceErrorCode;
+import com.beour.global.exception.exceptionType.InvalidCategoryException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -21,6 +23,9 @@ public enum UseCategory {
         return Arrays.stream(UseCategory.values())
                 .filter(c -> c.getDisplayName().equals(displayName))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("잘못된 사용 용도: " + displayName));
+                .orElseThrow(() -> new InvalidCategoryException(
+                        SpaceErrorCode.INVALID_USE_CATEGORY,
+                        "INVALID_USE_CATEGORY"
+                ));
     }
 }
